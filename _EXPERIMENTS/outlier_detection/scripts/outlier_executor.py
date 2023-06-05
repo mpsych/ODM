@@ -1,9 +1,8 @@
 import sys, os
 
-#sys.path.insert(0, "/home/ryan.zurrin001/Projects/omama/")
-omama_dir = os.path.abspath(os.path.join(os.path.realpath(__file__), '../../../../'))
-sys.path.append(omama_dir)
-import omama as O
+odm_dir = os.path.abspath(os.path.join(os.path.realpath(__file__), '../../'))
+sys.path.append(odm_dir)
+from ..outlier_detector import *
 
 config_numbers = [5, 6, 7]
 percent_bad = [8, 13, 24]
@@ -20,6 +19,7 @@ def per_task_execution(idx):
     feature = None
     percent = None
     norm_type = None
+    dataset = None
 
     # configure the dataset that is used for this task iteration
     if idx % 3 == 0:
@@ -126,16 +126,17 @@ def per_task_execution(idx):
     print("Running data on: Feature: {}, Norm: {}, Dataset: {}"
           .format(feature, norm_type, dataset))
 
-    O.OutlierDetector.generate_std_avg_all_algs(n_runs=5,
-                                                norm=norm_type,
-                                                feature=feature,
-                                                dataset=dataset,
-                                                display=False,
-                                                timing=False,
-                                                **arguments
-                                                )
+    OutlierDetector.generate_std_avg_all_algs(n_runs=5,
+                                              norm=norm_type,
+                                              feature=feature,
+                                              dataset=dataset,
+                                              display=False,
+                                              timing=False,
+                                              **arguments
+                                              )
     print(f"task number is: {idx}")
     return
+
 
 if __name__ == '__main__':
     TASK_NUM = sys.argv[1]

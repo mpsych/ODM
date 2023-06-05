@@ -3,16 +3,12 @@ from datetime import datetime
 import hashlib
 import json
 import logging
-import os
 import statistics
-import time
 import contextlib
-from types import SimpleNamespace
 
-import numpy as np
-
-import omama as O
-from ..algorithms import Algorithms
+from utils import *
+from feature_extractor import *
+from _EXPERIMENTS.outlier_detection.utils.algorithms import Algorithms
 
 DEBUG = True
 
@@ -1230,10 +1226,10 @@ class OutlierDetector(Algorithms):
         ncols : int
             Number of columns in the plot
         """
-        O.DataHelper.view_histogram_grid(images=data,
-                                         train_scores=train_scores,
-                                         hists=hists,
-                                         ncols=ncols)
+        DataHelper.view_histogram_grid(images=data,
+                                       train_scores=train_scores,
+                                       hists=hists,
+                                       ncols=ncols)
 
     @staticmethod
     def detect_outliers(features,
@@ -1449,25 +1445,25 @@ class OutlierDetector(Algorithms):
         print(f'Running {pyod_algorithm} {n_runs} times...')
         if dataset == 1:
             print(f'populating dataset with 8% errors...')
-            imgs = O.DataHelper.get2D(N=100, config_num=5, randomize=True)
+            imgs = DataHelper.get2D(N=100, config_num=5, randomize=True)
             num_bad = 8
         elif dataset == 2:
             print(f'populating dataset with 13% errors...')
-            imgs = O.DataHelper.get2D(N=100, config_num=6, randomize=True)
+            imgs = DataHelper.get2D(N=100, config_num=6, randomize=True)
             num_bad = 13
         elif dataset == 3:
             print(f'populating dataset with 24% errors...')
-            imgs = O.DataHelper.get2D(N=100, config_num=7, randomize=True)
+            imgs = DataHelper.get2D(N=100, config_num=7, randomize=True)
             num_bad = 24
         else:
             raise ValueError('dataset must be 1, 2, or 3')
 
         print(f'extracting features...')
-        normalized_imgs = O.Normalize.get_norm(pixels=imgs,
-                                               norm_type=norm)
+        normalized_imgs = Normalize.get_norm(pixels=imgs,
+                                             norm_type=norm)
 
-        feature_vector = O.Features.get_features(normalized_imgs,
-                                                 feature_type=feature)
+        feature_vector = Features.get_features(normalized_imgs,
+                                               feature_type=feature)
         for i in range(n_runs):
             if seed_test:
                 kwargs['random_state'] = i
@@ -1554,27 +1550,27 @@ class OutlierDetector(Algorithms):
             for i in range(n_runs):
                 if dataset == 1:
                     print(f'populating dataset with 8% errors...')
-                    imgs = O.DataHelper.get2D(N=100, config_num=5,
-                                              randomize=True)
+                    imgs = DataHelper.get2D(N=100, config_num=5,
+                                            randomize=True)
                     num_bad = 8
                 elif dataset == 2:
                     print(f'populating dataset with 13% errors...')
-                    imgs = O.DataHelper.get2D(N=100, config_num=6,
-                                              randomize=True)
+                    imgs = DataHelper.get2D(N=100, config_num=6,
+                                            randomize=True)
                     num_bad = 13
                 elif dataset == 3:
                     print(f'populating dataset with 24% errors...')
-                    imgs = O.DataHelper.get2D(N=100, config_num=7,
-                                              randomize=True)
+                    imgs = DataHelper.get2D(N=100, config_num=7,
+                                            randomize=True)
                     num_bad = 24
                 else:
                     raise ValueError('dataset must be 1, 2, or 3')
 
                 print(f'extracting features...')
-                normalized_imgs = O.Normalize.get_norm(pixels=imgs,
-                                                       norm_type=norm)
-                feature_vector = O.Features.get_features(normalized_imgs,
-                                                         feature_type=feature)
+                normalized_imgs = Normalize.get_norm(pixels=imgs,
+                                                     norm_type=norm)
+                feature_vector = Features.get_features(normalized_imgs,
+                                                       feature_type=feature)
                 print(f'run {i + 1} of {n_runs}')
                 train_scores, train_labels, accuracy = \
                     OutlierDetector.detect_outliers(features=feature_vector,

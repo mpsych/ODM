@@ -4,7 +4,8 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.9
+  - python=3.9.7
+  - scikit-image=0.19.2
   - mahotas
   - scikit-learn
   - matplotlib

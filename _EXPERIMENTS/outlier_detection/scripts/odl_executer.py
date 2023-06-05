@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 
-#
-# each run has 1 gpu
-# 128 GB ram
-# all on chimera12
-#
-#
-import os, sys, pickle
+import os
+import sys
 
-omama_dir = os.path.abspath(
-    os.path.join(os.path.realpath(__file__), '../../../../'))
-sys.path.append(omama_dir)
-import omama as O
+odm_dir = os.path.abspath(
+    os.path.join(os.path.realpath(__file__), '../../'))
+sys.path.append(odm_dir)
+from ..outlier_detector import *
+from ..outlier_detector_lite import *
 
-OUTPUTDIR = '/raid/mpsych/ODL/CSTAR/OPTIMIZED/'
-DATASETS = ['CSTAR']
+OUTPUTDIR = '/tmp/odm/output/'
+DATASETS = [
+    'A', 'B', 'C', 'ASTAR', 'BSTAR',
+    # 'CSTAR'
+]
 
 FEAT_TYPES = ['hist', 'sift', 'orb', 'downsample']
 NORM_TYPES = ['minmax', 'gaussian', 'max', 'robust', 'zscore']
+
+
 # total arrangements D * N * F = 1 * 5 * 4 = 20
 
 def per_task_execution(r, c, idx, p):
@@ -83,28 +84,26 @@ def per_task_execution(r, c, idx, p):
     # elif 75 < idx % 100 <= 100:
     #     feature = FEAT_TYPES[3]
 
-# def per_task_execution(r, c, idx, p):
-#     """
-#     This function is used to create all possible combinations of
-#     datasets, with one normalization type, and one feature type.
-#     """
-#     dataset = None
-#
-#     if idx % 5 == 0:
-#         dataset = DATASETS[0]
-#     elif idx % 5 == 1:
-#         dataset = DATASETS[1]
-#     elif idx % 5 == 2:
-#         dataset = DATASETS[2]
-#     elif idx % 5 == 3:
-#         dataset = DATASETS[3]
-#     elif idx % 5 == 4:
-#         dataset = DATASETS[4]
-#
-#     norm_type = NORM_TYPES[4]
-#     feature = FEAT_TYPES[2]
-
-
+    # def per_task_execution(r, c, idx, p):
+    #     """
+    #     This function is used to create all possible combinations of
+    #     datasets, with one normalization type, and one feature type.
+    #     """
+    #     dataset = None
+    #
+    #     if idx % 5 == 0:
+    #         dataset = DATASETS[0]
+    #     elif idx % 5 == 1:
+    #         dataset = DATASETS[1]
+    #     elif idx % 5 == 2:
+    #         dataset = DATASETS[2]
+    #     elif idx % 5 == 3:
+    #         dataset = DATASETS[3]
+    #     elif idx % 5 == 4:
+    #         dataset = DATASETS[4]
+    #
+    #     norm_type = NORM_TYPES[4]
+    #     feature = FEAT_TYPES[2]
 
     # print out the configuration for this task iteration
     print('On Iteration', idx)
@@ -121,7 +120,7 @@ def per_task_execution(r, c, idx, p):
         'batch_size': 32,
         'capacity': 0.06131767922552495,
         'contamination': 0.015414562231089293,
-        'decoder_neurons':  [16, 32, 64],
+        'decoder_neurons': [16, 32, 64],
         'dropout_rate': 0.42865805527000883,
         'encoder_neurons': [64, 32, 16],
         'epochs': 75,
@@ -160,7 +159,7 @@ def per_task_execution(r, c, idx, p):
         default_config = None
         custom_config = CUSTOM_CONFIG
 
-    odl = O.OutlierDetectorLite()
+    odl = OutlierDetectorLite()
 
     runs = {}
 
@@ -169,13 +168,13 @@ def per_task_execution(r, c, idx, p):
 
         IMGS = odl.load_data(DATASET)
         # print(IMGS)
-        FEATURE_VECTOR = O.Features.get_features(IMGS,
-                                                 feature_type=custom_config[
-                                                     'feat'],
-                                                 norm_type=custom_config[
-                                                     'norm'],
-                                                 **custom_config
-                                                 )
+        FEATURE_VECTOR = Features.get_features(IMGS,
+                                               feature_type=custom_config[
+                                                   'feat'],
+                                               norm_type=custom_config[
+                                                   'norm'],
+                                               **custom_config
+                                               )
         # print(FEATURE_VECTOR)
         GT = odl.load_ground_truth(DATASET)
         # print(GT)

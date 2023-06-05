@@ -6,8 +6,8 @@ import time
 
 import numpy as np
 
-import outlier_detection
-import outlier_detection as O
+from loaders import omama_loader as O
+from data import Data
 import pydicom as dicom
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -36,14 +36,14 @@ class DataHelper(object):
             The data instance.
         """
         t0 = time.time()
-        if O.Data.instance is None:
+        if Data.instance is None:
             loader = O.OmamaLoader(config_num=config_num)
-            O.Data(loader, load_cache=True)
-            data = O.Data.instance
+            Data(loader, load_cache=True)
+            data = Data.instance
         else:
-            data = O.Data.instance
+            data = Data.instance
         if timing:
-            O.Data.timing(t0, 'check_data_instance')
+            Data.timing(t0, 'check_data_instance')
         return data
 
     # --------------------------------------------------------------------------
@@ -92,14 +92,14 @@ class DataHelper(object):
         elif isinstance(image, np.ndarray):
             # print('in check_type, image is a numpy array')
             path = image
-        elif isinstance(image, O.Data):
+        elif isinstance(image, Data):
             # print('in check_type, image is a data object')
             path = image
         else:
             return 'Please specify either a path, image_id, dicom_name, ' \
                    'or a image object'
         if timing:
-            O.Data.timing(t0, 'check_type')
+            Data.timing(t0, 'check_type')
         return path
 
     @staticmethod
@@ -156,7 +156,7 @@ class DataHelper(object):
             # print('Loading image from path using dicom...')
             image = dicom.read_file(path, force=True)
             return image.pixel_array
-        elif isinstance(path, O.Data):
+        elif isinstance(path, Data):
             # print('Loading image from data object...')
             pixels = []
             for d in path:
@@ -284,7 +284,7 @@ class DataHelper(object):
             data_loader = O.OmamaLoader(config_num=config_num)
         else:
             data_loader = data_loader
-        data = O.Data(data_loader, load_cache=True)
+        data = Data(data_loader, load_cache=True)
         if cancer is True:
             label = "IndexCancer"
         elif cancer is False:
@@ -297,7 +297,7 @@ class DataHelper(object):
         for i in range(N):
             images.append(next(gen))
         if timing is True:
-            O.Data.timing(t0, 'get2D')
+            Data.timing(t0, 'get2D')
         return images
 
     # --------------------------------------------------------------------------
@@ -342,7 +342,7 @@ class DataHelper(object):
             data_loader = O.OmamaLoader(config_num=config_num)
         else:
             data_loader = data_loader
-        data = O.Data(data_loader, load_cache=True)
+        data = Data(data_loader, load_cache=True)
         if cancer is True:
             label = "IndexCancer"
         elif cancer is False:
@@ -355,7 +355,7 @@ class DataHelper(object):
         for i in range(N):
             images.append(next(gen))
         if timing is True:
-            O.Data.timing(t0, 'get3D')
+            Data.timing(t0, 'get3D')
         return images
 
     # --------------------------------------------------------------------------
@@ -546,7 +546,7 @@ class DataHelper(object):
             plt.title('Score: {}'.format(score))
 
         if timing is True:
-            O.Data.timing(t0, 'view')
+            Data.timing(t0, 'view')
 
     # --------------------------------------------------------------------------
     @staticmethod
@@ -614,28 +614,6 @@ class DataHelper(object):
                     index += 1
         plt.tight_layout()
         plt.show()
-
-        # if index < len(imgs):
-        #     ax[i, j].imshow(imgs[index], cmap=cmap)
-        #     if show_indices:
-        #         ax[i, j].axis('off')
-        #         ax[i, j].set_title(index)
-        #     index += 1
-        # else:
-        #     ax[i, j].axis('off')
-
-        # fig, ax = plt.subplots(nrows, ncols, figsize=figsize)
-        # axes = axes.flatten()[:len(imgs)]
-        #
-        # for img, ax in zip(imgs, axes.flatten()):
-        #     if np.any(img):
-        #         if len(img.shape) > 2 and img.shape[2] == 1:
-        #             img = img.squeeze()
-        #         if show_indices:
-        #             ax.axis('off')
-        #             ax.set_title(index)
-        #         ax.imshow(img, cmap=cmap)
-        #         index += 1
 
     # --------------------------------------------------------------------------
     @staticmethod
@@ -780,7 +758,7 @@ class DataHelper(object):
         if view is True:
             DataHelper.view(dicom_name, timing=timing)
         if timing is True:
-            O.Data.timing(t0, 'get')
+            Data.timing(t0, 'get')
         return img
 
     # --------------------------------------------------------------------------
@@ -836,18 +814,18 @@ class DataHelper(object):
             raise ValueError('File type not supported')
 
         if timing is True:
-            O.Data.timing(t0, 'store')
+            Data.timing(t0, 'store')
 
     # --------------------------------------------------------------------------
     @staticmethod
-    def store_all(data: outlier_detection.Data, save_path, timing=False):
-        """ stores all the images from the outlier_detection.Data class instance into the
+    def store_all(data: Data, save_path, timing=False):
+        """ stores all the images from the omama.Data class instance into the
          specified save_path.
 
         Parameters
         ----------
         data : omama.Data
-            The outlier_detection.Data class instance to store all the images from.
+            The omama.Data class instance to store all the images from.
         save_path : str
             The path to store the images in.
         timing : bool
@@ -872,7 +850,7 @@ class DataHelper(object):
             DataHelper.store(img, temp_save_path, timing=timing)
             i += 1
         if timing is True:
-            O.Data.timing(t0, 'store_all')
+            Data.timing(t0, 'store_all')
 
     # --------------------------------------------------------------------------
     @staticmethod
@@ -900,7 +878,7 @@ class DataHelper(object):
             sop_uids.append(
                 os.path.basename(path).replace(substr_to_remove, ""))
         if timing is True:
-            O.Data.timing(t0, 'parse_sop_uid_from_paths')
+            Data.timing(t0, 'parse_sop_uid_from_paths')
         return sop_uids
 
     # --------------------------------------------------------------------------
@@ -1003,7 +981,7 @@ class DataHelper(object):
                     f.write(path)
 
         if timing is True:
-            O.Data.timing(t0, 'list_to_caselist')
+            Data.timing(t0, 'list_to_caselist')
         return save_path
 
     @staticmethod

@@ -351,7 +351,7 @@ class Normalize:
         """Normalize pixels
         Parameters
         ----------
-        pixels : numpy.ndarray
+        pixels : numpy.ndarray | list of numpy.ndarray
             Array of pixels to be normalized
         norm_type : str
             Type of normalization. The default is 'min-max'.

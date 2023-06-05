@@ -1,7 +1,8 @@
 import sys
 
 sys.path.insert(0, "/home/ryan.zurrin001/Projects/omama/")
-import omama as O
+
+from ..outlier_detector import *
 
 # each one of the config numbers is a different partition of images
 # containing 44123 images randomly selected from the 176492 images.
@@ -71,19 +72,19 @@ def per_task_execution(idx):
     # config = config_numbers[0]
 
     # pulling in the data from where it is stored on the cluster
-    imgs = O.DataHelper.get2D(N=42092, config_num=config, randomize=True)
+    imgs = DataHelper.get2D(N=42092, config_num=config, randomize=True)
 
     # creating features from the images
-    features = O.Features.get_features(imgs,
-                                       feature_type=feature,
-                                       norm_type=norm)
+    feat = Features.get_features(imgs,
+                                 feature_type=feature,
+                                 norm_type=norm)
 
     # run the outlier detection algorithm
-    O.OutlierDetector.detect_outliers(features=features,
-                                      imgs=imgs,
-                                      pyod_algorithm='VAE',
-                                      id_=idx,
-                                      **arguments)
+    OutlierDetector.detect_outliers(features=feat,
+                                    imgs=imgs,
+                                    pyod_algorithm='VAE',
+                                    id_=idx,
+                                    **arguments)
 
     print(f"task number is: {idx}")
     return
