@@ -2,8 +2,8 @@ import os
 import sys
 import datetime
 
-sys.path.insert(0, "/home/ryan.zurrin001/Projects/outlier_detection/")
-import outlier_detection as O
+from ..feature_extractor import *
+from ..utils import *
 
 # each one of the config numbers is a different partition of images
 # containing 44123 images randomly selected from the 176492 images.
@@ -11,7 +11,7 @@ config_numbers = [8, 9, 10, 11]
 # sets the feature type and normalization type
 feature = 'hist'
 norm = 'minmax'
-LOG_DIR = r'/raid/mpsych/cache_files/RERUN_MEGARUN/'
+LOG_DIR = r'/tmp/odm/logs/'
 
 
 # plan to run 4 different jobs. each has 44123 images and each image is at
@@ -21,13 +21,13 @@ def per_task_execution(idx):
     config = config_numbers[idx % 4]
 
     # pulling in the data from where it is stored on the cluster
-    data_imgs = O.DataHelper.get2D(N=44123, config_num=config, randomize=True)
+    data_imgs = DataHelper.get2D(N=44123, config_num=config, randomize=True)
 
     # creating features from the images
-    binary_bin_feats = O.Features.get_features(data_imgs,
-                                               feature_type=feature,
-                                               norm_type=norm,
-                                               bins=5)
+    binary_bin_feats = Features.get_features(data_imgs,
+                                             feature_type=feature,
+                                             norm_type=norm,
+                                             bins=5)
 
     # make a list of all the img pahts with images that have higher then 1 in
     # second bin
@@ -36,7 +36,7 @@ def per_task_execution(idx):
     for i, binary in enumerate(binary_bin_feats):
         if binary[4] > 15000 or binary[1] < 1000:
             print(i, binary)
-            paths.append(data_imgs[i].filePath) 
+            paths.append(data_imgs[i].filePath)
             bad_indexes_found.append(i)
 
     # create a file name using the datetime + feat + norm

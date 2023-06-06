@@ -11,7 +11,7 @@ config_numbers = [8, 9, 10, 11]
 # sets the feature type and normalization type
 feature = 'hist'
 norm = 'minmax'
-LOG_DIR = r'/tmp/odm/cache_files/'
+LOG_DIR = r'/tmp/odm/logs/'
 
 
 # plan to run 4 different jobs. each has 44123 images and each image is at

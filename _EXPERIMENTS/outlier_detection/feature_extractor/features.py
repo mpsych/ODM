@@ -1,4 +1,3 @@
-import copy
 import time
 from types import SimpleNamespace
 from .normalizations import Normalize
