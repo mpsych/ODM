@@ -4,9 +4,10 @@ import pydicom as dicom
 import argparse
 from feature_extractor import *
 
-# sets the feature type and normalization type
-feature = 'hist'
-norm = 'minmax'
+# histogram and minmax has been found to be the best combination for 5BHIST algorithm
+FEAT = 'hist'
+NORM = 'minmax'
+
 LOG_DIR = r'/tmp/odm/logs/'
 
 
@@ -27,7 +28,7 @@ def get_pixel_list(data_dict):
     return [data[0].pixel_array for data in data_dict.values() if data[0].pixel_array.size > 0]
 
 
-def _5bhist(data_root, final_file_name):
+def fivebhist_runner(data_root, final_file_name):
     if not os.path.isdir(data_root):
         print("Provided data root directory does not exist.")
         return
@@ -37,7 +38,7 @@ def _5bhist(data_root, final_file_name):
     data_imgs = get_pixel_list(data_dict)
 
     # creating features from the images
-    five_b_hist = Features.get_features(data_imgs, feature_type=feature, norm_type=norm, bins=5)
+    five_b_hist = Features.get_features(data_imgs, feature_type=FEAT, norm_type=NORM, bins=5)
 
     # make a list of all the image paths with images that have higher than 1 in second bin
     bad_indexes_found = []
@@ -50,7 +51,7 @@ def _5bhist(data_root, final_file_name):
 
     # create a file name using the datetime + feat + norm
     date_and_time = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    file_name = f"{date_and_time}_{feature}_{norm}.txt"
+    file_name = f"{date_and_time}_{FEAT}_{NORM}.txt"
 
     # if the log directory does not exist, create it
     os.makedirs(LOG_DIR, exist_ok=True)
@@ -60,7 +61,7 @@ def _5bhist(data_root, final_file_name):
         f.write("\n".join(paths))
 
     # write the indexes to the file in the log directory as well
-    index_file_name = f"{date_and_time}_{feature}_{norm}_indexes.txt"
+    index_file_name = f"{date_and_time}_{FEAT}_{NORM}_indexes.txt"
     with open(os.path.join(LOG_DIR, index_file_name), 'w') as f:
         f.write("\n".join(map(str, bad_indexes_found)))
 
@@ -79,4 +80,4 @@ if __name__ == '__main__':
     parser.add_argument('--final_file', type=str, required=True, help='Name of the final file of good images.')
     args = parser.parse_args()
 
-    _5bhist(args.data_root, args.final_file)
+    fivebhist_runner(args.data_root, args.final_file)
