@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 
-from loaders import omama_loader as O
+from loaders import *
 from data import Data
 import pydicom as dicom
 import matplotlib as mpl
@@ -37,7 +37,7 @@ class DataHelper(object):
         """
         t0 = time.time()
         if Data.instance is None:
-            loader = O.OmamaLoader(config_num=config_num)
+            loader = DataLoader(config_num=config_num)
             Data(loader, load_cache=True)
             data = Data.instance
         else:
@@ -245,7 +245,7 @@ class DataHelper(object):
     # --------------------------------------------------------------------------
     @staticmethod
     def get2D(N=1,
-              data_loader=None,
+              dataloader=None,
               cancer=None,
               randomize=False,
               config_num=2,
@@ -256,7 +256,7 @@ class DataHelper(object):
         ----------
         N : int
             (default is 1) Number of images to return
-        data_loader : DataLoader
+        dataloader : DataLoader
             (default is None) The data loader to use to load the data
         cancer : bool
             (default is False)
@@ -280,11 +280,11 @@ class DataHelper(object):
             N 2D images from the dataset
         """
         t0 = time.time()
-        if data_loader is None:
-            data_loader = O.OmamaLoader(config_num=config_num)
+        if dataloader is None:
+            dataloader = DataLoader(config_num=config_num)
         else:
-            data_loader = data_loader
-        data = Data(data_loader, load_cache=True)
+            dataloader = dataloader
+        data = Data(dataloader, load_cache=True)
         if cancer is True:
             label = "IndexCancer"
         elif cancer is False:
@@ -303,7 +303,7 @@ class DataHelper(object):
     # --------------------------------------------------------------------------
     @staticmethod
     def get3D(N=1,
-              data_loader=None,
+              dataloader=None,
               cancer=None,
               randomize=False,
               config_num=2,
@@ -314,7 +314,7 @@ class DataHelper(object):
         ----------
         N : int
             (default is 1) Number of images to return
-        data_loader : DataLoader
+        dataloader : DataLoader
             (default is None) The data loader to use to load the data
         cancer : bool
             (default is False)
@@ -338,11 +338,11 @@ class DataHelper(object):
             N 3D images from the dataset.
         """
         t0 = time.time()
-        if data_loader is None:
-            data_loader = O.OmamaLoader(config_num=config_num)
+        if dataloader is None:
+            dataloader = DataLoader(config_num=config_num)
         else:
-            data_loader = data_loader
-        data = Data(data_loader, load_cache=True)
+            dataloader = dataloader
+        data = Data(dataloader, load_cache=True)
         if cancer is True:
             label = "IndexCancer"
         elif cancer is False:
