@@ -6,6 +6,8 @@ import logging
 import statistics
 import contextlib
 
+import numpy as np
+
 from utils import *
 from feature_extractor import *
 from _EXPERIMENTS.outlier_detection.utils.algorithms import Algorithms
@@ -1213,30 +1215,9 @@ class OutlierDetector(Algorithms):
             return None
 
     @staticmethod
-    def view(data, train_scores=None, hists=True, ncols=None):
-        """View data
-        Parameters
-        ----------
-        data : list
-            data to be viewed
-        train_scores : list
-            train scores to be viewed
-        hists : bool
-            Whether to show histograms
-        ncols : int
-            Number of columns in the plot
-        """
-        DataHelper.view_histogram_grid(images=data,
-                                       train_scores=train_scores,
-                                       hists=hists,
-                                       ncols=ncols)
-
-    @staticmethod
     def detect_outliers(features,
                         imgs,
                         pyod_algorithm,
-                        accuracy_score=False,
-                        number_bad=None,
                         timing=False,
                         id_=None,
                         **kwargs,
@@ -1247,8 +1228,7 @@ class OutlierDetector(Algorithms):
         t0 = time.time()
 
         errors = {}
-        t_scores = []
-        t_labels = []
+        t_scores = None
         accuracy = None
         # get the verbose flag from kwargs
         redirect_output = kwargs.get('redirect_output', False)
@@ -2636,15 +2616,18 @@ class OutlierDetector(Algorithms):
             for i in range(len(imgs)):
                 image_list.append(
                     SimpleNamespace(image=imgs[i], score=t_scores[i]))
-                image_list = sorted(image_list, key=lambda x: x.score,
-                                    reverse=True)
         elif isinstance(t_scores, list):
-            for i in range(len(imgs)):
+            if isinstance(t_scores[0], np.ndarray):
                 for j in range(len(t_scores)):
+                    for i in range(len(imgs)):
+                        image_list.append(
+                            SimpleNamespace(image=imgs[i], score=t_scores[j][i]))
+            else:
+                for i in range(len(imgs)):
                     image_list.append(
-                        SimpleNamespace(image=imgs[i], score=t_scores[j][i]))
-                    image_list = sorted(image_list, key=lambda x: x.score,
-                                        reverse=True)
+                        SimpleNamespace(image=imgs[i], score=t_scores[i]))
+
+        image_list = sorted(image_list, key=lambda x: x.score, reverse=True)
 
         # write the paths in order they are in the image_list
         with open(path, 'w') as f:

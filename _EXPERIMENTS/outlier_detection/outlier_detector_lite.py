@@ -1,17 +1,15 @@
 import glob
-import json
 import os
 import pickle
-from pprint import pprint
 
 import sklearn
-import sys
 import warnings
 
-sys.path.insert(0, '../..')
-import omama as O
 import numpy as np
 from sklearn.exceptions import ConvergenceWarning
+
+from outlier_detector import OutlierDetector
+from feature_extractor import Features
 
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 THRESHOLD = 0.0001
@@ -222,13 +220,13 @@ class OutlierDetectorLite:
 
         if feature_vector is None:
             feature_vector = \
-                O.Features.get_features(imgs, FEAT, NORM, **CONFIG)
+                Features.get_features(imgs, FEAT, NORM, **CONFIG)
         else:
             print('Using provided feature vector.')
 
         print('Calculated features!')
 
-        scores, labels, decision_function = O.OutlierDetector.detect_outliers(
+        scores, labels, decision_function = OutlierDetector.detect_outliers(
             features=feature_vector,
             imgs=imgs,
             pyod_algorithm=ALGORITHM,
@@ -247,6 +245,8 @@ class OutlierDetectorLite:
             groundtruth = self.load_ground_truth(DATASET)
         else:
             print('Using provided ground truth.')
+
+        evaluation = None
 
         if labels is not None:
             if len(labels) == len(groundtruth):
