@@ -24,8 +24,11 @@ def load_data_dict(path, ext='.dcm'):
     return data_dict
 
 
-def get_pixel_list(data_dict):
-    return [data[0].pixel_array for data in data_dict.values() if data[0].pixel_array.size > 0]
+def get_pixel_list(data):
+    if isinstance(data, dict):
+        return [data[0].pixel_array for data in data.values() if data[0].pixel_array.size > 0]
+    elif isinstance(data, list):
+        return [data.pixel_array for data in data if data.pixel_array.size > 0]
 
 
 def fivebhist_runner(data_root, final_file_name):

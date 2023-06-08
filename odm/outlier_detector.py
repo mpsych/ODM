@@ -1,17 +1,13 @@
-import traceback
 from datetime import datetime
 import hashlib
-import logging
 import os
 import time
 import contextlib
 from types import SimpleNamespace
-
+import logging
 import numpy as np
 
-from outlier_detection.algorithms import Algorithms
-
-DEBUG = True
+logger = logging.getLogger(__name__)
 
 ALGORITHMS = [
     'VAE',
@@ -23,51 +19,28 @@ STATS_CACHE = r'ODL_OD_STATS_CACHE_RERUN_MEGARUN.json'
 LOG_DIR = r'/raid/mpsych/cache_files/RERUN_MEGARUN/'
 
 
-class OutlierDetector(Algorithms):
+class OutlierDetector:
     def __init__(self,
-                 run_id,
-                 algorithms=None,
-                 imgs=None,
-                 features=None,
-                 exclude=None,
-                 timing=False,
-                 **kwargs):
+                 run_id: str,
+                 algorithms: list = None,
+                 imgs: list = None,
+                 features: list = None,
+                 verbose: bool = False,
+                 timing: bool = False) -> None:
         """ Initializes the OutlierDetector class """
         t0 = time.time()
         self.__run_id = run_id
-        if algorithms is None:
-            self.__algorithms = ALGORITHMS
-        else:
-            self.__algorithms = algorithms
-        if imgs is not None:
-            self.__imgs = imgs
-        if exclude is not None:
-            self.__exclude = exclude
-        else:
-            self.__exclude = []
-        if features is not None:
-            self.__features = features
-        else:
-            self.__features = None
-        verbose = kwargs.get('verbose', False)
+        self.__algorithms = ALGORITHMS if algorithms is None else algorithms
+        self.__imgs = imgs
+        self.__features = features
         if verbose is False:
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
             logging.getLogger('tensorflow').disabled = True
             logging.getLogger('pyod').disabled = True
-        else:
-            self.__accuracy_scores = None
-            self.__errors = None
+        self.__errors = None
 
         if timing:
-            display_timing(t0, "OD __init__")
-
-    @property
-    def results(self):
-        return self.__accuracy_scores, self.__errors
-
-    @property
-    def algorithms(self):
-        return self.__algorithms
+            logger.info(f'OD __init__ took {time.time() - t0} seconds')
 
     @staticmethod
     def detect_outliers(features,
@@ -75,6 +48,8 @@ class OutlierDetector(Algorithms):
                         pyod_algorithm,
                         timing=False,
                         id_=None,
+                        redirect_output=False,
+                        return_decision_function=False,
                         **kwargs,
                         ):
         """  Detect outliers using pyod algorithms
@@ -83,12 +58,10 @@ class OutlierDetector(Algorithms):
         t0 = time.time()
 
         errors = {}
-        t_scores = []
-        t_labels = []
-        accuracy = None
-        # get the verbose flag from kwargs
-        redirect_output = kwargs.get('redirect_output', False)
-        return_decision_function = kwargs.get('return_decision_function', False)
+        decision_scores = None
+
+        # caselist contains the list of image paths
+        caselist = kwargs.get('caselist', None)
 
         try:
             if redirect_output:
@@ -97,14 +70,14 @@ class OutlierDetector(Algorithms):
                 with open(out_file, "w") as f:
                     with contextlib.redirect_stdout(f):
                         if return_decision_function:
-                            t_scores, t_labels, t_decision_function = OutlierDetector._detect_outliers(
+                            decision_scores, labels, t_decision_function = OutlierDetector._detect_outliers(
                                 features,
                                 pyod_algorithm=pyod_algorithm,
                                 **kwargs)
 
                             accuracy = t_decision_function
                         else:
-                            t_scores, t_labels = OutlierDetector._detect_outliers(
+                            decision_scores, labels = OutlierDetector._detect_outliers(
                                 features,
                                 pyod_algorithm=pyod_algorithm,
                                 **kwargs)
@@ -112,7 +85,7 @@ class OutlierDetector(Algorithms):
                 print(f'Running {pyod_algorithm}...')
 
                 if return_decision_function:
-                    t_scores, t_labels, t_decision_function = OutlierDetector._detect_outliers(
+                    decision_scores, labels, t_decision_function = OutlierDetector._detect_outliers(
                         features,
                         pyod_algorithm=pyod_algorithm,
                         **kwargs)
@@ -120,19 +93,18 @@ class OutlierDetector(Algorithms):
                     accuracy = t_decision_function
 
                 else:
-                    t_scores, t_labels = OutlierDetector._detect_outliers(
+                    decision_scores, labels = OutlierDetector._detect_outliers(
                         features,
                         pyod_algorithm=pyod_algorithm,
                         **kwargs)
 
         # if the algorithm causes an error, skip it and move on
         except Exception as e:
-            print(f'Error running {pyod_algorithm}')
+            logging.error(
+                f'Error running {pyod_algorithm} on data {features} with exception {e}')
             errors[pyod_algorithm] = e
             accuracy = -1
-            t_labels = None
-            # print out only the error stack trace
-            traceback.print_exc()
+            labels = None
 
         kwargs_hash = dict_to_hash(kwargs)
         # get the date and time to use as file name
@@ -145,16 +117,18 @@ class OutlierDetector(Algorithms):
         filename = f'{date_time}_{pyod_algorithm}%_{kwargs_hash}'
 
         print(
-            f'about to save and len of tscore and imgs is {len(t_scores)} and {len(imgs)}')
+            f'about to save and len of tscore and imgs is {len(decision_scores)} and {len(imgs)}')
 
+        # TODO: This is expecting the imgs to be a SimpleNamespace from Data API, need to
+        #       change this so that it is no longer dependent on that
         OutlierDetector._save_outlier_path_log(
-            filename, imgs, t_scores
+            filename, imgs, decision_scores
         )
 
         if timing:
             display_timing(t0, "running " + pyod_algorithm)
 
-        return t_scores, t_labels, accuracy
+        return decision_scores, labels, accuracy
 
     @staticmethod
     def _detect_outliers(data_x,
@@ -186,8 +160,6 @@ class OutlierDetector(Algorithms):
             data_x = np.array(data_x)
 
         if pyod_algorithm == 'VAE':
-            if DEBUG:
-                print("In VAE algorithm")
             from pyod.models.vae import VAE
             from keras.losses import mse
             if 'VAE' in kwargs:
@@ -261,7 +233,7 @@ class OutlierDetector(Algorithms):
                     'The length of the data and labels must be the same')
 
     @staticmethod
-    def _save_outlier_path_log(filename, imgs, t_scores):
+    def _save_outlier_path_log(filename, imgs, t_scores, caselist: str = None):
         """ Saves the outlier path log
         Parameters
         ----------
@@ -271,9 +243,16 @@ class OutlierDetector(Algorithms):
             The training scores
         imgs : list
             The images
+        caselist : str
+            path to the caselist file, which contains the list of paths to the
+            images
         """
         # validate the length of the scores and images
         OutlierDetector._validate_lengths(imgs, t_scores)
+
+        # read the caselist file into a list
+        with open(caselist, 'r') as f:
+            paths = [line.strip() for line in f]
 
         # the path to write the log to will be the LOG_DIR with the cache key
         # appended to it
@@ -281,32 +260,32 @@ class OutlierDetector(Algorithms):
 
         # create the log directory if it doesn't exist with all the parent directories
         if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
 
         # this will put all the data into order from highest to lowest score
         image_list = []
         if isinstance(t_scores, np.ndarray):
             for i in range(len(imgs)):
-                image_list.append(
-                    SimpleNamespace(image=imgs[i], score=t_scores[i]))
-                image_list = sorted(image_list, key=lambda x: x.score,
-                                    reverse=True)
+                image_list.append(SimpleNamespace(image=paths[i], score=t_scores[i]))
         elif isinstance(t_scores, list):
-            for i in range(len(imgs)):
+            if isinstance(t_scores[0], np.ndarray):
                 for j in range(len(t_scores)):
+                    for i in range(len(imgs)):
+                        image_list.append(
+                            SimpleNamespace(image=paths[i], score=t_scores[j][i]))
+            else:
+                for i in range(len(imgs)):
                     image_list.append(
-                        SimpleNamespace(image=imgs[i], score=t_scores[j][i]))
-                    image_list = sorted(image_list, key=lambda x: x.score,
-                                        reverse=True)
+                        SimpleNamespace(image=paths[i], score=t_scores[i]))
+
+        image_list = sorted(image_list, key=lambda x: x.score, reverse=True)
 
         # write the paths in order they are in the image_list
         with open(path, 'w') as f:
             for i in range(len(image_list)):
-                f.write(image_list[i].image.filePath + '\n')
+                f.write(image_list[i].image + '\n')
 
-        # sort the scores from highest to lowest and then write them to
-        # another file with the same name as the path but with _scores.txt
-        # appended to it
+        # write the scores in order they are in the image_list
         path = os.path.join(LOG_DIR, filename + '_scores.txt')
         with open(path, 'w') as f:
             for i in range(len(image_list)):

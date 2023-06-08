@@ -1,9 +1,12 @@
 import time
+import logging
 from types import SimpleNamespace
 from .normalizations import Normalize
 import mahotas as mh
 import numpy as np
 from typing import Union, List
+
+logger = logging.getLogger(__name__)
 
 
 class Features:
@@ -47,7 +50,7 @@ class Features:
             histograms.append(mh.fullhistogram(tmp_pixels.astype(np.uint8)))
 
         if timing:
-            print("Histogram: ", time.time() - t0)
+            logger.info("Histogram: %s", time.time() - t0)
         return np.array(histograms)
 
     @staticmethod
@@ -83,5 +86,5 @@ class Features:
         else:
             raise ValueError("Feature type not supported")
         if timing:
-            print('Features: ', time.time() - t0)
+            logger.info("Get features: %s", time.time() - t0)
         return features

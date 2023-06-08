@@ -32,14 +32,14 @@ def load_data_from_text_file(file_path):
     return data
 
 
-def vae_runner(data_root, contamination=0.015, verbose=False, norm_type=NORM):
+def vae_runner(caselist, contamination=0.015, verbose=False, norm_type=NORM):
     """
     Runs the Variational AutoEncoder (VAE) algorithm on given data.
 
     Parameters
     ----------
-    data_root : str
-        The path to the data.
+    caselist : str
+        The path to the text file containing the paths of the DICOM files.
     contamination : float, optional
         The proportion of outliers in the data. Default is 0.015.
     verbose : bool, optional
@@ -48,8 +48,8 @@ def vae_runner(data_root, contamination=0.015, verbose=False, norm_type=NORM):
         The type of normalization to be applied. Default is NORM (minmax).
     """
     # load the data after running 5bhist algorithm
-    data_dict = load_data_dict(data_root)
-    imgs = get_pixel_list(data_dict)
+    data = load_data_from_text_file(caselist)
+    imgs = get_pixel_list(data)
 
     # creating features from the images
     feats = Features.get_features(imgs,
@@ -61,8 +61,8 @@ def vae_runner(data_root, contamination=0.015, verbose=False, norm_type=NORM):
                                     imgs=imgs,
                                     pyod_algorithm='VAE',
                                     contamination=contamination,
-                                    verbose=verbose)
-
+                                    verbose=verbose,
+                                    caselist=caselist)
     return
 
 
