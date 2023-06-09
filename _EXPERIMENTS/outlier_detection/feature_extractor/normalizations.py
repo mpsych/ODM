@@ -9,6 +9,7 @@ DEBUG = False
 
 # class to represent different normalization techniques
 
+
 class Normalize:
     @staticmethod
     def extract_pixels(images, timing=False):
@@ -46,22 +47,19 @@ class Normalize:
 
     @staticmethod
     def _minmax_helper(pixels, **kwargs):
-        """Helper function to normalize data using minmax method
-        """
+        """Helper function to normalize data using minmax method"""
         bins = kwargs.get("bins", 256)
         max_val = np.max(pixels)
         min_val = np.min(pixels)
         normalized_pixels = pixels.astype(np.float32).copy()
         normalized_pixels -= min_val
-        normalized_pixels /= (max_val - min_val)
+        normalized_pixels /= max_val - min_val
         normalized_pixels *= bins - 1
 
         return normalized_pixels
 
     @staticmethod
-    def minmax(pixels,
-               timing=False,
-               **kwargs):
+    def minmax(pixels, timing=False, **kwargs):
         """The min-max approach (often called normalization) rescales the
         feature to a fixed range of [0,1] by subtracting the minimum value
         of the feature and then dividing by the range, which is then multiplied
@@ -91,8 +89,7 @@ class Normalize:
 
     @staticmethod
     def _max_helper(pixels, **kwargs):
-        """Helper function to normalize data using max method
-        """
+        """Helper function to normalize data using max method"""
         bins = kwargs.get("bins", 256)
         max_val = np.max(pixels)
         normalized_pixels = pixels.astype(np.float32).copy()
@@ -101,9 +98,7 @@ class Normalize:
         return normalized_pixels
 
     @staticmethod
-    def max(pixels,
-            timing=False,
-            **kwargs):
+    def max(pixels, timing=False, **kwargs):
         """The maximum absolute scaling rescales each feature between -1 and 1
         by dividing every observation by its maximum absolute value.
         Parameters
@@ -136,17 +131,14 @@ class Normalize:
 
     @staticmethod
     def _gaussian_helper(pixels, **kwargs):
-        """Helper function to normalize data using gaussian blur
-        """
+        """Helper function to normalize data using gaussian blur"""
         sigma = kwargs.get("sigma", 20)
         normalized_pixels = mh.gaussian_filter(pixels, sigma=sigma)
         normalized_pixels /= normalized_pixels.max()
         return normalized_pixels
 
     @staticmethod
-    def gaussian(pixels,
-                 timing=False,
-                 **kwargs):
+    def gaussian(pixels, timing=False, **kwargs):
         """Normalize by gaussian
         Parameters
         ----------
@@ -182,8 +174,7 @@ class Normalize:
 
     @staticmethod
     def _zscore_helper(pixels, **kwargs):
-        """Helper function to normalize data using zscore method
-        """
+        """Helper function to normalize data using zscore method"""
         bins = kwargs.get("bins", 255)
         normalized_pixels = pixels.astype(np.float32).copy()
         normalized_pixels -= np.mean(normalized_pixels)
@@ -193,9 +184,7 @@ class Normalize:
         return normalized_pixels
 
     @staticmethod
-    def z_score(pixels,
-                timing=False,
-                **kwargs):
+    def z_score(pixels, timing=False, **kwargs):
         """The z-score method (often called standardization) transforms the data
         into a distribution with a mean of 0 and a standard deviation of 1.
         Each standardized value is computed by subtracting the mean of the
@@ -238,17 +227,15 @@ class Normalize:
         bins = kwargs.get("bins", 256)
         normalized_pixels = pixels.astype(np.float32).copy()
         normalized_pixels -= np.median(normalized_pixels)
-        normalized_pixels /= np.percentile(normalized_pixels,
-                                           75) - np.percentile(
-            normalized_pixels, 25)
+        normalized_pixels /= np.percentile(normalized_pixels, 75) - np.percentile(
+            normalized_pixels, 25
+        )
         normalized_pixels *= bins - 1
 
         return normalized_pixels
 
     @staticmethod
-    def robust(pixels,
-               timing=False,
-               **kwargs):
+    def robust(pixels, timing=False, **kwargs):
         """In robust scaling, we scale each feature of the data set by subtracting
         the median and then dividing by the interquartile range. The interquartile
         range (IQR) is defined as the difference between the third and the first
@@ -283,12 +270,9 @@ class Normalize:
         return normalized_pixels, None
 
     @staticmethod
-    def downsample(images,
-                   output_shape=None,
-                   flatten=False,
-                   normalize=None,
-                   timing=False,
-                   **kwargs):
+    def downsample(
+        images, output_shape=None, flatten=False, normalize=None, timing=False, **kwargs
+    ):
         """Downsample images to a given shape.
         Parameters
         ----------
@@ -309,6 +293,7 @@ class Normalize:
         """
         t0 = time.time()
         from skimage.transform import resize
+
         if output_shape is None:
             output_shape = (256, 256)
         images_copy = Normalize.extract_pixels(images)
@@ -316,16 +301,14 @@ class Normalize:
             resized = []
             for img in images_copy:
                 if flatten:
-                    resized.append(
-                        np.array(resize(img, output_shape)).reshape(-1))
+                    resized.append(np.array(resize(img, output_shape)).reshape(-1))
                 else:
                     resized.append(np.array(resize(img, output_shape)))
                 if timing:
                     print("downsample: {}".format(time.time() - t0))
         else:
             if flatten:
-                resized = np.array(resize(images_copy, output_shape)).reshape(
-                    -1)
+                resized = np.array(resize(images_copy, output_shape)).reshape(-1)
             else:
                 resized = np.array(resize(images_copy, output_shape))
 
@@ -334,8 +317,7 @@ class Normalize:
                 normalize = "minmax"
             if isinstance(resized, list):
                 for i in range(len(resized)):
-                    resized[i] = Normalize.get_norm(resized[i],
-                                                    normalize)[0]
+                    resized[i] = Normalize.get_norm(resized[i], normalize)[0]
             else:
                 resized = Normalize.get_norm(resized, normalize)[0]
 
@@ -344,10 +326,7 @@ class Normalize:
         return np.asarray(resized), None
 
     @staticmethod
-    def get_norm(pixels,
-                 norm_type,
-                 timing=False,
-                 **kwargs):
+    def get_norm(pixels, norm_type, timing=False, **kwargs):
         """Normalize pixels
         Parameters
         ----------
@@ -372,37 +351,29 @@ class Normalize:
         """
         t0 = time.time()
         pixels = Normalize.extract_pixels(pixels)
-        if norm_type.lower() == 'max':
-            normalized, filtered = Normalize.max(pixels,
-                                                 timing,
-                                                 **kwargs)
-        elif norm_type.lower() == 'minmax' or norm_type.lower() == 'min-max':
-            normalized, filtered = Normalize.minmax(pixels,
-                                                    timing,
-                                                    **kwargs)
-        elif norm_type.lower() == 'gaussian':
-            normalized, filtered = Normalize.gaussian(pixels,
-                                                      timing,
-                                                      **kwargs)
-        elif norm_type.lower() == 'zscore' or norm_type.lower() == 'z-score':
-            normalized, filtered = Normalize.z_score(pixels,
-                                                     timing,
-                                                     **kwargs)
-        elif norm_type.lower() == 'robust':
-            output_shape = kwargs.get('output_shape', (256, 256))
-            normalized, filtered = Normalize.robust(pixels,
-                                                    timing,
-                                                    **kwargs)
-        elif norm_type.lower() == 'downsample':
-            output_shape = kwargs.get('output_shape', (256, 256))
-            flatten = kwargs.get('flatten', True)
-            normalized, filtered = Normalize.downsample(pixels,
-                                                        output_shape=output_shape,
-                                                        flatten=flatten,
-                                                        normalize=norm_type,
-                                                        **kwargs)
+        if norm_type.lower() == "max":
+            normalized, filtered = Normalize.max(pixels, timing, **kwargs)
+        elif norm_type.lower() == "minmax" or norm_type.lower() == "min-max":
+            normalized, filtered = Normalize.minmax(pixels, timing, **kwargs)
+        elif norm_type.lower() == "gaussian":
+            normalized, filtered = Normalize.gaussian(pixels, timing, **kwargs)
+        elif norm_type.lower() == "zscore" or norm_type.lower() == "z-score":
+            normalized, filtered = Normalize.z_score(pixels, timing, **kwargs)
+        elif norm_type.lower() == "robust":
+            output_shape = kwargs.get("output_shape", (256, 256))
+            normalized, filtered = Normalize.robust(pixels, timing, **kwargs)
+        elif norm_type.lower() == "downsample":
+            output_shape = kwargs.get("output_shape", (256, 256))
+            flatten = kwargs.get("flatten", True)
+            normalized, filtered = Normalize.downsample(
+                pixels,
+                output_shape=output_shape,
+                flatten=flatten,
+                normalize=norm_type,
+                **kwargs
+            )
         else:
-            raise ValueError('Invalid normalization type')
+            raise ValueError("Invalid normalization type")
 
         if timing:
             print("get_norm: {}".format(time.time() - t0))

@@ -11,11 +11,14 @@ logger = logging.getLogger(__name__)
 
 class Features:
     @staticmethod
-    def histogram(pixels: Union[
-        List[Union[SimpleNamespace, np.ndarray]], SimpleNamespace, np.ndarray],
-                  norm_type: str = None,
-                  timing: bool = False,
-                  **kwargs) -> np.ndarray:
+    def histogram(
+        pixels: Union[
+            List[Union[SimpleNamespace, np.ndarray]], SimpleNamespace, np.ndarray
+        ],
+        norm_type: str = None,
+        timing: bool = False,
+        **kwargs
+    ) -> np.ndarray:
         """
         Create histogram of data
 
@@ -43,10 +46,9 @@ class Features:
             else:
                 tmp_pixels = pixel.copy()
             if norm_type is not None:
-                tmp_pixels = Normalize.get_norm(tmp_pixels,
-                                                norm_type=norm_type,
-                                                timing=timing,
-                                                **kwargs)[0]
+                tmp_pixels = Normalize.get_norm(
+                    tmp_pixels, norm_type=norm_type, timing=timing, **kwargs
+                )[0]
             histograms.append(mh.fullhistogram(tmp_pixels.astype(np.uint8)))
 
         if timing:
@@ -54,11 +56,13 @@ class Features:
         return np.array(histograms)
 
     @staticmethod
-    def get_features(data: Union[SimpleNamespace, np.ndarray],
-                     feature_type: str = "hist",
-                     norm_type: str = None,
-                     timing: bool = False,
-                     **kwargs) -> np.ndarray:
+    def get_features(
+        data: Union[SimpleNamespace, np.ndarray],
+        feature_type: str = "hist",
+        norm_type: str = None,
+        timing: bool = False,
+        **kwargs
+    ) -> np.ndarray:
         """
         Get features of data
 
@@ -79,10 +83,9 @@ class Features:
         """
         t0 = time.time()
         if feature_type in ["hist", "histogram"]:
-            features = Features.histogram(data,
-                                          norm_type=norm_type,
-                                          timing=timing,
-                                          **kwargs)
+            features = Features.histogram(
+                data, norm_type=norm_type, timing=timing, **kwargs
+            )
         else:
             raise ValueError("Feature type not supported")
         if timing:

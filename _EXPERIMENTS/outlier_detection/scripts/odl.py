@@ -8,12 +8,11 @@
 #
 import os, sys, pickle
 
-omama_dir = os.path.abspath(
-    os.path.join(os.path.realpath(__file__), '../../../../'))
+omama_dir = os.path.abspath(os.path.join(os.path.realpath(__file__), "../../../../"))
 sys.path.append(omama_dir)
 import omama as O
 
-OUTPUTDIR = '/raid/mpsych/ODL/CSTAR/'
+OUTPUTDIR = "/raid/mpsych/ODL/CSTAR/"
 
 CUSTOM_CONFIG = {
     # 'KNN': {
@@ -49,22 +48,22 @@ CUSTOM_CONFIG = {
     #     'n_jobs': 3,
     #     'use_weights': True,
     # },
-    'norm': 'minmax',
-    'feat': 'hist',
-    'accuracy_score': False,
-    'return_decision_function': False,
+    "norm": "minmax",
+    "feat": "hist",
+    "accuracy_score": False,
+    "return_decision_function": False,
     # 'sigma': 10,
 }
 
 NO_RUNS = 1
-DATASET = 'A'
-CONFIG = 'default'  # or 'best'
+DATASET = "A"
+CONFIG = "default"  # or 'best'
 JOBID = 0
 PRELOAD = 0  # or 1 (preload data)
-FILE_NAME_ID = ''
+FILE_NAME_ID = ""
 IMGS = None
 FEATURE_VECTOR = None
-GT = None # ground truth
+GT = None  # ground truth
 
 if len(sys.argv) > 1:
     NO_RUNS = sys.argv[1]
@@ -76,19 +75,19 @@ if len(sys.argv) > 1:
     if len(sys.argv) > 6:
         FILE_NAME_ID = sys.argv[6]
 
-print('STARTING ODLite..')
-print('DATASET', DATASET)
-print('CONFIG', CONFIG)
-print('NO_RUNS', NO_RUNS)
-print('JOBID', JOBID)
-print('PRELOAD', PRELOAD)
-print('CUSTOM_CONFIG', CUSTOM_CONFIG)
+print("STARTING ODLite..")
+print("DATASET", DATASET)
+print("CONFIG", CONFIG)
+print("NO_RUNS", NO_RUNS)
+print("JOBID", JOBID)
+print("PRELOAD", PRELOAD)
+print("CUSTOM_CONFIG", CUSTOM_CONFIG)
 
 default_config = False
 custom_config = None
-if CONFIG == 'default':
+if CONFIG == "default":
     default_config = True
-if CONFIG == 'custom':
+if CONFIG == "custom":
     default_config = None
     custom_config = CUSTOM_CONFIG
 
@@ -97,58 +96,86 @@ odl = O.OutlierDetectorLite()
 runs = {}
 
 if PRELOAD == 1:
-    print('Preloading data')
+    print("Preloading data")
 
     IMGS = odl.load_data(DATASET)
     # print(IMGS)
-    FEATURE_VECTOR = O.Features.get_features(IMGS,
-                                             feature_type=custom_config['feat'],
-                                             norm_type=custom_config['norm'],
-                                             **custom_config
-                                             )
+    FEATURE_VECTOR = O.Features.get_features(
+        IMGS,
+        feature_type=custom_config["feat"],
+        norm_type=custom_config["norm"],
+        **custom_config
+    )
     # print(FEATURE_VECTOR)
     GT = odl.load_ground_truth(DATASET)
     # print(GT)
-    print('Done preloading data')
+    print("Done preloading data")
 else:
-    print('Not preloading data')
+    print("Not preloading data")
 
 for algo in odl.ALGORITHMS:
-
-    print('Running', algo)
+    print("Running", algo)
 
     runs[algo] = []
 
     for run in range(int(NO_RUNS)):
-        results = odl.run(DATASET=DATASET,
-                          ALGORITHM=algo,
-                          default_config=default_config,
-                          custom_config=custom_config,
-                          imgs=IMGS,
-                          feature_vector=FEATURE_VECTOR,
-                          groundtruth=GT)
+        results = odl.run(
+            DATASET=DATASET,
+            ALGORITHM=algo,
+            default_config=default_config,
+            custom_config=custom_config,
+            imgs=IMGS,
+            feature_vector=FEATURE_VECTOR,
+            groundtruth=GT,
+        )
 
         # print(algo, results['evaluation']['jaccard_score'])
 
         runs[algo].append(results)
 
-    print('=' * 80)
+    print("=" * 80)
 
-if CONFIG == 'custom':
-    FN = custom_config['feat'] + '_' + custom_config['norm']
-    if FILE_NAME_ID != '':
-        outputfilename = DATASET + '_' + CONFIG + '_' + FN + '_' + NO_RUNS + '_' + JOBID + '_' + FILE_NAME_ID + '.pkl'
+if CONFIG == "custom":
+    FN = custom_config["feat"] + "_" + custom_config["norm"]
+    if FILE_NAME_ID != "":
+        outputfilename = (
+            DATASET
+            + "_"
+            + CONFIG
+            + "_"
+            + FN
+            + "_"
+            + NO_RUNS
+            + "_"
+            + JOBID
+            + "_"
+            + FILE_NAME_ID
+            + ".pkl"
+        )
     else:
-        outputfilename = DATASET + '_' + CONFIG + '_' + FN + '_' + NO_RUNS + '_' + JOBID + '.pkl'
+        outputfilename = (
+            DATASET + "_" + CONFIG + "_" + FN + "_" + NO_RUNS + "_" + JOBID + ".pkl"
+        )
 else:
-    if FILE_NAME_ID != '':
-        outputfilename = DATASET + '_' + CONFIG + '_' + NO_RUNS + '_' + JOBID + '_' + FILE_NAME_ID + '.pkl'
+    if FILE_NAME_ID != "":
+        outputfilename = (
+            DATASET
+            + "_"
+            + CONFIG
+            + "_"
+            + NO_RUNS
+            + "_"
+            + JOBID
+            + "_"
+            + FILE_NAME_ID
+            + ".pkl"
+        )
     else:
-        outputfilename = DATASET + '_' + CONFIG + '_' + NO_RUNS + '_' + JOBID + '.pkl'
+        outputfilename = DATASET + "_" + CONFIG + "_" + NO_RUNS + "_" + JOBID + ".pkl"
 
 # TODO: Make function to save to file to cut down on code duplication
 
-with open(os.path.join(OUTPUTDIR, outputfilename), 'wb') as f:
+with open(os.path.join(OUTPUTDIR, outputfilename), "wb") as f:
     pickle.dump(runs, f)
 
-print('All done! Stored to', outputfilename)
+print("All done! Stored to", outputfilename)

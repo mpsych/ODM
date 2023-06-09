@@ -9,9 +9,9 @@ from ..utils import *
 # containing 44123 images randomly selected from the 176492 images.
 config_numbers = [8, 9, 10, 11]
 # sets the feature type and normalization type
-feature = 'hist'
-norm = 'minmax'
-LOG_DIR = r'/tmp/odm/logs/'
+feature = "hist"
+norm = "minmax"
+LOG_DIR = r"/tmp/odm/logs/"
 
 
 # plan to run 4 different jobs. each has 44123 images and each image is at
@@ -24,10 +24,9 @@ def per_task_execution(idx):
     data_imgs = DataHelper.get2D(N=44123, config_num=config, randomize=True)
 
     # creating features from the images
-    binary_bin_feats = Features.get_features(data_imgs,
-                                             feature_type=feature,
-                                             norm_type=norm,
-                                             bins=5)
+    binary_bin_feats = Features.get_features(
+        data_imgs, feature_type=feature, norm_type=norm, bins=5
+    )
 
     # make a list of all the img pahts with images that have higher then 1 in
     # second bin
@@ -46,12 +45,12 @@ def per_task_execution(idx):
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
     # write the paths to the file in the log directory
-    with open(os.path.join(LOG_DIR, file_name), 'w') as f:
+    with open(os.path.join(LOG_DIR, file_name), "w") as f:
         for path in paths:
             f.write(f"{path}\n")
     # write the indexes to the file in the log directory as well
     index_file_name = f"{date_and_time}_{feature}_{norm}_indexes.txt"
-    with open(os.path.join(LOG_DIR, index_file_name), 'w') as f:
+    with open(os.path.join(LOG_DIR, index_file_name), "w") as f:
         for index in bad_indexes_found:
             f.write(f"{index}\n")
 
@@ -65,7 +64,7 @@ def per_task_execution(idx):
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     TASK_NUM = sys.argv[1]
     TASK_NUM = int(TASK_NUM)
     per_task_execution(TASK_NUM)

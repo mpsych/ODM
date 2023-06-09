@@ -4,8 +4,8 @@ from odm import OutlierDetector
 from .fivebhist_runner import *
 
 # constants for feature type and normalization type
-FEAT = 'hist'
-NORM = 'minmax'
+FEAT = "hist"
+NORM = "minmax"
 
 
 def load_data_from_text_file(file_path):
@@ -22,7 +22,7 @@ def load_data_from_text_file(file_path):
     list
         A list of DICOM files.
     """
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         paths = f.readlines()
 
     paths = [path.strip() for path in paths]  # remove the new line characters
@@ -52,30 +52,42 @@ def vae_runner(caselist, contamination=0.015, verbose=False, norm_type=NORM):
     imgs = get_pixel_list(data)
 
     # creating features from the images
-    feats = Features.get_features(imgs,
-                                  feature_type=FEAT,
-                                  norm_type=norm_type)
+    feats = Features.get_features(imgs, feature_type=FEAT, norm_type=norm_type)
 
     # run the outlier detection algorithm
-    OutlierDetector.detect_outliers(features=feats,
-                                    imgs=imgs,
-                                    pyod_algorithm='VAE',
-                                    contamination=contamination,
-                                    verbose=verbose,
-                                    caselist=caselist)
+    OutlierDetector.detect_outliers(
+        features=feats,
+        imgs=imgs,
+        pyod_algorithm="VAE",
+        contamination=contamination,
+        verbose=verbose,
+        caselist=caselist,
+    )
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Runs the Variational AutoEncoder (VAE) algorithm on given data.')
-    parser.add_argument('data_root', type=str, help='The path to the data.')
-    parser.add_argument('--contamination', type=float, default=0.015,
-                        help='The proportion of outliers in the data.')
-    parser.add_argument('--verbose', action='store_true',
-                        help='Whether to print progress messages to stdout.')
-    parser.add_argument('--norm_type', type=str, default=NORM,
-                        help='The type of normalization to be applied.')
+        description="Runs the Variational AutoEncoder (VAE) algorithm on given data."
+    )
+    parser.add_argument("data_root", type=str, help="The path to the data.")
+    parser.add_argument(
+        "--contamination",
+        type=float,
+        default=0.015,
+        help="The proportion of outliers in the data.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Whether to print progress messages to stdout.",
+    )
+    parser.add_argument(
+        "--norm_type",
+        type=str,
+        default=NORM,
+        help="The type of normalization to be applied.",
+    )
     args = parser.parse_args()
 
     vae_runner(args.data_root, args.contamination, args.verbose, args.norm_type)

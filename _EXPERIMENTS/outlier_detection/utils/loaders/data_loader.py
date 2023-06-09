@@ -4,23 +4,24 @@ import configparser
 
 
 class DataLoader:
-    """ DataLoader class to hold all the specific path location data that is
-    used in the data class """
+    """DataLoader class to hold all the specific path location data that is
+    used in the data class"""
 
-    def __init__(self,
-                 data_paths: list,
-                 csv_paths: list,
-                 study_folder_names: list,
-                 cache_paths: list,
-                 dicom_tags: list,
-                 dicom_2d_substring: str,
-                 dicom_3d_substring: str,
-                 patient_identifier: str,
-                 cancer_identifier: str,
-                 caselist_path: str = None,
-                 config_num: int = 0,
-                 config_loc: str = None
-                 ):
+    def __init__(
+        self,
+        data_paths: list,
+        csv_paths: list,
+        study_folder_names: list,
+        cache_paths: list,
+        dicom_tags: list,
+        dicom_2d_substring: str,
+        dicom_3d_substring: str,
+        patient_identifier: str,
+        cancer_identifier: str,
+        caselist_path: str = None,
+        config_num: int = 0,
+        config_loc: str = None,
+    ):
         self._data_paths = data_paths
         self._csv_paths = csv_paths
         self._study_folder_names = study_folder_names
@@ -58,23 +59,23 @@ class DataLoader:
         """
 
     def __str__(self):
-        """ Returns a string representation of the DataLoader object
-        """
-        return "DataLoader(data_paths={}, csv_paths={}, pickle_path={}, " \
-               "dicom_tags={}, dicom_2d_substring={}, dicom_3d_substring={}, " \
-               "whitelist_path={}, config_num={}, config_csv_path={} )" \
-            .format(
-            self._data_paths,
-            self._csv_paths,
-            self._cache_paths,
-            self._dicom_tags,
-            self._dicom_2d_substring,
-            self._dicom_3d_substring,
-            self._caselist_path,
-            self._patient_identifier,
-            self._cancer_identifier,
-            self._config_num,
-            self._config_loc
+        """Returns a string representation of the DataLoader object"""
+        return (
+            "DataLoader(data_paths={}, csv_paths={}, pickle_path={}, "
+            "dicom_tags={}, dicom_2d_substring={}, dicom_3d_substring={}, "
+            "whitelist_path={}, config_num={}, config_csv_path={} )".format(
+                self._data_paths,
+                self._csv_paths,
+                self._cache_paths,
+                self._dicom_tags,
+                self._dicom_2d_substring,
+                self._dicom_3d_substring,
+                self._caselist_path,
+                self._patient_identifier,
+                self._cancer_identifier,
+                self._config_num,
+                self._config_loc,
+            )
         )
 
     @property
@@ -175,7 +176,7 @@ class DataLoader:
 
     @staticmethod
     def load_config_data_from_csv(config_num, config_csv_path):
-        """ Loads the cache paths and the case list path from the csv file. If the
+        """Loads the cache paths and the case list path from the csv file. If the
         config_num is not found in the csv file, the function returns None for
         both the cache_paths and the case_list_path. If the create_new flag is
         set to True, and the config_num is not found in the csv file, the
@@ -186,7 +187,7 @@ class DataLoader:
         """
         cache_paths = None
         case_list_path = None
-        with open(config_csv_path, 'r') as f:
+        with open(config_csv_path, "r") as f:
             reader = csv.reader(f)
             for row in reader:
                 if row[0] == str(config_num):
@@ -196,13 +197,12 @@ class DataLoader:
                     cache_paths = [cache_paths, sop_uid_cache_path]
                     break
 
-        if case_list_path == 'None':
+        if case_list_path == "None":
             case_list_path = None
 
         if cache_paths is None and case_list_path is None:
             # throw error saying there is no data to load
-            raise ValueError(
-                "No data found for config_num: {}".format(config_num))
+            raise ValueError("No data found for config_num: {}".format(config_num))
 
         return cache_paths, case_list_path
 
@@ -216,21 +216,20 @@ class DataLoader:
         cache_paths = []
         case_list_path = None
         for key in config[str(config_num)]:
-            if key == 'cache_path1':
+            if key == "cache_path1":
                 cache_paths.append(config[str(config_num)][key])
-            elif key == 'cache_path2':
+            elif key == "cache_path2":
                 cache_paths.append(config[str(config_num)][key])
-            elif key == 'caselist_path':
+            elif key == "caselist_path":
                 case_list_path = config[str(config_num)][key]
             else:
                 continue
 
-        if case_list_path == 'None':
+        if case_list_path == "None":
             case_list_path = None
 
         if cache_paths is None and case_list_path is None:
             # throw error saying there is no data to load
-            raise ValueError(
-                "No data found for config_num: {}".format(config_num))
+            raise ValueError("No data found for config_num: {}".format(config_num))
 
         return cache_paths, case_list_path

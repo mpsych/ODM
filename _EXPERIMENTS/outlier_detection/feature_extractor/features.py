@@ -7,7 +7,6 @@ import numpy as np
 
 
 class Features:
-
     @staticmethod
     def histogram(pixels, norm_type=None, timing=False, **kwargs):
         """Create histogram of data
@@ -28,20 +27,18 @@ class Features:
                     tmp_pixels = pixels[i].copy()
                 # if normalization is specified normalize pixels before histogram
                 if norm_type is not None:
-                    tmp_pixels = Normalize.get_norm(tmp_pixels,
-                                                    norm_type=norm_type,
-                                                    timing=timing,
-                                                    **kwargs)[0]
+                    tmp_pixels = Normalize.get_norm(
+                        tmp_pixels, norm_type=norm_type, timing=timing, **kwargs
+                    )[0]
                 # append histogram to list
                 histograms.append(mh.fullhistogram(tmp_pixels.astype(np.uint8)))
         # if pixels is a single image get histogram
         else:
             tmp_pixels = pixels.copy()
             if norm_type is not None:
-                tmp_pixels = Normalize.get_norm(tmp_pixels,
-                                                norm_type=norm_type,
-                                                timing=timing,
-                                                **kwargs)[0]
+                tmp_pixels = Normalize.get_norm(
+                    tmp_pixels, norm_type=norm_type, timing=timing, **kwargs
+                )[0]
             histograms = mh.fullhistogram(tmp_pixels.astype(np.uint8))
 
         if timing:
@@ -49,12 +46,14 @@ class Features:
         return histograms
 
     @staticmethod
-    def orb(imgs,
-            norm_type=None,
-            timing=False,
-            downsample=True,
-            return_pixel_values=True,
-            **kwargs):
+    def orb(
+        imgs,
+        norm_type=None,
+        timing=False,
+        downsample=True,
+        return_pixel_values=True,
+        **kwargs
+    ):
         """Create ORB features of data
         Parameters:
         ----------
@@ -113,30 +112,31 @@ class Features:
 
         from skimage.feature import ORB
 
-        n_keypoints = kwargs.get('n_keypoints', 50)
-        fast_n = kwargs.get('fast_n', 9)
-        fast_threshold = kwargs.get('fast_threshold', 0.08)
-        harris_k = kwargs.get('harris_k', 0.04)
-        downscale = kwargs.get('downscale', 1.2)
-        n_scales = kwargs.get('n_scales', 8)
-        output_shape = kwargs.get('output_shape', (512, 512))
+        n_keypoints = kwargs.get("n_keypoints", 50)
+        fast_n = kwargs.get("fast_n", 9)
+        fast_threshold = kwargs.get("fast_threshold", 0.08)
+        harris_k = kwargs.get("harris_k", 0.04)
+        downscale = kwargs.get("downscale", 1.2)
+        n_scales = kwargs.get("n_scales", 8)
+        output_shape = kwargs.get("output_shape", (512, 512))
 
         pixels = Normalize.extract_pixels(imgs)
         if downsample:
             pixels = Normalize.downsample(pixels, output_shape=output_shape)[0]
 
         if norm_type is not None:
-            pixels = Normalize.get_norm(pixels,
-                                        norm_type=norm_type,
-                                        timing=timing,
-                                        **kwargs)[0]
+            pixels = Normalize.get_norm(
+                pixels, norm_type=norm_type, timing=timing, **kwargs
+            )[0]
 
-        descriptor_extractor = ORB(n_keypoints=n_keypoints,
-                                   fast_n=fast_n,
-                                   fast_threshold=fast_threshold,
-                                   harris_k=harris_k,
-                                   downscale=downscale,
-                                   n_scales=n_scales)
+        descriptor_extractor = ORB(
+            n_keypoints=n_keypoints,
+            fast_n=fast_n,
+            fast_threshold=fast_threshold,
+            harris_k=harris_k,
+            downscale=downscale,
+            n_scales=n_scales,
+        )
         keypoints = []
         if isinstance(pixels, list) or isinstance(pixels, np.ndarray):
             for i in range(len(pixels)):
@@ -151,7 +151,9 @@ class Features:
             for i in range(len(keypoints)):
                 intensities.append(
                     Features._extract_pixel_intensity_from_keypoints(
-                        keypoints[i], pixels[i]))
+                        keypoints[i], pixels[i]
+                    )
+                )
             keypoints = intensities
 
         if timing:
@@ -159,13 +161,14 @@ class Features:
         return keypoints
 
     @staticmethod
-    def sift(imgs,
-             norm_type=None,
-             timing=False,
-             downsample=True,
-             return_pixel_values=True,
-             **kwargs
-             ):
+    def sift(
+        imgs,
+        norm_type=None,
+        timing=False,
+        downsample=True,
+        return_pixel_values=True,
+        **kwargs
+    ):
         """Create SIFT features of data
         Parameters:
         ----------
@@ -238,44 +241,45 @@ class Features:
 
         from skimage.feature import SIFT
 
-        upsampling = kwargs.get('upsampling', 1)
-        n_octaves = kwargs.get('n_octaves', 1)
-        n_scales = kwargs.get('n_scales', 1)
-        sigma_min = kwargs.get('sigma_min', 1.3)
-        sigma_in = kwargs.get('sigma_in', .5)
-        c_dog = kwargs.get('c_dog', .7)
-        c_edge = kwargs.get('c_edge', .05)
-        n_bins = kwargs.get('n_bins', 10)
-        lambda_ori = kwargs.get('lambda_ori', .5)
-        c_max = kwargs.get('c_max', 1.5)
-        lambda_descr = kwargs.get('lambda_descr', .5)
-        n_hist = kwargs.get('n_hist', 1)
-        n_ori = kwargs.get('n_ori', 1)
-        output_shape = kwargs.get('output_shape', (256, 256))
+        upsampling = kwargs.get("upsampling", 1)
+        n_octaves = kwargs.get("n_octaves", 1)
+        n_scales = kwargs.get("n_scales", 1)
+        sigma_min = kwargs.get("sigma_min", 1.3)
+        sigma_in = kwargs.get("sigma_in", 0.5)
+        c_dog = kwargs.get("c_dog", 0.7)
+        c_edge = kwargs.get("c_edge", 0.05)
+        n_bins = kwargs.get("n_bins", 10)
+        lambda_ori = kwargs.get("lambda_ori", 0.5)
+        c_max = kwargs.get("c_max", 1.5)
+        lambda_descr = kwargs.get("lambda_descr", 0.5)
+        n_hist = kwargs.get("n_hist", 1)
+        n_ori = kwargs.get("n_ori", 1)
+        output_shape = kwargs.get("output_shape", (256, 256))
 
         pixels = Normalize.extract_pixels(imgs)
         if downsample:
             pixels = Normalize.downsample(pixels, output_shape=output_shape)[0]
 
         if norm_type is not None:
-            pixels = Normalize.get_norm(pixels,
-                                        norm_type=norm_type,
-                                        timing=timing,
-                                        **kwargs)[0]
+            pixels = Normalize.get_norm(
+                pixels, norm_type=norm_type, timing=timing, **kwargs
+            )[0]
 
-        descriptor_extractor = SIFT(upsampling=upsampling,
-                                    n_octaves=n_octaves,
-                                    n_scales=n_scales,
-                                    sigma_min=sigma_min,
-                                    sigma_in=sigma_in,
-                                    c_dog=c_dog,
-                                    c_edge=c_edge,
-                                    n_bins=n_bins,
-                                    lambda_ori=lambda_ori,
-                                    c_max=c_max,
-                                    lambda_descr=lambda_descr,
-                                    n_hist=n_hist,
-                                    n_ori=n_ori)
+        descriptor_extractor = SIFT(
+            upsampling=upsampling,
+            n_octaves=n_octaves,
+            n_scales=n_scales,
+            sigma_min=sigma_min,
+            sigma_in=sigma_in,
+            c_dog=c_dog,
+            c_edge=c_edge,
+            n_bins=n_bins,
+            lambda_ori=lambda_ori,
+            c_max=c_max,
+            lambda_descr=lambda_descr,
+            n_hist=n_hist,
+            n_ori=n_ori,
+        )
 
         keypoints = []
         if isinstance(pixels, list) or isinstance(pixels, np.ndarray):
@@ -291,22 +295,21 @@ class Features:
             for i in range(len(keypoints)):
                 intensities.append(
                     Features._extract_pixel_intensity_from_keypoints(
-                        keypoints[i], pixels[i]))
+                        keypoints[i], pixels[i]
+                    )
+                )
             intensities = Features._fix_jagged_keypoint_arrays(intensities)
             keypoints = intensities
 
         if timing:
-            print('SIFT: {:.2f} s'.format(time.time() - t0))
+            print("SIFT: {:.2f} s".format(time.time() - t0))
 
         return keypoints
 
     @staticmethod
-    def downsample(images,
-                   output_shape=None,
-                   flatten=False,
-                   normalize=None,
-                   timing=False,
-                   **kwargs):
+    def downsample(
+        images, output_shape=None, flatten=False, normalize=None, timing=False, **kwargs
+    ):
         """Downsample images to a given shape.
         Parameters
         ----------
@@ -327,6 +330,7 @@ class Features:
         """
         t0 = time.time()
         from skimage.transform import resize
+
         if output_shape is None:
             output_shape = (128, 128)
         pixels = Normalize.extract_pixels(images)
@@ -341,10 +345,9 @@ class Features:
             resized = [img.flatten() for img in resized]
 
         if normalize is not None:
-            resized = Normalize.get_norm(resized,
-                                         norm_type=normalize,
-                                         timing=timing,
-                                         **kwargs)[0]
+            resized = Normalize.get_norm(
+                resized, norm_type=normalize, timing=timing, **kwargs
+            )[0]
 
         if timing:
             print("downsample: {}".format(time.time() - t0))
@@ -390,17 +393,14 @@ class Features:
         for kp in keypoints:
             if len(kp) > min_len:
                 new_keypoints.append(
-                    kp[np.random.choice(len(kp), min_len, replace=False)])
+                    kp[np.random.choice(len(kp), min_len, replace=False)]
+                )
             else:
                 new_keypoints.append(kp)
         return np.array(new_keypoints)
 
     @staticmethod
-    def get_features(data,
-                     feature_type="hist",
-                     norm_type=None,
-                     timing=False,
-                     **kwargs):
+    def get_features(data, feature_type="hist", norm_type=None, timing=False, **kwargs):
         """Get features of data
         Parameters
         ----------
@@ -418,54 +418,61 @@ class Features:
         """
         t0 = time.time()
         if feature_type == "hist" or feature_type == "histogram":
-            features = Features.histogram(data,
-                                          norm_type=norm_type,
-                                          timing=timing,
-                                          **kwargs)
+            features = Features.histogram(
+                data, norm_type=norm_type, timing=timing, **kwargs
+            )
         elif feature_type == "sift":
-            rpv = kwargs.get('return_pixel_values', True)
-            ds = kwargs.get('downsample', False)
-            features = Features.sift(data,
-                                     norm_type=norm_type,
-                                     return_pixel_values=rpv,
-                                     downsample=ds,
-                                     timing=timing,
-                                     **kwargs)
+            rpv = kwargs.get("return_pixel_values", True)
+            ds = kwargs.get("downsample", False)
+            features = Features.sift(
+                data,
+                norm_type=norm_type,
+                return_pixel_values=rpv,
+                downsample=ds,
+                timing=timing,
+                **kwargs
+            )
         elif feature_type == "orb":
-            rpv = kwargs.get('return_pixel_values', True)
-            ds = kwargs.get('downsample', True)
-            features = Features.orb(data,
-                                    norm_type=norm_type,
-                                    return_pixel_values=rpv,
-                                    downsample=ds,
-                                    timing=timing,
-                                    **kwargs)
+            rpv = kwargs.get("return_pixel_values", True)
+            ds = kwargs.get("downsample", True)
+            features = Features.orb(
+                data,
+                norm_type=norm_type,
+                return_pixel_values=rpv,
+                downsample=ds,
+                timing=timing,
+                **kwargs
+            )
         elif feature_type == "downsample":
-            output_shape = kwargs.get('output_shape', (256, 256))
-            flatten = kwargs.get('flatten', True)
-            features = Normalize.downsample(data,
-                                            output_shape=output_shape,
-                                            flatten=flatten,
-                                            norm_type=norm_type,
-                                            timing=timing,
-                                            **kwargs)[0]
+            output_shape = kwargs.get("output_shape", (256, 256))
+            flatten = kwargs.get("flatten", True)
+            features = Normalize.downsample(
+                data,
+                output_shape=output_shape,
+                flatten=flatten,
+                norm_type=norm_type,
+                timing=timing,
+                **kwargs
+            )[0]
         else:
             raise ValueError("Feature type not supported")
         if timing:
-            print('Features: ', time.time() - t0)
+            print("Features: ", time.time() - t0)
         return features
 
     @staticmethod
-    def show_image_and_feature(image,
-                               features=None,
-                               feature_types=None,
-                               norm_type='min-max',
-                               downsample=False,
-                               output_shape=None,
-                               train_scores=None,
-                               label=None,
-                               log=False,
-                               **kwargs):
+    def show_image_and_feature(
+        image,
+        features=None,
+        feature_types=None,
+        norm_type="min-max",
+        downsample=False,
+        output_shape=None,
+        train_scores=None,
+        label=None,
+        log=False,
+        **kwargs
+    ):
         """Displays an image next to the specified features.
         Parameters
         ----------
@@ -505,28 +512,29 @@ class Features:
             downsample = True
 
         # normalize the image
-        img = Normalize.get_norm(pixels,
-                                 norm_type=norm_type,
-                                 downsample=downsample,
-                                 output_shape=output_shape,
-                                 **kwargs)
+        img = Normalize.get_norm(
+            pixels,
+            norm_type=norm_type,
+            downsample=downsample,
+            output_shape=output_shape,
+            **kwargs
+        )
 
-        fig, ax = plt.subplots(1,
-                               len(feature_types) + 1,
-                               figsize=(10, 5))
+        fig, ax = plt.subplots(1, len(feature_types) + 1, figsize=(10, 5))
         if label is not None:
             fig.suptitle(
-                'SOPInstanceUID: ' + image.SOPInstanceUID + ' ' + 'Label: ' + label)
+                "SOPInstanceUID: " + image.SOPInstanceUID + " " + "Label: " + label
+            )
         else:
-            fig.suptitle('SOPInstanceUID: ' + image.SOPInstanceUID)
+            fig.suptitle("SOPInstanceUID: " + image.SOPInstanceUID)
         # add extra width between plots
         fig.subplots_adjust(wspace=0.4)
 
-        ax[0].imshow(img, cmap='gray')
+        ax[0].imshow(img, cmap="gray")
         # ax[0].set_title(image.SOPInstanceUID, size=8-len(feature_types))
 
-        if 'sift' in feature_types:
-            idx = feature_types.index('sift') + 1
+        if "sift" in feature_types:
+            idx = feature_types.index("sift") + 1
             if features is None:
                 kp = Features.sift(img)
                 keypoints = kp.keypoints
@@ -535,15 +543,12 @@ class Features:
             ax[idx].imshow(img)
             x_points = keypoints[:, 1]
             y_points = keypoints[:, 0]
-            ax[idx].scatter(x_points, y_points, facecolors='none',
-                            edgecolors='r')
-            label = Features._get_train_score('sift',
-                                              feature_types,
-                                              train_scores)
+            ax[idx].scatter(x_points, y_points, facecolors="none", edgecolors="r")
+            label = Features._get_train_score("sift", feature_types, train_scores)
             ax[idx].set_title(label, size=8)
 
-        if 'orb' in feature_types:
-            idx = feature_types.index('orb') + 1
+        if "orb" in feature_types:
+            idx = feature_types.index("orb") + 1
             if features is None:
                 kp = Features.orb(img)
                 keypoints = kp.keypoints
@@ -554,59 +559,49 @@ class Features:
             ax[idx].imshow(img_ds[0])
             x_points = keypoints[:, 1]
             y_points = keypoints[:, 0]
-            ax[idx].scatter(x_points, y_points, facecolors='none',
-                            edgecolors='r')
-            label = Features._get_train_score('orb',
-                                              feature_types,
-                                              train_scores)
+            ax[idx].scatter(x_points, y_points, facecolors="none", edgecolors="r")
+            label = Features._get_train_score("orb", feature_types, train_scores)
             ax[idx].set_title(label, size=8)
 
-        if 'hist' in feature_types or 'histogram' in feature_types:
-            idx = feature_types.index('hist') + 1
+        if "hist" in feature_types or "histogram" in feature_types:
+            idx = feature_types.index("hist") + 1
             if features is None:
                 y_axis = Features.histogram(img)
-                idx = feature_types.index('hist') + 1
+                idx = feature_types.index("hist") + 1
                 y_axis = Features.histogram(img)
                 if len(y_axis) < 256:
                     y_axis = np.append(y_axis, np.zeros(256 - len(y_axis)))
                 x_axis = np.arange(0, 256, 1)
                 ax[idx].set_ylim(0, 1)
-                ax[idx].bar(x_axis, y_axis, color='b', log=True, width=10)
-                ax[idx].set_xlim(.01, 255)
-                ax[idx].set_ylim(.01, 10 ** 8)
-                label = Features._get_train_score('hist',
-                                                  feature_types,
-                                                  train_scores)
+                ax[idx].bar(x_axis, y_axis, color="b", log=True, width=10)
+                ax[idx].set_xlim(0.01, 255)
+                ax[idx].set_ylim(0.01, 10**8)
+                label = Features._get_train_score("hist", feature_types, train_scores)
                 ax[idx].set_title(label, size=8)
             else:
                 y_axis = features[idx - 1]
                 print(y_axis)
                 ax[idx].set_ylim(0, np.max(y_axis))
                 ax[idx].bar(np.arange(0, len(y_axis)), y_axis, log=log)
-                label = Features._get_train_score('hist',
-                                                  feature_types,
-                                                  train_scores)
+                label = Features._get_train_score("hist", feature_types, train_scores)
                 ax[idx].set_title(label, size=8)
 
-        if 'downsample' in feature_types:
-            idx = feature_types.index('downsample') + 1
+        if "downsample" in feature_types:
+            idx = feature_types.index("downsample") + 1
             if features is None:
                 img_ds = Normalize.downsample(img)
             else:
                 img_ds = features[idx - 1]
-            ax[idx].imshow(img_ds[0], cmap='gray')
-            label = Features._get_train_score('downsample',
-                                              feature_types,
-                                              train_scores)
+            ax[idx].imshow(img_ds[0], cmap="gray")
+            label = Features._get_train_score("downsample", feature_types, train_scores)
             ax[idx].set_title(label, size=8)
 
         plt.show()
 
     @staticmethod
-    def view_image_and_features(images,
-                                feature_types=None,
-                                norm_type='min-max',
-                                train_scores=None):
+    def view_image_and_features(
+        images, feature_types=None, norm_type="min-max", train_scores=None
+    ):
         """Displays an image next to its histogram.
         Parameters
         ----------
@@ -640,27 +635,29 @@ class Features:
         # loop over the images and use the show image and feature function
         for i in range(len(images)):
             ds = images_list[i]
-            Features.show_image_and_feature(ds.image,
-                                            feature_types=feature_types,
-                                            norm_type=norm_type,
-                                            train_scores=ds.train_scores)
+            Features.show_image_and_feature(
+                ds.image,
+                feature_types=feature_types,
+                norm_type=norm_type,
+                train_scores=ds.train_scores,
+            )
 
     @staticmethod
     def _get_train_score(feature, feature_types, train_scores):
         """Get train scores of features
-            Parameters
-            ----------
-            feature : str
-                feature to get train scores of
-            feature_types : list
-               type of features to display
-            train_scores : list
-                (default is None) train scores of the feature
-            Returns
-            -------
-            list
-                train scores of the features
-            """
+        Parameters
+        ----------
+        feature : str
+            feature to get train scores of
+        feature_types : list
+           type of features to display
+        train_scores : list
+            (default is None) train scores of the feature
+        Returns
+        -------
+        list
+            train scores of the features
+        """
         if train_scores is None:
             return feature
         if len(train_scores) == 1:

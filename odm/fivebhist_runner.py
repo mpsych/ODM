@@ -5,20 +5,22 @@ import argparse
 from feature_extractor import *
 
 # histogram and minmax has been found to be the best combination for 5BHIST algorithm
-FEAT = 'hist'
-NORM = 'minmax'
+FEAT = "hist"
+NORM = "minmax"
 
-LOG_DIR = r'/tmp/odm/logs/'
+LOG_DIR = r"/tmp/odm/logs/"
 
 
-def load_data_dict(path, ext='.dcm'):
+def load_data_dict(path, ext=".dcm"):
     data_dict = {}
     for index, (root, dirs, files) in enumerate(os.walk(path)):
         dicom_files = [file for file in files if file.endswith(ext)]
         for file in dicom_files:
             try:
-                data_dict[index] = [dicom.dcmread(os.path.join(root, file)),
-                                    os.path.join(root, file)]
+                data_dict[index] = [
+                    dicom.dcmread(os.path.join(root, file)),
+                    os.path.join(root, file),
+                ]
             except Exception as e:
                 print(f"Error reading file {file}: {e}")
     return data_dict
@@ -26,7 +28,11 @@ def load_data_dict(path, ext='.dcm'):
 
 def get_pixel_list(data):
     if isinstance(data, dict):
-        return [data[0].pixel_array for data in data.values() if data[0].pixel_array.size > 0]
+        return [
+            data[0].pixel_array
+            for data in data.values()
+            if data[0].pixel_array.size > 0
+        ]
     elif isinstance(data, list):
         return [data.pixel_array for data in data if data.pixel_array.size > 0]
 
@@ -41,7 +47,9 @@ def fivebhist_runner(data_root, final_file_name):
     data_imgs = get_pixel_list(data_dict)
 
     # creating features from the images
-    five_b_hist = Features.get_features(data_imgs, feature_type=FEAT, norm_type=NORM, bins=5)
+    five_b_hist = Features.get_features(
+        data_imgs, feature_type=FEAT, norm_type=NORM, bins=5
+    )
 
     # make a list of all the image paths with images that have higher than 1 in second bin
     bad_indexes_found = []
@@ -60,27 +68,38 @@ def fivebhist_runner(data_root, final_file_name):
     os.makedirs(LOG_DIR, exist_ok=True)
 
     # write the paths to the file in the log directory
-    with open(os.path.join(LOG_DIR, file_name), 'w') as f:
+    with open(os.path.join(LOG_DIR, file_name), "w") as f:
         f.write("\n".join(paths))
 
     # write the indexes to the file in the log directory as well
     index_file_name = f"{date_and_time}_{FEAT}_{NORM}_indexes.txt"
-    with open(os.path.join(LOG_DIR, index_file_name), 'w') as f:
+    with open(os.path.join(LOG_DIR, index_file_name), "w") as f:
         f.write("\n".join(map(str, bad_indexes_found)))
 
     # create a final text file of paths to good images after removing the bad images
-    with open(os.path.join(LOG_DIR, final_file_name), 'w') as f:
-        good_paths = [data[1] for i, data in enumerate(data_dict.values()) if i not in bad_indexes_found]
+    with open(os.path.join(LOG_DIR, final_file_name), "w") as f:
+        good_paths = [
+            data[1]
+            for i, data in enumerate(data_dict.values())
+            if i not in bad_indexes_found
+        ]
         f.write("\n".join(good_paths))
 
     # print the number of bad images found
     print(f"number of bad images found: {len(bad_indexes_found)}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Image feature extraction task.")
-    parser.add_argument('--data_root', type=str, required=True, help='Root directory of the data.')
-    parser.add_argument('--final_file', type=str, required=True, help='Name of the final file of good images.')
+    parser.add_argument(
+        "--data_root", type=str, required=True, help="Root directory of the data."
+    )
+    parser.add_argument(
+        "--final_file",
+        type=str,
+        required=True,
+        help="Name of the final file of good images.",
+    )
     args = parser.parse_args()
 
     fivebhist_runner(args.data_root, args.final_file)

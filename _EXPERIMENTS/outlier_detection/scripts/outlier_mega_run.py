@@ -8,8 +8,8 @@ from ..outlier_detector import *
 # containing 44123 images randomly selected from the 176492 images.
 config_numbers = [29, 30, 31, 32]
 # sets the feature type and normalization type
-feature = 'hist'
-norm = 'minmax'
+feature = "hist"
+norm = "minmax"
 
 
 # plan to run 4 different jobs. each has 44123 images and each image is at
@@ -34,9 +34,9 @@ def per_task_execution(idx):
     # ]
 
     arguments = {
-        "contamination": .015,
+        "contamination": 0.015,
         "verbose": False,
-        'norm_type': norm,
+        "norm_type": norm,
         # 'metric': 'euclidean',
         # 'n_jobs': None,
         # 'n_bins': 2,
@@ -75,22 +75,18 @@ def per_task_execution(idx):
     imgs = DataHelper.get2D(N=42092, config_num=config, randomize=True)
 
     # creating features from the images
-    feat = Features.get_features(imgs,
-                                 feature_type=feature,
-                                 norm_type=norm)
+    feat = Features.get_features(imgs, feature_type=feature, norm_type=norm)
 
     # run the outlier detection algorithm
-    OutlierDetector.detect_outliers(features=feat,
-                                    imgs=imgs,
-                                    pyod_algorithm='VAE',
-                                    id_=idx,
-                                    **arguments)
+    OutlierDetector.detect_outliers(
+        features=feat, imgs=imgs, pyod_algorithm="VAE", id_=idx, **arguments
+    )
 
     print(f"task number is: {idx}")
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     TASK_NUM = sys.argv[1]
     TASK_NUM = int(TASK_NUM)
     per_task_execution(TASK_NUM)

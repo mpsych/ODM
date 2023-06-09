@@ -1,6 +1,6 @@
 import sys, os
 
-odm_dir = os.path.abspath(os.path.join(os.path.realpath(__file__), '../../'))
+odm_dir = os.path.abspath(os.path.join(os.path.realpath(__file__), "../../"))
 sys.path.append(odm_dir)
 from ..outlier_detector import *
 
@@ -10,8 +10,8 @@ percent_bad = [8, 13, 24, 24]
 # config_numbers = [25, 25, 25]
 # percent_bad = [24, 24, 24]
 
-feature_types = ['downsample', 'hist', 'sift', 'orb']
-norm_types = ['minmax', 'gaussian', 'max', 'zscore']
+feature_types = ["downsample", "hist", "sift", "orb"]
+norm_types = ["minmax", "gaussian", "max", "zscore"]
 
 
 def per_task_execution(idx):
@@ -75,31 +75,26 @@ def per_task_execution(idx):
         #                                    feature_type=feature,
         #                                    norm_type=norm_type)
 
-    detector_list = [
-        'KNN',
-        'LOF',
-        'COF',
-        'HBOS'
-    ]
+    detector_list = ["KNN", "LOF", "COF", "HBOS"]
 
     arguments = {
         "contamination": percent / 100,
         "verbose": False,
-        'norm_type': norm_type,
-        'metric': 'euclidean',
-        'n_jobs': 1,
-        'n_bins': 2,
-        'alpha': 0.2,
-        'n_clusters': 2,
+        "norm_type": norm_type,
+        "metric": "euclidean",
+        "n_jobs": 1,
+        "n_bins": 2,
+        "alpha": 0.2,
+        "n_clusters": 2,
         "tol": 0.2,
         "beta": 3,
         "n_neighbors": 3,
         "base_estimators": detector_list,
-        "cluster_estimator": 'KMeans',
+        "cluster_estimator": "KMeans",
         "n_estimators": 4,
         "subset_size": 0.5,
         "combination": "maximum",
-        'leaf_size': 20,
+        "leaf_size": 20,
         "p": 4,
         "novelty": False,
         "kernel": "linear",
@@ -113,7 +108,7 @@ def per_task_execution(idx):
         "max_samples": 0.5,
         "bandwidth": 2.0,
         "radius": 1.2,
-        "hidden_neurons": [48, 24, 24, 48]
+        "hidden_neurons": [48, 24, 24, 48],
     }
 
     # if feature is downsamle then exclude ['MCD', 'GMM']
@@ -130,22 +125,26 @@ def per_task_execution(idx):
     #                   kwargs=arguments)
 
     # print out the feature, the normalization type, and the dataset
-    print("Running data on: Feature: {}, Norm: {}, Dataset: {}"
-          .format(feature, norm_type, dataset))
+    print(
+        "Running data on: Feature: {}, Norm: {}, Dataset: {}".format(
+            feature, norm_type, dataset
+        )
+    )
 
-    OutlierDetector.generate_std_avg_all_algs(n_runs=5,
-                                              norm=norm_type,
-                                              feature=feature,
-                                              dataset=dataset,
-                                              display=False,
-                                              timing=False,
-                                              **arguments
-                                              )
+    OutlierDetector.generate_std_avg_all_algs(
+        n_runs=5,
+        norm=norm_type,
+        feature=feature,
+        dataset=dataset,
+        display=False,
+        timing=False,
+        **arguments,
+    )
     print(f"task number is: {idx}")
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     TASK_NUM = sys.argv[1]
     TASK_NUM = int(TASK_NUM)
     per_task_execution(TASK_NUM)
