@@ -20,6 +20,17 @@ BATCH_SIZE = int(config["5BHIST"]["batch_size"])
 TIMING = config["5BHIST"]["timing"]
 
 
+def get_all_image_paths(root_dir, ext):
+    image_paths = set()
+    for dirpath, dirnames, filenames in tqdm(
+        os.walk(root_dir), desc="Walking through directories"
+    ):
+        for filename in filenames:
+            if filename.endswith(ext):
+                image_paths.add(os.path.join(dirpath, filename))
+    return image_paths
+
+
 def file_batches_generator(directory, ext, batch_size):
     """
     Generator that yields batches of files from a directory and the total file count.
@@ -34,16 +45,13 @@ def file_batches_generator(directory, ext, batch_size):
     int: Total file count.
     """
     all_files = []
-    for root, dirs, files in tqdm(
-        os.walk(directory), desc="Walking through directories"
-    ):
+    for root, dirs, files in os.walk(directory):
         all_files.extend(
             [os.path.join(root, file) for file in files if file.endswith(ext)]
         )
 
-    total_files = len(all_files)
-    for i in tqdm(range(0, total_files, batch_size), desc="Generating file batches"):
-        yield all_files[i : i + batch_size], total_files
+    for i in range(0, len(all_files), batch_size):
+        yield all_files[i : i + batch_size]
 
 
 def load_data_batch(files):
@@ -115,28 +123,30 @@ def fivebhist_runner(data_root, final_file_name):
         print("Provided data root directory does not exist.")
         return
 
-    bad_indexes_found = []
-    paths = []
+    # The set of bad image paths
+    bad_paths = set()
 
-    print("Loading DICOM files...")
+    logger.info("Loading DICOM files...")
+
+    # Get all image paths at the start
+    all_paths = get_all_image_paths(data_root, EXT)
+    total_files = len(all_paths)
+
     file_batches_gen = file_batches_generator(data_root, EXT, BATCH_SIZE)
 
-    total_files = 0
-    data_dict = {}
-    for file_batch, file_count in file_batches_gen:
-        total_files += file_count
+    for file_batch in file_batches_gen:
         data_dict = load_data_batch(file_batch)
         data_imgs = get_pixel_list(data_dict)
+
         five_b_hist = Features.get_features(
             data_imgs, feature_type=FEAT, norm_type=NORM, bins=5
         )
 
-        print("Finding bad images...")
+        logger.info("Finding bad images...")
         for i, binary in enumerate(five_b_hist):
             if binary[4] > 15000 or binary[1] < 1000:
                 print(i, binary)
-                paths.append(data_dict[i][1])
-                bad_indexes_found.append(i)
+                bad_paths.add(data_dict[i][1])
 
     print(f"Total files: {total_files}")
 
@@ -146,22 +156,15 @@ def fivebhist_runner(data_root, final_file_name):
     os.makedirs(LOG_DIR, exist_ok=True)
 
     with open(os.path.join(LOG_DIR, file_name), "w") as f:
-        f.write("\n".join(paths))
+        f.write("\n".join(list(bad_paths)))
 
-    index_file_name = f"{date_and_time}_{FEAT}_{NORM}_indexes.txt"
-    with open(os.path.join(LOG_DIR, index_file_name), "w") as f:
-        f.write("\n".join(map(str, bad_indexes_found)))
-
-    good_paths = [
-        data[1]
-        for i, data in enumerate(data_dict.values())
-        if i not in bad_indexes_found
-    ]
+    # Get the set of good image paths by subtracting the set of bad image paths from the set of all image paths
+    good_paths = list(all_paths - bad_paths)
 
     with open(os.path.join(LOG_DIR, final_file_name), "w") as f:
         f.write("\n".join(good_paths))
 
-    print(f"number of bad images found: {len(bad_indexes_found)}")
+    print(f"number of bad images found: {len(bad_paths)}")
     print(f"number of good images found: {len(good_paths)}")
 
     if TIMING:
