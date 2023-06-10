@@ -154,15 +154,6 @@ class Data:
         dicom : dicom.dicom.DicomImage
             the dicom at the given index
         """
-        # if isinstance(subscript, slice):
-        #     # do your handling for a slice object:
-        #     print(subscript.start, subscript.stop, subscript.step)
-        # else:
-        #     # Do your handling for a plain index
-        #     print(subscript)
-        # check if the index is a slice
-        # return dicom.filereader.dcmread(cls._image_paths[index])
-
         if isinstance(index, slice):
             return [dicom.filereader.dcmread(path) for path in cls._image_paths[index]]
         else:
@@ -764,12 +755,7 @@ class Data:
 
     # --------------------------------------------------------------------------
     @classmethod
-    def _validate_path(
-        cls,
-        path,
-        _2d=True,
-        _3d=True,
-    ) -> bool:
+    def _validate_path(cls, path, _2d=True, _3d=True,) -> bool:
         """Checks if the path is valid
 
         Parameters

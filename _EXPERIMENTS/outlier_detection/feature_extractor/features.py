@@ -575,7 +575,7 @@ class Features:
                 ax[idx].set_ylim(0, 1)
                 ax[idx].bar(x_axis, y_axis, color="b", log=True, width=10)
                 ax[idx].set_xlim(0.01, 255)
-                ax[idx].set_ylim(0.01, 10**8)
+                ax[idx].set_ylim(0.01, 10 ** 8)
                 label = Features._get_train_score("hist", feature_types, train_scores)
                 ax[idx].set_title(label, size=8)
             else:

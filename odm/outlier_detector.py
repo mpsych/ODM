@@ -9,9 +9,7 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-ALGORITHMS = [
-    "VAE",
-]
+ALGORITHMS = ["VAE"]
 
 CACHE_PATH = r"/tmp/odm/cache_files/"
 CACHE_FILE = r"ODM_CACHE.json"
