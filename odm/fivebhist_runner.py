@@ -14,8 +14,6 @@ logger = logging.getLogger(__name__)
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-FEAT = config["5BHIST"]["feat"]
-NORM = config["5BHIST"]["norm"]
 LOG_DIR = config["5BHIST"]["log_dir"]
 EXT = config["5BHIST"]["ext"]
 BATCH_SIZE = int(config["5BHIST"]["batch_size"])
@@ -110,6 +108,8 @@ def fivebhist_runner(data_root, final_file_name):
     data_root (str): The root directory of the DICOM files.
     final_file_name (str): The name of the final text file containing paths to good images.
     """
+    FEAT = "hist"
+    NORM = "minmax"
     t0 = time.time()
     if not os.path.isdir(data_root):
         print("Provided data root directory does not exist.")
@@ -173,8 +173,6 @@ def print_properties():
     """
     Print the properties used in the 5-bin histogram feature extraction process.
     """
-    print(f"Feature type: {FEAT}")
-    print(f"Norm type: {NORM}")
     print(f"Log directory: {LOG_DIR}")
     print(f"File extension: {EXT}")
     print(f"Batch size: {BATCH_SIZE}")

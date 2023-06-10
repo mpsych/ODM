@@ -895,7 +895,7 @@ class DataHelper(object):
         ax = fig.add_axes([0, 0, 1, 1])
         ax.bar(x_axis, y_axis, width=10, color="b", log=True)
         ax.set_xlim(0.01, 255)
-        ax.set_ylim(0.01, 10 ** 8)
+        ax.set_ylim(0.01, 10**8)
         plt.show()
 
     @staticmethod

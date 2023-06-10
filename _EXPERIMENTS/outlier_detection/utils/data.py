@@ -755,7 +755,12 @@ class Data:
 
     # --------------------------------------------------------------------------
     @classmethod
-    def _validate_path(cls, path, _2d=True, _3d=True,) -> bool:
+    def _validate_path(
+        cls,
+        path,
+        _2d=True,
+        _3d=True,
+    ) -> bool:
         """Checks if the path is valid
 
         Parameters
