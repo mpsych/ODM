@@ -1,8 +1,28 @@
 # Outlier Detection for Mammograms (ODM)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
+## Table of Contents
+1. [Installation](#installation)
+    - [Standard Installation](#standard-installation)
+    - [Docker Installation](#docker-installation)
+2. [Usage](#usage)
+    - [Full Outlier Detection Pipeline](#full-outlier-detection-pipeline)
+    - [Separate Pipeline Stages](#separate-pipeline-stages)
+3. [Configuration](#configuration)
+    - [Five-Bin Histogram Based Thresholding (5BHIST)](#five-bin-histogram-based-thresholding-5bhist)
+    - [Variational Autoencoder (VAE)](#variational-autoencoder-vae)
+4. [Citation](#citation)
+5. [License](#license)
+6. [Acknowledgements](#acknowledgements)
+7. [Contact](#contact)
+
 ODM is a two-stage unsupervised learning-based outlier detection pipeline for large mammogram collections. It uses a threshold-based 5-bin histogram filtering (5-BHIST) and a variational autoencoder (VAE) to remove low-quality and undesired scans.
 
 ## Installation
+
+### Standard Installation
 
 Ensure you have Python 3.8 or newer installed. You can check your Python version by running `python --version` in your command line.
 
@@ -22,6 +42,38 @@ Or create a new conda environment and install the required packages:
 conda env create -f environment.yml
 conda activate ODM
 ```
+
+### Docker Installation
+
+Ensure you have Docker installed. You can check your Docker version by running `docker --version` in your command line.
+
+We have also provided a Dockerfile which can be used to build a Docker image and run the software in a container. To do this, first, make sure you have Docker installed on your system. Then, follow the steps below:
+
+1. Clone the repository:
+```bash
+git clone https://github.com/mpsych/ODM.git
+cd ODM
+```
+
+2. Build the Docker image:
+```bash
+docker build -t odm .
+```
+
+3. Run the Docker container:
+```bash
+docker run -it odm
+```
+
+Note: if your project requires access to local files or directories (e.g., for data input or output), you can mount a local directory inside the Docker container using the `-v` flag:
+```bash
+docker run -it -v /path/to/local/directory:/path/to/container/directory odm
+```
+Replace `/path/to/local/directory` with the path to the directory on your host system that you want to access from within the Docker container, and replace `/path/in/container` with the path where you want the directory to be mounted in the Docker container.
+
+
+In the command above, the `-it` flag starts the container in interactive mode, so you can interact with the command line of the running container, and the `-v` flag mounts a local directory inside the container.
+
 
 ## Usage
 
