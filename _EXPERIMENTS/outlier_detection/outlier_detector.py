@@ -1284,12 +1284,7 @@ class OutlierDetector(Algorithms):
 
     @staticmethod
     def detect_outliers(
-        features,
-        imgs,
-        pyod_algorithm,
-        timing=False,
-        id_=None,
-        **kwargs,
+        features, imgs, pyod_algorithm, timing=False, id_=None, **kwargs
     ):
         """Detect outliers using pyod algorithms"""
 
@@ -1559,13 +1554,7 @@ class OutlierDetector(Algorithms):
 
     @staticmethod
     def generate_std_avg_all_algs(
-        n_runs,
-        norm,
-        feature,
-        dataset,
-        display=False,
-        timing=False,
-        **kwargs,
+        n_runs, norm, feature, dataset, display=False, timing=False, **kwargs
     ):
         """Generates the standard deviation and average of the accuracy of
         all pyod algorithms

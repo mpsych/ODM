@@ -148,20 +148,21 @@ def fivebhist_runner(data_root, final_file_name):
     with open(os.path.join(LOG_DIR, file_name), "w") as f:
         f.write("\n".join(paths))
 
-        index_file_name = f"{date_and_time}_{FEAT}_{NORM}_indexes.txt"
-        with open(os.path.join(LOG_DIR, index_file_name), "w") as f:
-            f.write("\n".join(map(str, bad_indexes_found)))
+    index_file_name = f"{date_and_time}_{FEAT}_{NORM}_indexes.txt"
+    with open(os.path.join(LOG_DIR, index_file_name), "w") as f:
+        f.write("\n".join(map(str, bad_indexes_found)))
 
-        with open(os.path.join(LOG_DIR, final_file_name), "w") as f:
-            good_paths = [
-                data[1]
-                for i, data in enumerate(data_dict.values())
-                if i not in bad_indexes_found
-            ]
-            f.write("\n".join(good_paths))
+    good_paths = [
+        data[1]
+        for i, data in enumerate(data_dict.values())
+        if i not in bad_indexes_found
+    ]
 
-        print(f"number of bad images found: {len(bad_indexes_found)}")
-        print(f"number of good images found: {len(good_paths)}")
+    with open(os.path.join(LOG_DIR, final_file_name), "w") as f:
+        f.write("\n".join(good_paths))
+
+    print(f"number of bad images found: {len(bad_indexes_found)}")
+    print(f"number of good images found: {len(good_paths)}")
 
     if TIMING:
         logger.info(

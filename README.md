@@ -26,6 +26,8 @@ conda activate ODM
 ## Usage
 
 ### Full Outlier Detection Pipeline
+Be sure to navigate to the `ODM/odm` directory before running any of the commands below.
+
 You can run the full outlier detection pipeline using the `odm_runner.py` script. This script accepts a text file with paths to the mammograms and outputs a final caselist of paths to the filtered, high-quality images. The paths and other parameters will be loaded by default from the `config.ini` file, but they can be overridden via command-line arguments.
 ```bash
 python odm_runner.py --data_root PATH_TO_YOUR_DATA_ROOT --final_file PATH_TO_YOUR_FINAL_FILE --contamination CONTAMINATION --verbose VERBOSE
