@@ -1,10 +1,14 @@
 import os
 import datetime
+import time
 import pydicom as dicom
 import argparse
+import logging
 from tqdm import tqdm
 import configparser
 from feature_extractor import *
+
+logger = logging.getLogger(__name__)
 
 # read the config file
 config = configparser.ConfigParser()
@@ -15,6 +19,7 @@ NORM = config["5BHIST"]["norm"]
 LOG_DIR = config["5BHIST"]["log_dir"]
 EXT = config["5BHIST"]["ext"]
 BATCH_SIZE = int(config["5BHIST"]["batch_size"])
+TIMING = config["5BHIST"]["timing"]
 
 
 def file_batches_generator(directory, ext, batch_size):
@@ -53,6 +58,7 @@ def load_data_batch(files):
     Returns:
     dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
     """
+    t0 = time.time()
     data_dict = {}
     for index, file in tqdm(
         enumerate(files), desc="Loading DICOM files", total=len(files)
@@ -61,6 +67,12 @@ def load_data_batch(files):
             data_dict[index] = [dicom.dcmread(file), file]
         except Exception as e:
             print(f"Error reading file {file}: {e}")
+
+    if TIMING:
+        logger.info(
+            f"Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
+
     return data_dict
 
 
@@ -74,17 +86,31 @@ def get_pixel_list(data):
     Returns:
     list: A list of pixel arrays.
     """
-    if isinstance(data, dict):
-        return [
-            data[0].pixel_array
-            for data in tqdm(
-                data.values(), desc="Getting pixel arrays", total=len(data)
-            )
-            if data[0].pixel_array.size > 0
-        ]
+    t0 = time.time()
+    imgs = []
+    for key in tqdm(data, desc="Generating pixel arrays"):
+        try:
+            imgs.append(data[key][0].pixel_array)
+        except Exception as e:
+            print(f"Error reading file {data[key][1]}: {e}")
+
+    if TIMING:
+        logger.info(
+            f"Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
+
+    return imgs
 
 
 def fivebhist_runner(data_root, final_file_name):
+    """
+    Run the 5-bin histogram feature extraction and bad image identification.
+
+    Parameters:
+    data_root (str): The root directory of the DICOM files.
+    final_file_name (str): The name of the final text file containing paths to good images.
+    """
+    t0 = time.time()
     if not os.path.isdir(data_root):
         print("Provided data root directory does not exist.")
         return
@@ -96,6 +122,7 @@ def fivebhist_runner(data_root, final_file_name):
     file_batches_gen = file_batches_generator(data_root, EXT, BATCH_SIZE)
 
     total_files = 0
+    data_dict = {}
     for file_batch, file_count in file_batches_gen:
         total_files += file_count
         data_dict = load_data_batch(file_batch)
@@ -134,6 +161,12 @@ def fivebhist_runner(data_root, final_file_name):
             f.write("\n".join(good_paths))
 
         print(f"number of bad images found: {len(bad_indexes_found)}")
+        print(f"number of good images found: {len(good_paths)}")
+
+    if TIMING:
+        logger.info(
+            f"Total time to run feature extraction: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
 
 
 def print_properties():

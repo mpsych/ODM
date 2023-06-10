@@ -36,32 +36,24 @@ class Normalize:
         t0 = time.time()
         pixels = []
         if isinstance(images, list):
-            for image in images:
-                if isinstance(image, np.ndarray) or isinstance(
-                    image, types.SimpleNamespace
-                ):
-                    pixels.append(
-                        image.pixels
-                        if isinstance(image, types.SimpleNamespace)
-                        else image
-                    )
-                elif isinstance(image, dicom.dataset.FileDataset):
+            if isinstance(images[0], np.ndarray):
+                return images
+            elif isinstance(images[0], types.SimpleNamespace):
+                for image in images:
+                    pixels.append(image.pixels)
+            elif isinstance(images[0], dicom.dataset.FileDataset):
+                for image in images:
                     pixels.append(image.pixel_array)
-                else:
-                    raise TypeError(f"Unknown type of images: {type(image)}")
-        elif isinstance(images, np.ndarray) or isinstance(
-            images, types.SimpleNamespace
-        ):
-            pixels = (
-                [images.pixels]
-                if isinstance(images, types.SimpleNamespace)
-                else [images]
-            )
+            else:
+                raise TypeError("Unknown type of images")
+        elif isinstance(images, np.ndarray):
+            pixels = images  # was returning this as list before
+        elif isinstance(images, types.SimpleNamespace):
+            pixels = images.pixels
         else:
-            raise TypeError(f"Unknown type of images: {type(images)}")
-
+            raise TypeError("Unknown type of images")
         if timing:
-            logger.info("Extract pixels: %s", time.time() - t0)
+            print("Extract pixels: {}".format(time.time() - t0))
         return pixels
 
     @staticmethod
@@ -114,10 +106,15 @@ class Normalize:
             Normalized pixels and None.
         """
         t0 = time.time()
-        normalized_pixels = [Normalize._minmax_helper(p, **kwargs) for p in pixels]
+        if isinstance(pixels, list):
+            normalized_pixels = []
+            for p in pixels:
+                normalized_pixels.append(Normalize._minmax_helper(p, **kwargs))
+        else:
+            normalized_pixels = Normalize._minmax_helper(pixels, **kwargs)
 
         if timing:
-            logger.info("minmax: %s", time.time() - t0)
+            print("minmax: {}".format(time.time() - t0))
         return normalized_pixels, None
 
     @staticmethod
@@ -150,16 +147,12 @@ class Normalize:
         """
         t0 = time.time()
         pixels = Normalize.extract_pixels(pixels)
-
-        norm_func = {"minmax": Normalize.minmax, "min-max": Normalize.minmax}.get(
-            norm_type.lower()
-        )
-        if norm_func is None:
+        if norm_type.lower() == "minmax" or norm_type.lower() == "min-max":
+            normalized, filtered = Normalize.minmax(pixels, timing, **kwargs)
+        else:
             raise ValueError("Invalid normalization type")
 
-        normalized_pixels, _ = norm_func(pixels, timing, **kwargs)
-
         if timing:
-            logger.info("get_norm: %s", time.time() - t0)
+            print("get_norm: {}".format(time.time() - t0))
 
-        return normalized_pixels, None
+        return normalized, filtered

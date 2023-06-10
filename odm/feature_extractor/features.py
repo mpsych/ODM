@@ -38,18 +38,29 @@ class Features:
         """
         t0 = time.time()
         histograms = []
-        if not isinstance(pixels, list):  # if not a list, make it a list
-            pixels = [pixels]
-        for pixel in pixels:
-            if isinstance(pixel, SimpleNamespace):
-                tmp_pixels = pixel.pixels.copy()
-            else:
-                tmp_pixels = pixel.copy()
+        # if pixels is a list of images get list of histograms for each image
+        if isinstance(pixels, list):
+            for i in range(len(pixels)):
+                # if pixels is a list of SimpleNamespace use the pixels attribute
+                if isinstance(pixels[i], SimpleNamespace):
+                    tmp_pixels = pixels[i].pixels.copy()
+                else:  # else assume pixels is a list of np.ndarray
+                    tmp_pixels = pixels[i].copy()
+                # if normalization is specified normalize pixels before histogram
+                if norm_type is not None:
+                    tmp_pixels = Normalize.get_norm(
+                        tmp_pixels, norm_type=norm_type, timing=timing, **kwargs
+                    )[0]
+                # append histogram to list
+                histograms.append(mh.fullhistogram(tmp_pixels.astype(np.uint8)))
+        # if pixels is a single image get histogram
+        else:
+            tmp_pixels = pixels.copy()
             if norm_type is not None:
                 tmp_pixels = Normalize.get_norm(
                     tmp_pixels, norm_type=norm_type, timing=timing, **kwargs
                 )[0]
-            histograms.append(mh.fullhistogram(tmp_pixels.astype(np.uint8)))
+            histograms = mh.fullhistogram(tmp_pixels.astype(np.uint8))
 
         if timing:
             logger.info("Histogram: %s", time.time() - t0)
@@ -81,6 +92,7 @@ class Features:
         -------
         np.ndarray
         """
+        print("get_features")
         t0 = time.time()
         if feature_type in ["hist", "histogram"]:
             features = Features.histogram(
