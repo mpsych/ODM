@@ -82,7 +82,7 @@ Be sure to navigate to the `ODM/odm` directory before running any of the command
 
 You can run the full outlier detection pipeline using the `odm_runner.py` script. This script accepts a text file with paths to the mammograms and outputs a final caselist of paths to the filtered, high-quality images. The paths and other parameters will be loaded by default from the `config.ini` file, but they can be overridden via command-line arguments.
 ```bash
-python odm_runner.py --data_root PATH_TO_YOUR_DATA_ROOT --final_file PATH_TO_YOUR_FINAL_FILE --contamination CONTAMINATION --verbose VERBOSE
+python odm_runner.py --data_root PATH_TO_YOUR_DATA_ROOT --final_file PATH_TO_YOUR_FINAL_FILE --caselist CASELIST --contamination CONTAMINATION --batch_size BATCH_SIZE --final_output FINAL_OUTPUT --verbose
 ```
 
 ### Separate Pipeline Stages
@@ -98,10 +98,10 @@ python fivebhist_runner.py --data_root PATH_TO_YOUR_DATA_ROOT --final_file PATH_
 ### 2. Variational Autoencoder (VAE)
 The `vae_runner.py` script runs the second stage of the pipeline. It requires the path to the data and optionally accepts the proportion of outliers in the data (contamination) and a verbosity flag. These parameters will be loaded by default from the `[VAE]` section of the `config.ini` file, but they can be overridden via command-line arguments.
 ```shell
-python vae_runner.py --caselist PATH_TO_YOUR_FINAL_FILE --contamination CONTAMINATION --verbose VERBOSE
+python vae_runner.py --caselist PATH_TO_YOUR_FINAL_FILE --contamination CONTAMINATION --batch_size BATCH_SIZE --final_output FINAL_OUTPUT --verbose VERBOSE
 ```
 
-In the commands above, replace `PATH_TO_YOUR_DATA_ROOT` with the path to your data, `PATH_TO_YOUR_FINAL_FILE` with the path to your final file of good images, and `CONTAMINATION` with the proportion of outliers in your data (a number between 0 and 1). If you include `--verbose` in the `vae_runner.py` command, progress messages will be printed to stdout. If not, the script will run silently.
+In the commands above, replace `PATH_TO_YOUR_DATA_ROOT` with the path to your data, `PATH_TO_YOUR_FINAL_FILE` with the path to your final file of good images, and `CASELIST` with the path to the caselist of good images output by the 5BHIST stage, and `CONTAMINATION` with the proportion of outliers in your data (a number between 0 and 1), and `BATCH_SIZE` with the batch size to use for training the VAE, and `FINAL_OUTPUT` with the path to the final output file. If you include `--verbose` in the `vae_runner.py` command, progress messages will be printed to stdout. If not, the script will run silently.
 
 For additional help for any of the scripts, run `python SCRIPT_NAME.py -h`.
 
@@ -121,8 +121,9 @@ The parameters for the 5BHIST stage are in the `[5BHIST]` section of the `config
 ### 2. Variational Autoencoder (VAE)
 - `caselist`: The path to the final file of good images. This is the file that will be created by the 5BHIST stage and used as input for the VAE stage.
 - `contamination`: The proportion of outliers in the data. This is a number between 0 and 1. If you do not know the proportion of outliers in your data, you can set this to 0.15.
-- `verbose`: Whether to print progress messages to stdout. If set to `True`, progress messages will be printed to stdout. If set to `False`, the script will run silently.
 - `batch_size`: The batch size to use for loading the images. This is the number of images that will be loaded into memory at a time. If you have a large amount of memory, you can increase this number to speed up the process. If you have a small amount of memory, you may need to decrease this number to avoid running out of memory.
+- `verbose`: Whether to print progress messages to stdout. If set to `True`, progress messages will be printed to stdout. If set to `False`, the script will run silently.
+- `final_output`: The path to the final output file. This is the file that will be created by the VAE stage and is the final output of the pipeline (All the good images).
 
 ## Citation
 If you use this code in your research, please cite the following paper:

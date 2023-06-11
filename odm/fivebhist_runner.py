@@ -1,21 +1,19 @@
 import os
 import datetime
 import time
-
 import numpy as np
 import pydicom as dicom
 import argparse
 import logging
-
 from PIL import Image
 from tqdm import tqdm
-import configparser
+from configparser import SafeConfigParser
 from feature_extractor import *
 
 logger = logging.getLogger(__name__)
 
 # read the config file
-config = configparser.ConfigParser()
+config = SafeConfigParser()
 config.read("config.ini")
 
 LOG_DIR = config["5BHIST"]["log_dir"]
@@ -35,6 +33,7 @@ def get_all_image_paths(root_dir, ext) -> set:
     Returns:
     set: A set of image paths.
     """
+    t0 = time.time()
     image_paths = set()
     for dirpath, dirnames, filenames in tqdm(
         os.walk(root_dir), desc="Walking through directories"
@@ -42,6 +41,12 @@ def get_all_image_paths(root_dir, ext) -> set:
         for filename in filenames:
             if filename.endswith(ext):
                 image_paths.add(os.path.join(dirpath, filename))
+
+    if TIMING:
+        logger.info(
+            f"Time to walk through directories: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
+
     return image_paths
 
 
@@ -126,7 +131,7 @@ def get_pixel_list(data) -> list:
     return imgs
 
 
-def fivebhist_runner(data_root, final_file_name) -> None:
+def fivebhist_runner(data_root, final_file) -> None:
     """
     Run the 5-bin histogram feature extraction and bad image identification.
 
@@ -169,17 +174,17 @@ def fivebhist_runner(data_root, final_file_name) -> None:
     print(f"Total files: {total_files}")
 
     date_and_time = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    file_name = f"{date_and_time}_{FEAT}_{NORM}.txt"
+    file_name_bad_paths = f"{date_and_time}_bad_paths.txt"
 
     os.makedirs(LOG_DIR, exist_ok=True)
 
-    with open(os.path.join(LOG_DIR, file_name), "w") as f:
+    with open(os.path.join(LOG_DIR, file_name_bad_paths), "w") as f:
         f.write("\n".join(list(bad_paths)))
 
     # Get the set of good image paths by subtracting the set of bad image paths from the set of all image paths
     good_paths = list(all_paths - bad_paths)
 
-    with open(os.path.join(LOG_DIR, final_file_name), "w") as f:
+    with open(os.path.join(LOG_DIR, final_file), "w") as f:
         f.write("\n".join(good_paths))
 
     print(f"number of bad images found: {len(bad_paths)}")
@@ -199,7 +204,6 @@ def print_properties() -> None:
     print(f"File extension: {EXT}")
     print(f"Batch size: {BATCH_SIZE}")
     print(f"Data root: {args.data_root}")
-    print(f"Final file: {args.final_file}")
 
 
 # In the main section of your script, you can call this method at the beginning:
@@ -223,7 +227,7 @@ if __name__ == "__main__":
         "--final_file",
         type=str,
         default=config["5BHIST"]["final_file"],
-        help="Name of the final file of good images.",
+        help="Name of the final text file containing paths to good images.",
     )
     args = parser.parse_args()
 
