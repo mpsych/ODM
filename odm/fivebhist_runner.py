@@ -20,7 +20,17 @@ BATCH_SIZE = int(config["5BHIST"]["batch_size"])
 TIMING = config["5BHIST"]["timing"]
 
 
-def get_all_image_paths(root_dir, ext):
+def get_all_image_paths(root_dir, ext) -> set:
+    """
+    Get all image paths in a directory, including subdirectories.
+
+    Parameters:
+    root_dir (str): Path of the directory to be searched.
+    ext (str): File extension to be searched.
+
+    Returns:
+    set: A set of image paths.
+    """
     image_paths = set()
     for dirpath, dirnames, filenames in tqdm(
         os.walk(root_dir), desc="Walking through directories"
@@ -31,7 +41,7 @@ def get_all_image_paths(root_dir, ext):
     return image_paths
 
 
-def file_batches_generator(directory, ext, batch_size):
+def file_batches_generator(directory, ext, batch_size) -> tuple:
     """
     Generator that yields batches of files from a directory and the total file count.
 
@@ -54,7 +64,7 @@ def file_batches_generator(directory, ext, batch_size):
         yield all_files[i : i + batch_size]
 
 
-def load_data_batch(files):
+def load_data_batch(files) -> dict:
     """
     Load a batch of DICOM files into a dictionary.
 
@@ -82,7 +92,7 @@ def load_data_batch(files):
     return data_dict
 
 
-def get_pixel_list(data):
+def get_pixel_list(data) -> list:
     """
     Generate a list of pixel arrays from a dictionary of DICOM data.
 
@@ -108,7 +118,7 @@ def get_pixel_list(data):
     return imgs
 
 
-def fivebhist_runner(data_root, final_file_name):
+def fivebhist_runner(data_root, final_file_name) -> None:
     """
     Run the 5-bin histogram feature extraction and bad image identification.
 
@@ -173,7 +183,7 @@ def fivebhist_runner(data_root, final_file_name):
         )
 
 
-def print_properties():
+def print_properties() -> None:
     """
     Print the properties used in the 5-bin histogram feature extraction process.
     """
@@ -186,6 +196,14 @@ def print_properties():
 
 # In the main section of your script, you can call this method at the beginning:
 if __name__ == "__main__":
+    """
+    Main entry point of the program. Parses command-line arguments, reads the config file,
+    overwrites config values if command line arguments are provided, and then runs the 5BHIST algorithm.
+
+    Supports the following command-line arguments:
+        --data_root: The root directory of the DICOM files.
+        --final_file: The name of the final text file containing paths to good images.
+    """
     parser = argparse.ArgumentParser(description="Image feature extraction task.")
     parser.add_argument(
         "--data_root",
