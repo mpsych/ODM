@@ -1,9 +1,13 @@
 import os
 import datetime
 import time
+
+import numpy as np
 import pydicom as dicom
 import argparse
 import logging
+
+from PIL import Image
 from tqdm import tqdm
 import configparser
 from feature_extractor import *
@@ -77,12 +81,16 @@ def load_data_batch(files) -> dict:
     t0 = time.time()
     data_dict = {}
     for index, file in tqdm(
-        enumerate(files), desc="Loading DICOM files", total=len(files)
+        enumerate(files), desc="Loading IMAGE files", total=len(files)
     ):
         try:
-            data_dict[index] = [dicom.dcmread(file), file]
-        except Exception as e:
-            print(f"Error reading file {file}: {e}")
+            if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(""):
+                data_dict[index] = [dicom.dcmread(file), file]
+            else:
+                with Image.open(file) as img:
+                    data_dict[index] = [np.array(img), file]
+        except Exception as e_:
+            print(f"Error reading file {file}: {e_}")
 
     if TIMING:
         logger.info(

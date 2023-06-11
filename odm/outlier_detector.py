@@ -44,7 +44,7 @@ class OutlierDetector:
     @staticmethod
     def detect_outliers(
         features,
-        imgs,
+        paths,
         pyod_algorithm,
         timing=False,
         id_=None,
@@ -58,9 +58,6 @@ class OutlierDetector:
 
         errors = {}
         decision_scores = None
-
-        # caselist contains the list of image paths
-        caselist = kwargs.get("caselist", None)
 
         try:
             if redirect_output:
@@ -76,8 +73,6 @@ class OutlierDetector:
                             ) = OutlierDetector._detect_outliers(
                                 features, pyod_algorithm=pyod_algorithm, **kwargs
                             )
-
-                            accuracy = t_decision_function
                         else:
                             decision_scores, labels = OutlierDetector._detect_outliers(
                                 features, pyod_algorithm=pyod_algorithm, **kwargs
@@ -94,8 +89,6 @@ class OutlierDetector:
                         features, pyod_algorithm=pyod_algorithm, **kwargs
                     )
 
-                    accuracy = t_decision_function
-
                 else:
                     decision_scores, labels = OutlierDetector._detect_outliers(
                         features, pyod_algorithm=pyod_algorithm, **kwargs
@@ -107,7 +100,6 @@ class OutlierDetector:
                 f"Error running {pyod_algorithm} on data {features} with exception {e}"
             )
             errors[pyod_algorithm] = e
-            accuracy = -1
             labels = None
 
         kwargs_hash = dict_to_hash(kwargs)
@@ -121,17 +113,15 @@ class OutlierDetector:
         filename = f"{date_time}_{pyod_algorithm}%_{kwargs_hash}"
 
         print(
-            f"about to save and len of tscore and imgs is {len(decision_scores)} and {len(imgs)}"
+            f"about to save and len of tscore and imgs is {len(decision_scores)} and {len(features)}"
         )
 
-        # TODO: This is expecting the imgs to be a SimpleNamespace from Data API, need to
-        #       change this so that it is no longer dependent on that
-        OutlierDetector._save_outlier_path_log(filename, imgs, decision_scores)
+        OutlierDetector._save_outlier_path_log(filename, paths, decision_scores)
 
         if timing:
             display_timing(t0, "running " + pyod_algorithm)
 
-        return decision_scores, labels, accuracy
+        return decision_scores, labels
 
     @staticmethod
     def _detect_outliers(data_x, pyod_algorithm, **kwargs):
