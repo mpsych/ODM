@@ -3,24 +3,26 @@ import hashlib
 import os
 import time
 import contextlib
+from configparser import ConfigParser
 from types import SimpleNamespace
 import logging
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
-ALGORITHMS = ["VAE"]
+# read the config file
+config = ConfigParser()
+config.read("config.ini")
 
-CACHE_PATH = r"/tmp/odm/cache_files/"
-CACHE_FILE = r"ODM_CACHE.json"
-LOG_DIR = r"/tmp/odm/log/"
+ALGORITHM = config["OD"]["algorithm"]
+LOG_DIR = config["OD"]["log_dir"]
 
 
 class OutlierDetector:
     def __init__(
         self,
         run_id: str,
-        algorithms: list = None,
+        algorithm: str = None,
         imgs: list = None,
         features: list = None,
         verbose: bool = False,
@@ -29,7 +31,7 @@ class OutlierDetector:
         """Initializes the OutlierDetector class"""
         t0 = time.time()
         self.__run_id = run_id
-        self.__algorithms = ALGORITHMS if algorithms is None else algorithms
+        self.__algorithms = ALGORITHM if algorithm is None else algorithm
         self.__imgs = imgs
         self.__features = features
         if verbose is False:
@@ -102,7 +104,7 @@ class OutlierDetector:
             errors[pyod_algorithm] = e
             labels = None
 
-        kwargs_hash = dict_to_hash(kwargs)
+        hash_val = hashlib.md5(str(features).encode("utf-8")).hexdigest()
         # get the date and time to use as file name
         date_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         # if the id is not None add it as part of the file name
@@ -110,7 +112,7 @@ class OutlierDetector:
             date_time = f"{date_time}_{str(id_)}"
 
         # put the feature type name with the number bad to use in the cache file
-        filename = f"{date_time}_{pyod_algorithm}%_{kwargs_hash}"
+        filename = f"{date_time}_{pyod_algorithm}%_{hash_val}"
 
         print(
             f"about to save and len of tscore and imgs is {len(decision_scores)} and {len(features)}"
@@ -119,7 +121,7 @@ class OutlierDetector:
         OutlierDetector._save_outlier_path_log(filename, paths, decision_scores)
 
         if timing:
-            display_timing(t0, "running " + pyod_algorithm)
+            logger.info(f"OD detect_outliers took {time.time() - t0} seconds")
 
         return decision_scores, labels
 
@@ -224,7 +226,7 @@ class OutlierDetector:
                 raise ValueError("The length of the data and labels must be the same")
 
     @staticmethod
-    def _save_outlier_path_log(filename, imgs, t_scores, caselist: str = None):
+    def _save_outlier_path_log(filename, paths, t_scores):
         """Saves the outlier path log
         Parameters
         ----------
@@ -239,11 +241,7 @@ class OutlierDetector:
             images
         """
         # validate the length of the scores and images
-        OutlierDetector._validate_lengths(imgs, t_scores)
-
-        # read the caselist file into a list
-        with open(caselist, "r") as f:
-            paths = [line.strip() for line in f]
+        OutlierDetector._validate_lengths(paths, t_scores)
 
         # the path to write the log to will be the LOG_DIR with the cache key
         # appended to it
@@ -256,17 +254,17 @@ class OutlierDetector:
         # this will put all the data into order from highest to lowest score
         image_list = []
         if isinstance(t_scores, np.ndarray):
-            for i in range(len(imgs)):
+            for i in range(len(paths)):
                 image_list.append(SimpleNamespace(image=paths[i], score=t_scores[i]))
         elif isinstance(t_scores, list):
             if isinstance(t_scores[0], np.ndarray):
                 for j in range(len(t_scores)):
-                    for i in range(len(imgs)):
+                    for i in range(len(paths)):
                         image_list.append(
                             SimpleNamespace(image=paths[i], score=t_scores[j][i])
                         )
             else:
-                for i in range(len(imgs)):
+                for i in range(len(paths)):
                     image_list.append(
                         SimpleNamespace(image=paths[i], score=t_scores[i])
                     )
@@ -283,34 +281,3 @@ class OutlierDetector:
         with open(path, "w") as f:
             for i in range(len(image_list)):
                 f.write(str(image_list[i].score) + "\n")
-
-
-def dict_to_hash(d):
-    """Converts a dictionary to a hash and returns it as a string
-    Parameters
-    ----------
-    d : dict
-        The dictionary to be converted
-    Returns
-    -------
-    hash : str
-        The hash of the dictionary
-    """
-    return hashlib.md5(str(d).encode("utf-8")).hexdigest()
-
-
-def display_timing(t0, label: str):
-    """Prints the time it takes to perform a certain action
-
-    Parameters
-    ----------
-    t0 : float
-        the time when the action was performed
-    label : str
-        the label of the action
-    """
-    print(
-        "{:<25s}{:<10s}{:>10f}{:^5s}".format(
-            label, "...took ", time.time() - t0, " seconds"
-        )
-    )
