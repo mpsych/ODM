@@ -7,13 +7,13 @@ import argparse
 import logging
 from PIL import Image
 from tqdm import tqdm
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from feature_extractor import *
 
 logger = logging.getLogger(__name__)
 
 # read the config file
-config = SafeConfigParser()
+config = ConfigParser()
 config.read("config.ini")
 
 LOG_DIR = config["5BHIST"]["log_dir"]

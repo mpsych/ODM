@@ -1,10 +1,10 @@
 import numpy as np
 import datetime
 import time
-from odm import OutlierDetector
+from outlier_detector import OutlierDetector
 import logging
 import argparse
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from tqdm import tqdm
 from PIL import Image
 import pydicom as dicom
@@ -13,7 +13,7 @@ from feature_extractor import *
 logger = logging.getLogger(__name__)
 
 # read the config file
-config = SafeConfigParser()
+config = ConfigParser()
 config.read("config.ini")
 
 TIMING = config["VAE"]["timing"]
@@ -59,7 +59,7 @@ def get_pixel_list(data):
     imgs = []
     for key in tqdm(data, desc="Generating pixel arrays"):
         try:
-            imgs.append(data[key][0].pixel_array)
+            imgs.append(data[key][0])
         except Exception as e:
             print(f"Error reading file {data[key][1]}: {e}")
 
@@ -109,6 +109,7 @@ def vae_runner(caselist, contamination, batch_size, verbose):
         decision_scores, labels = OutlierDetector.detect_outliers(
             features=feats,
             paths=file_batch,
+            pyod_algorithm="VAE",
             contamination=contamination,
             verbose=verbose,
         )
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         description="Runs the Variational AutoEncoder (VAE) algorithm on given data."
     )
     parser.add_argument(
-        "caselist",
+        "--caselist",
         type=str,
         default=config["VAE"]["caselist"],
         help="The path to the text file containing the paths of the DICOM files.",

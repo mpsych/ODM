@@ -33,5 +33,6 @@ setup(
         "Pillow~=9.3.0",
         "pandas~=1.5.2",
         "statsmodels~=0.13.5",
+        "tensorflow~=2.12.0",
     ],
 )
