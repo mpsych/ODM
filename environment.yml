@@ -1,0 +1,19 @@
+name: ODM2
+channels:
+  - anaconda
+  - defaults
+  - conda-forge
+dependencies:
+  - matplotlib
+  - mahotas
+  - python=3.9.7
+  - pyod
+  - pip
+  - scikit-learn
+  - scikit-image=0.19.2
+  - keras
+  - hyperopt
+  - pydicom
+  - gdcm
+  - pip:
+      - pylibjpeg[all]

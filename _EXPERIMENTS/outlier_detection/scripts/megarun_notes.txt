@@ -1,0 +1,11 @@
+We have 176,189 total 2D images. For sake of dividing up the tasks for the big
+run better we will remove 9 bad images from the total. 176,180 images remain.
+
+We can then divide up the images into 230 groups of 766 images each.
+
+we will be using 1 algorithm, 1 feature type and 1 normalization method.
+
+If we use 1 core per task and allocate 8GB of RAM per core will mean we need a
+total of 230 cores and 1840GB of RAM.
+
+Images are large so we may need to downsample them to 512x512 or 256x256.
