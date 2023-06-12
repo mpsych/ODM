@@ -122,7 +122,6 @@ def vae_runner(caselist, contamination, batch_size, verbose, timing):
         # Run the outlier detection algorithm
         decision_scores, labels = OutlierDetector.detect_outliers(
             features=feats,
-            pyod_algorithm="VAE",
             contamination=contamination,
             verbose=verbose,
             timing=timing,

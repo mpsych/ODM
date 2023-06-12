@@ -63,6 +63,8 @@ class Normalize:
         ----------
         pixels : Union[np.ndarray, List[np.ndarray]]
             Array of pixels to be normalized
+        bins : int, optional
+            Number of bins to use for normalization. The default is 256.
 
         Returns
         -------

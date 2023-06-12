@@ -210,7 +210,12 @@ if __name__ == "__main__":
 
     Supports the following command-line arguments:
         --data_root: The root directory of the DICOM files.
+        --log_dir: The directory to save the log files.
         --final_file: The name of the final text file containing paths to good images.
+        --batch_size: The number of files to load at a time.
+        --ext: The file extension to be searched.
+        --max_workers: The maximum number of workers to be used by the ThreadPoolExecutor.
+        --timing: Whether to print timing information.
     """
     # read the config file
     config = ConfigParser()

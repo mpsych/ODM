@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def vae(data_x, pyod_algorithm, **kwargs):
+def vae(data_x, **kwargs):
     """Detect outliers using PyOD algorithm. Default algorithm is HBOS.
     See PYOD documentation to see which arguments are available for each
     algorithm and to get description of each algorithm and how the
@@ -24,54 +24,50 @@ def vae(data_x, pyod_algorithm, **kwargs):
                 data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 3), "constant")
         data_x = np.array(data_x)
 
-    if pyod_algorithm == "VAE":
-        from pyod.models.vae import VAE
-        from keras.losses import mse
+    from pyod.models.vae import VAE
+    from keras.losses import mse
 
-        if "VAE" in kwargs:
-            clf = VAE(**kwargs["VAE"])
-        else:
-            latent_dim = kwargs.get("latent_dim", 2)
-            hidden_activation = kwargs.get("hidden_activation", "relu")
-            output_activation = kwargs.get("output_activation", "sigmoid")
-            loss = kwargs.get("loss", mse)
-            optimizer = kwargs.get("optimizer", "adam")
-            epochs = kwargs.get("epochs", 100)
-            batch_size = kwargs.get("batch_size", 32)
-            dropout_rate = kwargs.get("dropout_rate", 0.2)
-            l2_regularizer = kwargs.get("l2_regularizer", 0.1)
-            validation_size = kwargs.get("validation_size", 0.1)
-            preprocessing = kwargs.get("preprocessing", True)
-            verbose = kwargs.get("verbose", 1)
-            contamination = kwargs.get("contamination", 0.1)
-            gamma = kwargs.get("gamma", 1.0)
-            capacity = kwargs.get("capacity", 0.0)
-            random_state = kwargs.get("random_state", None)
-            encoder_neurons = kwargs.get("encoder_neurons", None)
-            decoder_neurons = kwargs.get("decoder_neurons", None)
-            clf = VAE(
-                encoder_neurons=encoder_neurons,
-                decoder_neurons=decoder_neurons,
-                latent_dim=latent_dim,
-                hidden_activation=hidden_activation,
-                output_activation=output_activation,
-                loss=loss,
-                optimizer=optimizer,
-                epochs=epochs,
-                batch_size=batch_size,
-                dropout_rate=dropout_rate,
-                l2_regularizer=l2_regularizer,
-                validation_size=validation_size,
-                preprocessing=preprocessing,
-                verbose=verbose,
-                random_state=random_state,
-                contamination=contamination,
-                gamma=gamma,
-                capacity=capacity,
-            )
-
+    if "VAE" in kwargs:
+        clf = VAE(**kwargs["VAE"])
     else:
-        raise ValueError("Algorithm not supported")
+        latent_dim = kwargs.get("latent_dim", 2)
+        hidden_activation = kwargs.get("hidden_activation", "relu")
+        output_activation = kwargs.get("output_activation", "sigmoid")
+        loss = kwargs.get("loss", mse)
+        optimizer = kwargs.get("optimizer", "adam")
+        epochs = kwargs.get("epochs", 100)
+        batch_size = kwargs.get("batch_size", 32)
+        dropout_rate = kwargs.get("dropout_rate", 0.2)
+        l2_regularizer = kwargs.get("l2_regularizer", 0.1)
+        validation_size = kwargs.get("validation_size", 0.1)
+        preprocessing = kwargs.get("preprocessing", True)
+        verbose = kwargs.get("verbose", 1)
+        contamination = kwargs.get("contamination", 0.1)
+        gamma = kwargs.get("gamma", 1.0)
+        capacity = kwargs.get("capacity", 0.0)
+        random_state = kwargs.get("random_state", None)
+        encoder_neurons = kwargs.get("encoder_neurons", None)
+        decoder_neurons = kwargs.get("decoder_neurons", None)
+        clf = VAE(
+            encoder_neurons=encoder_neurons,
+            decoder_neurons=decoder_neurons,
+            latent_dim=latent_dim,
+            hidden_activation=hidden_activation,
+            output_activation=output_activation,
+            loss=loss,
+            optimizer=optimizer,
+            epochs=epochs,
+            batch_size=batch_size,
+            dropout_rate=dropout_rate,
+            l2_regularizer=l2_regularizer,
+            validation_size=validation_size,
+            preprocessing=preprocessing,
+            verbose=verbose,
+            random_state=random_state,
+            contamination=contamination,
+            gamma=gamma,
+            capacity=capacity,
+        )
 
     clf.fit(data_x)
 
