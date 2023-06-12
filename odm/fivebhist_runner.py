@@ -122,6 +122,13 @@ def get_pixel_list(data, timing: bool = False) -> list:
 
 
 def process_batch(file_batch, timing: bool = False):
+    """
+    Process a batch of files.
+
+    Parameters:
+    file_batch (list): A list of file paths to be processed.
+    timing (bool): Whether to print timing information.
+    """
     bad_paths = set()
     data_dict = load_data_batch(file_batch, timing=timing)
     data_imgs = get_pixel_list(data_dict, timing=timing)
@@ -137,8 +144,19 @@ def process_batch(file_batch, timing: bool = False):
 def fivebhist_runner(
     data_root, final_file, log_dir, ext, batch_size, max_workers, timing: bool = False
 ) -> None:
-    FEAT = "hist"
-    NORM = "minmax"
+    """
+    Run the 5-BHIST Stage 1 algorithm.
+
+    Parameters:
+    data_root (str): Path of the directory to be searched.
+    final_file (str): Path of the file to be written.
+    log_dir (str): Path of the directory to write log files.
+    ext (str): File extension to be searched.
+    batch_size (int): Size of the file batches to be returned.
+    max_workers (int): Maximum number of workers to be used by the ThreadPoolExecutor.
+    timing (bool): Whether to print timing information.
+    """
+
     t0 = time.time()
     if not os.path.isdir(data_root):
         print("Provided data root directory does not exist.")

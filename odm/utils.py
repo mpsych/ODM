@@ -83,14 +83,14 @@ def validate_inputs(**kwargs) -> None:
             raise ValueError("File extension must be a string.")
 
     # check if the n_proc is a valid positive integer and not above the number of cores
-    n_proc = kwargs.get("n_proc", None)
+    n_proc = kwargs.get("max_workers", None)
     if n_proc is not None:
         if not isinstance(n_proc, int) or n_proc <= 0:
-            raise ValueError("Number of processes must be a positive integer.")
+            raise ValueError("Number of workers must be a positive integer.")
         import multiprocessing
 
         if n_proc > multiprocessing.cpu_count():
-            raise ValueError("Number of processes must not exceed the number of cores.")
+            raise ValueError("Number of workers must not exceed the number of cores.")
 
     # check if time is a valid boolean
     time = kwargs.get("time", None)

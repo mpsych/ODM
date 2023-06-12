@@ -4,3 +4,4 @@ from .feature_extractor import *
 from .fivebhist_runner import *
 from .vae_runner import *
 from .utils import *
+from .run_pipeline import *
