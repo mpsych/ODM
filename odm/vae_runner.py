@@ -1,61 +1,152 @@
-from odm import OutlierDetector
-from .fivebhist_runner import *
+import os
+import numpy as np
+import datetime
+import time
+from outlier_detector import OutlierDetector
+import logging
+import argparse
+from configparser import ConfigParser
+from tqdm import tqdm
+from PIL import Image
+import pydicom as dicom
+from feature_extractor import *
+from utils import *
 
 
-def load_data_from_text_file(file_path):
+logger = logging.getLogger(__name__)
+
+
+def load_data_batch(files, timing):
     """
-    Loads DICOM data from a text file containing a list of file paths.
+    Load a batch of DICOM files into a dictionary.
 
     Parameters:
-        file_path (str): Path to the text file containing the paths of the DICOM files.
+    files (list): A list of file paths to be loaded.
 
     Returns:
-        list: List of DICOM data.
+    dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
     """
-    with open(file_path, "r") as f:
-        paths = f.readlines()
+    t0 = time.time()
+    img_formats = [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".PNG",
+        ".JPG",
+        ".JPEG",
+        ".tif",
+        ".tiff",
+        ".TIF",
+        ".TIFF",
+    ]
+    data_dict = {}
+    for index, file in tqdm(enumerate(files), desc="Loading files", total=len(files)):
+        try:
+            if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(""):
+                data_dict[index] = [dicom.dcmread(file).pixel_array, file]  # DICOM
+            elif file.endswith(tuple(img_formats)):
+                with Image.open(file) as img:
+                    data_dict[index] = [np.array(img), file]  # Non-DICOM
+            else:
+                print(f"File {file} is not a valid image file.")
+        except Exception as e:
+            print(f"Error reading file {file}: {e}")
 
-    paths = [path.strip() for path in paths]  # remove the new line characters
+    if timing:
+        print(
+            f"Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
+    return data_dict
 
-    data = [dicom.read_file(path) for path in paths]  # load the DICOM files
 
-    return data
-
-
-def vae_runner(caselist, contamination=0.015, verbose=False):
+def get_pixel_list(data, timing):
     """
-    Runs the Variational AutoEncoder (VAE) outlier detection algorithm on DICOM data.
+    Generate a list of pixel arrays from a dictionary of DICOM data.
 
     Parameters:
-        caselist (str): Path to the text file containing the paths of the DICOM files.
-        contamination (float, optional): The proportion of outliers in the data. Defaults to 0.015.
-        verbose (bool, optional): Whether to print progress messages to stdout. Defaults to False.
-
-    Returns:
-        None
+    data (dict): A dictionary of DICOM data.
     """
+    t0 = time.time()
+    imgs = []
+    for key in tqdm(data, desc="Generating pixel arrays"):
+        try:
+            imgs.append(data[key][0])
+        except Exception as e:
+            print(f"Error reading file {data[key][1]}: {e}")
+
+    if timing:
+        print(
+            f"Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
+    return imgs
+
+
+def vae_runner(caselist, contamination, batch_size, verbose, timing):
+    """
+    Run the VAE algorithm on a list of files.
+
+    Parameters:
+    caselist (str): The path to a file containing a list of file paths to be processed.
+    contamination (float): The proportion of outliers in the data set.
+    verbose (bool): Whether to print verbose output.
+    batch_size (int): The number of files to process at a time.
+    """
+    t0 = time.time()
     FEAT = "hist"
     NORM = "minmax"
-    # load the data after running 5bhist algorithm
-    data = [
-        dicom.read_file(path.strip())
-        for path in tqdm(open(caselist, "r"), desc="Loading data")
-    ]
-    imgs = get_pixel_list(data)
 
-    # creating features from the images
-    feats = Features.get_features(imgs, feature_type=FEAT, norm_type=NORM)
+    master_decision_scores = {}
+    master_labels = {}
+    master_paths = {}
 
-    # run the outlier detection algorithm
-    OutlierDetector.detect_outliers(
-        features=feats,
-        imgs=imgs,
-        pyod_algorithm="VAE",
-        contamination=contamination,
-        verbose=verbose,
-        caselist=caselist,
-    )
-    return
+    good_img_paths = []
+    bad_img_paths = []
+
+    # Read the list of file paths
+    with open(caselist, "r") as f_:
+        all_files = [path_.strip() for path_ in f_.readlines()]
+
+    # Process the files in batches
+    for i in range(0, len(all_files), batch_size):
+        file_batch = all_files[i : i + batch_size]
+
+        # Load the data batch after running 5bhist algorithm
+        data_dict = load_data_batch(file_batch, timing)
+        imgs = get_pixel_list(data_dict, timing)
+
+        # Create features from the images
+        feats = Features.get_features(
+            imgs, feature_type=FEAT, norm_type=NORM, timing=timing
+        )
+
+        # Run the outlier detection algorithm
+        decision_scores, labels = OutlierDetector.detect_outliers(
+            features=feats,
+            pyod_algorithm="VAE",
+            contamination=contamination,
+            verbose=verbose,
+            timing=timing,
+        )
+
+        # Add the decision scores, labels, and paths to the master dictionaries using the index as the key
+        # so index i in each dictionary corresponds to the path, decision score, and label for the same file
+        for index, path_ in enumerate(file_batch):
+            master_decision_scores[i + index] = decision_scores[index]
+            master_labels[i + index] = labels[index]
+            master_paths[i + index] = path_
+
+    # construct a master list of good paths
+    for key in master_labels:
+        if master_labels[key] == 0:
+            good_img_paths.append(master_paths[key])
+        else:
+            bad_img_paths.append(master_paths[key])
+
+    if timing:
+        print(
+            f"Time to run VAE on {len(all_files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
+    return good_img_paths, bad_img_paths
 
 
 if __name__ == "__main__":
@@ -67,43 +158,79 @@ if __name__ == "__main__":
         caselist (str): Path to the text file containing the paths of the DICOM files.
         contamination (float, optional): The proportion of outliers in the data. Defaults to 0.015.
         verbose (bool, optional): Whether to print progress messages to stdout. Defaults to False.
+        batch_size (int, optional): The number of files to process in each batch. Defaults to 100.
+        good_output (str, optional): The path to the text file to write the final list of good files to.
+        bad_output (str, optional): The path to the text file to write the final list of bad files to.
     """
-    # Create a config parser
-    config = configparser.ConfigParser()
-    # Read the configuration file
+    # read the config file
+    config = ConfigParser()
     config.read("config.ini")
 
     parser = argparse.ArgumentParser(
         description="Runs the Variational AutoEncoder (VAE) algorithm on given data."
     )
     parser.add_argument(
-        "caselist",
+        "--caselist",
         type=str,
+        default=config["VAE"]["caselist"],
         help="The path to the text file containing the paths of the DICOM files.",
     )
     parser.add_argument(
         "--contamination",
         type=float,
-        default=None,
+        default=config["VAE"]["contamination"],
         help="The proportion of outliers in the data.",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=config["VAE"]["batch_size"],
+        help="The number of files to process in each batch.",
+    )
+    parser.add_argument(
+        "--good_output",
+        type=str,
+        default=config["VAE"]["good_output"],
+        help="The name of the final file where good paths are saved.",
+    )
+    parser.add_argument(
+        "--bad_output",
+        type=str,
+        default=config["VAE"]["bad_output"],
+        help="The name of the final file where bad paths are saved.",
+    )
+    parser.add_argument(
+        "--timing",
+        action="store_true",
+        default=config.getboolean("VAE", "timing"),
+        help="Whether to time the execution of the algorithm.",
     )
     parser.add_argument(
         "--verbose",
         action="store_true",
+        default=config.getboolean("VAE", "verbose"),
         help="Whether to print progress messages to stdout.",
     )
     args = parser.parse_args()
 
-    # Overwrite config.ini values if command line arguments are provided
-    if args.caselist:
-        config["VAE"]["caselist"] = args.caselist
-    if args.contamination is not None:
-        config["VAE"]["contamination"] = str(args.contamination)
-    if args.verbose:
-        config["VAE"]["verbose"] = str(args.verbose)
+    validate_inputs(**vars(args))
 
-    vae_runner(
-        config["VAE"]["caselist"],
-        float(config["VAE"]["contamination"]),
-        config["VAE"]["verbose"],
+    print_properties("VAE Runner", **vars(args))
+
+    good_paths, bad_paths = vae_runner(
+        args.caselist, args.contamination, args.batch_size, args.verbose, args.timing
     )
+
+    try:
+        with open(args.good_output, "w") as f:
+            for path in good_paths:
+                f.write(f"{path}\n")
+    except Exception as e:
+        print(f"Error writing to file {args.good_output}: {e}")
+
+    try:
+        with open(args.bad_output, "w") as f:
+            for path in bad_paths:
+                f.write(f"{path}\n")
+    except Exception as e:
+        print(f"Error writing to file {args.bad_output}: {e}")

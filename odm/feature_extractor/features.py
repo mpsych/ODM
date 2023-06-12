@@ -1,12 +1,9 @@
 import time
-import logging
 from types import SimpleNamespace
 from .normalizations import Normalize
 import mahotas as mh
 import numpy as np
 from typing import Union, List
-
-logger = logging.getLogger(__name__)
 
 
 class Features:
@@ -15,9 +12,9 @@ class Features:
         pixels: Union[
             List[Union[SimpleNamespace, np.ndarray]], SimpleNamespace, np.ndarray
         ],
-        norm_type: str = None,
+        bins: int = 256,
         timing: bool = False,
-        **kwargs
+        norm_type: str = None,
     ) -> np.ndarray:
         """
         Create histogram of data
@@ -49,7 +46,7 @@ class Features:
                 # if normalization is specified normalize pixels before histogram
                 if norm_type is not None:
                     tmp_pixels = Normalize.get_norm(
-                        tmp_pixels, norm_type=norm_type, timing=timing, **kwargs
+                        pixels=tmp_pixels, norm_type=norm_type, timing=timing, bins=bins
                     )[0]
                 # append histogram to list
                 histograms.append(mh.fullhistogram(tmp_pixels.astype(np.uint8)))
@@ -58,21 +55,21 @@ class Features:
             tmp_pixels = pixels.copy()
             if norm_type is not None:
                 tmp_pixels = Normalize.get_norm(
-                    tmp_pixels, norm_type=norm_type, timing=timing, **kwargs
+                    tmp_pixels, norm_type=norm_type, timing=timing, bins=bins
                 )[0]
             histograms = mh.fullhistogram(tmp_pixels.astype(np.uint8))
 
         if timing:
-            logger.info("Histogram: %s", time.time() - t0)
+            print("Histogram: %s", time.time() - t0)
         return np.array(histograms)
 
     @staticmethod
     def get_features(
         data: Union[SimpleNamespace, np.ndarray],
+        timing: bool = False,
         feature_type: str = "hist",
         norm_type: str = None,
-        timing: bool = False,
-        **kwargs
+        bins: int = 256,
     ) -> np.ndarray:
         """
         Get features of data
@@ -96,10 +93,10 @@ class Features:
         t0 = time.time()
         if feature_type in ["hist", "histogram"]:
             features = Features.histogram(
-                data, norm_type=norm_type, timing=timing, **kwargs
+                data, norm_type=norm_type, timing=timing, bins=bins
             )
         else:
             raise ValueError("Feature type not supported")
         if timing:
-            logger.info("Get features: %s", time.time() - t0)
+            print("Get features: %s", time.time() - t0)
         return features

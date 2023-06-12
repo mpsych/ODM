@@ -1,11 +1,9 @@
 import time
 import types
-import logging
+
 import pydicom as dicom
 import numpy as np
 from typing import Union, List, Tuple, Any, Optional
-
-logger = logging.getLogger(__name__)
 
 
 class Normalize:
@@ -57,7 +55,7 @@ class Normalize:
         return pixels
 
     @staticmethod
-    def _minmax_helper(pixels: np.ndarray, **kwargs) -> np.ndarray:
+    def _minmax_helper(pixels: np.ndarray, bins: int) -> np.ndarray:
         """
         Helper function to normalize data using minmax method
 
@@ -71,7 +69,6 @@ class Normalize:
         Union[np.ndarray, List[np.ndarray]]
             Normalized pixels
         """
-        bins = kwargs.get("bins", 256)
         max_val = np.max(pixels)
         min_val = np.min(pixels)
         normalized_pixels = pixels.astype(np.float32).copy()
@@ -82,7 +79,9 @@ class Normalize:
 
     @staticmethod
     def minmax(
-        pixels: Union[np.ndarray, List[np.ndarray]], timing: bool = False, **kwargs
+        pixels: Union[np.ndarray, List[np.ndarray]],
+        timing: bool = False,
+        bins: int = 256,
     ) -> Tuple[List[np.ndarray], None]:
         """
         The min-max approach (often called normalization) rescales the
@@ -97,8 +96,8 @@ class Normalize:
         timing : bool
             If true, the time needed to perform the normalization is printed
             The default is False.
-        kwargs : dict
-            Additional parameters to be passed to the normalization function.
+        bins : int, optional
+            Number of bins to use for normalization. The default is 256.
 
         Returns
         -------
@@ -109,9 +108,9 @@ class Normalize:
         if isinstance(pixels, list):
             normalized_pixels = []
             for p in pixels:
-                normalized_pixels.append(Normalize._minmax_helper(p, **kwargs))
+                normalized_pixels.append(Normalize._minmax_helper(p, bins=bins))
         else:
-            normalized_pixels = Normalize._minmax_helper(pixels, **kwargs)
+            normalized_pixels = Normalize._minmax_helper(pixels, bins=bins)
 
         if timing:
             print("minmax: {}".format(time.time() - t0))
@@ -122,7 +121,7 @@ class Normalize:
         pixels: Union[np.ndarray, List[np.ndarray]],
         norm_type: str,
         timing: bool = False,
-        **kwargs,
+        bins: int = 256,
     ) -> Tuple[List[np.ndarray], Optional[Any]]:
         """
         Normalize pixels
@@ -136,8 +135,8 @@ class Normalize:
         timing : bool, optional
             If true, the time needed to perform the normalization is printed.
             The default is False.
-        kwargs : dict
-            Additional parameters to be passed to the normalization function.
+        bins : int, optional
+            Number of bins to use for normalization. The default is 256.
 
         Returns
         -------
@@ -146,9 +145,9 @@ class Normalize:
             The second element is None.
         """
         t0 = time.time()
-        pixels = Normalize.extract_pixels(pixels)
+        pixels = Normalize.extract_pixels(pixels, timing=timing)
         if norm_type.lower() == "minmax" or norm_type.lower() == "min-max":
-            normalized, filtered = Normalize.minmax(pixels, timing, **kwargs)
+            normalized, filtered = Normalize.minmax(pixels, timing=timing, bins=bins)
         else:
             raise ValueError("Invalid normalization type")
 
