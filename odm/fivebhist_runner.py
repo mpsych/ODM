@@ -1,4 +1,4 @@
-import os
+import concurrent
 import datetime
 import time
 import numpy as np
@@ -6,6 +6,7 @@ import pydicom as dicom
 import argparse
 from PIL import Image
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 from configparser import ConfigParser
 from feature_extractor import *
 from utils import *
@@ -120,16 +121,22 @@ def get_pixel_list(data, timing: bool = False) -> list:
     return imgs
 
 
-def fivebhist_runner(
-    data_root, final_file, log_dir, ext, batch_size, timing: bool = False
-) -> None:
-    """
-    Run the 5-bin histogram feature extraction and bad image identification.
+def process_batch(file_batch, timing: bool = False):
+    bad_paths = set()
+    data_dict = load_data_batch(file_batch, timing=timing)
+    data_imgs = get_pixel_list(data_dict, timing=timing)
+    five_b_hist = Features.get_features(
+        data_imgs, feature_type="hist", norm_type="minmax", bins=5, timing=timing
+    )
+    for i, binary in enumerate(five_b_hist):
+        if binary[4] > 15000 or binary[1] < 1000:
+            bad_paths.add(data_dict[i][1])
+    return bad_paths
 
-    Parameters:
-    data_root (str): The root directory of the DICOM files.
-    final_file_name (str): The name of the final text file containing paths to good images.
-    """
+
+def fivebhist_runner(
+    data_root, final_file, log_dir, ext, batch_size, max_workers, timing: bool = False
+) -> None:
     FEAT = "hist"
     NORM = "minmax"
     t0 = time.time()
@@ -137,44 +144,33 @@ def fivebhist_runner(
         print("Provided data root directory does not exist.")
         return
 
-    # The set of bad image paths
     bad_paths = set()
 
     print("Running 5-BHIST Stage 1...")
 
-    # Get all image paths at the start
     all_paths = get_all_image_paths(data_root, ext, timing=timing)
     total_files = len(all_paths)
-
     file_batches_gen = file_batches_generator(data_root, ext, batch_size)
 
-    for file_batch in file_batches_gen:
-        data_dict = load_data_batch(file_batch, timing=timing)
-        data_imgs = get_pixel_list(data_dict, timing=timing)
-
-        five_b_hist = Features.get_features(
-            data_imgs, feature_type=FEAT, norm_type=NORM, bins=5, timing=timing
-        )
-
-        print("Finding bad images...")
-        for i, binary in enumerate(five_b_hist):
-            if binary[4] > 15000 or binary[1] < 1000:
-                print(i, binary)
-                bad_paths.add(data_dict[i][1])
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_batch = {
+            executor.submit(process_batch, batch, timing): batch
+            for batch in file_batches_gen
+        }
+        for future in concurrent.futures.as_completed(future_to_batch):
+            bad_paths.update(future.result())
 
     print(f"Total files: {total_files}")
 
     date_and_time = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     file_name_bad_paths = f"{date_and_time}_bad_paths.txt"
 
-    # check if log directory exists and create it if it doesn't
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
 
     with open(os.path.join(log_dir, file_name_bad_paths), "w") as f:
         f.write("\n".join(list(bad_paths)))
 
-    # Get the set of good image paths by subtracting the set of bad image paths from the set of all image paths
     good_paths = list(all_paths - bad_paths)
 
     with open(os.path.join(log_dir, final_file), "w") as f:
@@ -189,7 +185,6 @@ def fivebhist_runner(
         )
 
 
-# In the main section of your script, you can call this method at the beginning:
 if __name__ == "__main__":
     """
     Main entry point of the program. Parses command-line arguments, reads the config file,
@@ -235,6 +230,12 @@ if __name__ == "__main__":
         help="File extension of the DICOM files.",
     )
     parser.add_argument(
+        "--max_workers",
+        type=int,
+        default=config["5BHIST"]["max_workers"],
+        help="Number of processes to use.",
+    )
+    parser.add_argument(
         "--timing",
         action="store_true",
         default=config.getboolean("5BHIST", "timing"),
@@ -254,6 +255,7 @@ if __name__ == "__main__":
             args.log_dir,
             args.ext,
             args.batch_size,
+            args.max_workers,
             args.timing,
         )
     except Exception as e:
