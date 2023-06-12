@@ -2,7 +2,8 @@ import logging
 import os
 import time
 import contextlib
-from vae import *
+from vae import vae
+import numpy as np
 
 
 class OutlierDetector:
