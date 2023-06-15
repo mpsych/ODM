@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>odm.fivebhist_runner API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>odm.fivebhist_runner</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import concurrent
+import datetime
+import time
+import numpy as np
+import argparse
+from PIL import Image
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
+from configparser import ConfigParser
+from feature_extractor import *
+from utils import *
+
+
+def get_all_image_paths(root_dir, ext, timing: bool = False) -&gt; set:
+    &#34;&#34;&#34;
+    Get all image paths in a directory, including subdirectories.
+
+    Parameters:
+    root_dir (str): Path of the directory to be searched.
+    ext (str): File extension to be searched.
+
+    Returns:
+    set: A set of image paths.
+    &#34;&#34;&#34;
+    t0 = time.time()
+    image_paths = set()
+    for dirpath, dirnames, filenames in tqdm(
+        os.walk(root_dir), desc=&#34;Walking through directories&#34;
+    ):
+        for filename in filenames:
+            if filename.endswith(ext):
+                image_paths.add(os.path.join(dirpath, filename))
+
+    if timing is True:
+        print(
+            f&#34;Time to walk through directories: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )
+
+    return image_paths
+
+
+def file_batches_generator(directory, ext, batch_size) -&gt; tuple:
+    &#34;&#34;&#34;
+    Generator that yields batches of files from a directory and the total file count.
+
+    Parameters:
+    directory (str): Path of the directory to be searched.
+    ext (str): File extension to be searched.
+    batch_size (int): Size of the file batches to be returned.
+
+    Yields:
+    list: A list of file paths of size &#39;batch_size&#39;.
+    int: Total file count.
+    &#34;&#34;&#34;
+    all_files = []
+    for root, dirs, files in os.walk(directory):
+        all_files.extend(
+            [os.path.join(root, file) for file in files if file.endswith(ext)]
+        )
+
+    for i in range(0, len(all_files), batch_size):
+        yield all_files[i: i + batch_size]
+
+
+def load_data_batch(files, timing: bool = False) -&gt; dict:
+    &#34;&#34;&#34;
+    Load a batch of DICOM files into a dictionary.
+
+    Parameters:
+    files (list): A list of file paths to be loaded.
+
+    Returns:
+    dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
+    &#34;&#34;&#34;
+    import pydicom as dicom
+    t0 = time.time()
+    data_dict = {}
+    for index, file in tqdm(
+        enumerate(files), desc=&#34;Loading IMAGE files&#34;, total=len(files)
+    ):
+        try:
+            if file.endswith(&#34;.dcm&#34;) or file.endswith(&#34;.DCM&#34;) or file.endswith(&#34;&#34;):
+                data_dict[index] = [dicom.dcmread(file), file]
+            else:
+                with Image.open(file) as img:
+                    data_dict[index] = [np.array(img), file]
+        except Exception as e_:
+            print(f&#34;Error reading file {file}: {e_}&#34;)
+
+    if timing is True:
+        print(
+            f&#34;Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )
+
+    return data_dict
+
+
+def get_pixel_list(data, timing: bool = False) -&gt; list:
+    &#34;&#34;&#34;
+    Generate a list of pixel arrays from a dictionary of DICOM data.
+
+    Parameters:
+    data (dict): A dictionary of DICOM data.
+
+    Returns:
+    list: A list of pixel arrays.
+    &#34;&#34;&#34;
+    import pydicom as dicom
+    t0 = time.time()
+    imgs = []
+    for key in tqdm(data, desc=&#34;Generating pixel arrays&#34;):
+        try:
+            # If the image is a DICOM file
+            if isinstance(data[key][0], dicom.dataset.FileDataset):
+                imgs.append(data[key][0].pixel_array)
+            # If the image is a PNG file
+            elif isinstance(data[key][0], np.ndarray):
+                imgs.append(data[key][0])
+        except Exception as e:
+            print(f&#34;Error reading file {data[key][1]}: {e}&#34;)
+
+    if timing:
+        print(
+            f&#34;Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )
+
+    return imgs
+
+
+def process_batch(file_batch, timing: bool = False):
+    &#34;&#34;&#34;
+    Process a batch of files.
+
+    Parameters:
+    file_batch (list): A list of file paths to be processed.
+    timing (bool): Whether to print timing information.
+    &#34;&#34;&#34;
+    bad_paths = set()
+    data_dict = load_data_batch(file_batch, timing=timing)
+    data_imgs = get_pixel_list(data_dict, timing=timing)
+    five_b_hist = Features.get_features(
+        data_imgs, feature_type=&#34;hist&#34;, norm_type=&#34;minmax&#34;, bins=5, timing=timing
+    )
+    for i, binary in enumerate(five_b_hist):
+        if binary[4] &gt; 15000 or binary[1] &lt; 1000:
+            bad_paths.add(data_dict[i][1])
+    return bad_paths
+
+
+def fivebhist_runner(
+    data_root, final_file, log_dir, ext, batch_size, max_workers, timing: bool = False
+) -&gt; None:
+    &#34;&#34;&#34;
+    Run the 5-BHIST Stage 1 algorithm.
+
+    Parameters:
+    data_root (str): Path of the directory to be searched.
+    final_file (str): Path of the file to be written.
+    log_dir (str): Path of the directory to write log files.
+    ext (str): File extension to be searched.
+    batch_size (int): Size of the file batches to be returned.
+    max_workers (int): Maximum number of workers to be used by the ThreadPoolExecutor.
+    timing (bool): Whether to print timing information.
+    &#34;&#34;&#34;
+
+    t0 = time.time()
+    if not os.path.isdir(data_root):
+        print(&#34;Provided data root directory does not exist.&#34;)
+        return
+
+    bad_paths = set()
+
+    print(&#34;Running 5-BHIST Stage 1...&#34;)
+
+    all_paths = get_all_image_paths(data_root, ext, timing=timing)
+    total_files = len(all_paths)
+    file_batches_gen = file_batches_generator(data_root, ext, batch_size)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_batch = {
+            executor.submit(process_batch, batch, timing): batch
+            for batch in file_batches_gen
+        }
+        for future in concurrent.futures.as_completed(future_to_batch):
+            bad_paths.update(future.result())
+
+    print(f&#34;Total files: {total_files}&#34;)
+
+    date_and_time = datetime.datetime.now().strftime(&#34;%Y_%m_%d_%H_%M_%S&#34;)
+    file_name_bad_paths = f&#34;{date_and_time}_bad_paths.txt&#34;
+
+    if not os.path.isdir(log_dir):
+        os.mkdir(log_dir)
+
+    with open(os.path.join(log_dir, file_name_bad_paths), &#34;w&#34;) as f:
+        f.write(&#34;\n&#34;.join(list(bad_paths)))
+
+    good_paths = list(all_paths - bad_paths)
+
+    with open(os.path.join(log_dir, final_file), &#34;w&#34;) as f:
+        f.write(&#34;\n&#34;.join(good_paths))
+
+    print(f&#34;number of bad images found: {len(bad_paths)}&#34;)
+    print(f&#34;number of good images found: {len(good_paths)}&#34;)
+
+    if timing is True:
+        print(
+            f&#34;Total time to run feature extraction: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )
+
+
+if __name__ == &#34;__main__&#34;:
+    &#34;&#34;&#34;
+    Main entry point of the program. Parses command-line arguments, reads the config file,
+    overwrites config values if command line arguments are provided, and then runs the 5BHIST algorithm.
+
+    Supports the following command-line arguments:
+        --data_root: The root directory of the DICOM files.
+        --log_dir: The directory to save the log files.
+        --final_file: The name of the final text file containing paths to good images.
+        --batch_size: The number of files to load at a time.
+        --ext: The file extension to be searched.
+        --max_workers: The maximum number of workers to be used by the ThreadPoolExecutor.
+        --timing: Whether to print timing information.
+    &#34;&#34;&#34;
+    # read the config file
+    config = ConfigParser()
+    config.read(&#34;config.ini&#34;)
+
+    parser = argparse.ArgumentParser(
+        description=&#34;Image feature extraction task.&#34;)
+    parser.add_argument(
+        &#34;--data_root&#34;,
+        type=str,
+        default=config[&#34;5BHIST&#34;][&#34;data_root&#34;],
+        help=&#34;Root directory of the data.&#34;,
+    )
+    parser.add_argument(
+        &#34;--log_dir&#34;,
+        type=str,
+        default=config[&#34;5BHIST&#34;][&#34;log_dir&#34;],
+        help=&#34;Directory to save the log files.&#34;,
+    )
+    parser.add_argument(
+        &#34;--final_file&#34;,
+        type=str,
+        default=config[&#34;5BHIST&#34;][&#34;final_file&#34;],
+        help=&#34;Name of the final text file containing paths to good images.&#34;,
+    )
+    parser.add_argument(
+        &#34;--batch_size&#34;,
+        type=int,
+        default=config[&#34;5BHIST&#34;][&#34;batch_size&#34;],
+        help=&#34;Number of files to load at a time.&#34;,
+    )
+    parser.add_argument(
+        &#34;--ext&#34;,
+        type=str,
+        default=config[&#34;5BHIST&#34;][&#34;ext&#34;],
+        help=&#34;File extension of the DICOM files.&#34;,
+    )
+    parser.add_argument(
+        &#34;--max_workers&#34;,
+        type=int,
+        default=config[&#34;5BHIST&#34;][&#34;max_workers&#34;],
+        help=&#34;Number of processes to use.&#34;,
+    )
+    parser.add_argument(
+        &#34;--timing&#34;,
+        action=&#34;store_true&#34;,
+        default=config.getboolean(&#34;5BHIST&#34;, &#34;timing&#34;),
+        help=&#34;Whether to time the feature extraction process.&#34;,
+    )
+
+    args = parser.parse_args()
+
+    validate_inputs(**vars(args))
+
+    print_properties(&#34;5BHIST Runner&#34;, **vars(args))
+
+    try:
+        fivebhist_runner(
+            args.data_root,
+            args.final_file,
+            args.log_dir,
+            args.ext,
+            args.batch_size,
+            args.max_workers,
+            args.timing,
+        )
+    except Exception as e:
+        print(f&#34;An error occurred: {e}&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="odm.fivebhist_runner.file_batches_generator"><code class="name flex">
+<span>def <span class="ident">file_batches_generator</span></span>(<span>directory, ext, batch_size) ‑> tuple</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generator that yields batches of files from a directory and the total file count.</p>
+<p>Parameters:
+directory (str): Path of the directory to be searched.
+ext (str): File extension to be searched.
+batch_size (int): Size of the file batches to be returned.</p>
+<p>Yields:
+list: A list of file paths of size 'batch_size'.
+int: Total file count.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def file_batches_generator(directory, ext, batch_size) -&gt; tuple:
+    &#34;&#34;&#34;
+    Generator that yields batches of files from a directory and the total file count.
+
+    Parameters:
+    directory (str): Path of the directory to be searched.
+    ext (str): File extension to be searched.
+    batch_size (int): Size of the file batches to be returned.
+
+    Yields:
+    list: A list of file paths of size &#39;batch_size&#39;.
+    int: Total file count.
+    &#34;&#34;&#34;
+    all_files = []
+    for root, dirs, files in os.walk(directory):
+        all_files.extend(
+            [os.path.join(root, file) for file in files if file.endswith(ext)]
+        )
+
+    for i in range(0, len(all_files), batch_size):
+        yield all_files[i: i + batch_size]</code></pre>
+</details>
+</dd>
+<dt id="odm.fivebhist_runner.fivebhist_runner"><code class="name flex">
+<span>def <span class="ident">fivebhist_runner</span></span>(<span>data_root, final_file, log_dir, ext, batch_size, max_workers, timing: bool = False) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run the 5-BHIST Stage 1 algorithm.</p>
+<p>Parameters:
+data_root (str): Path of the directory to be searched.
+final_file (str): Path of the file to be written.
+log_dir (str): Path of the directory to write log files.
+ext (str): File extension to be searched.
+batch_size (int): Size of the file batches to be returned.
+max_workers (int): Maximum number of workers to be used by the ThreadPoolExecutor.
+timing (bool): Whether to print timing information.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fivebhist_runner(
+    data_root, final_file, log_dir, ext, batch_size, max_workers, timing: bool = False
+) -&gt; None:
+    &#34;&#34;&#34;
+    Run the 5-BHIST Stage 1 algorithm.
+
+    Parameters:
+    data_root (str): Path of the directory to be searched.
+    final_file (str): Path of the file to be written.
+    log_dir (str): Path of the directory to write log files.
+    ext (str): File extension to be searched.
+    batch_size (int): Size of the file batches to be returned.
+    max_workers (int): Maximum number of workers to be used by the ThreadPoolExecutor.
+    timing (bool): Whether to print timing information.
+    &#34;&#34;&#34;
+
+    t0 = time.time()
+    if not os.path.isdir(data_root):
+        print(&#34;Provided data root directory does not exist.&#34;)
+        return
+
+    bad_paths = set()
+
+    print(&#34;Running 5-BHIST Stage 1...&#34;)
+
+    all_paths = get_all_image_paths(data_root, ext, timing=timing)
+    total_files = len(all_paths)
+    file_batches_gen = file_batches_generator(data_root, ext, batch_size)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_batch = {
+            executor.submit(process_batch, batch, timing): batch
+            for batch in file_batches_gen
+        }
+        for future in concurrent.futures.as_completed(future_to_batch):
+            bad_paths.update(future.result())
+
+    print(f&#34;Total files: {total_files}&#34;)
+
+    date_and_time = datetime.datetime.now().strftime(&#34;%Y_%m_%d_%H_%M_%S&#34;)
+    file_name_bad_paths = f&#34;{date_and_time}_bad_paths.txt&#34;
+
+    if not os.path.isdir(log_dir):
+        os.mkdir(log_dir)
+
+    with open(os.path.join(log_dir, file_name_bad_paths), &#34;w&#34;) as f:
+        f.write(&#34;\n&#34;.join(list(bad_paths)))
+
+    good_paths = list(all_paths - bad_paths)
+
+    with open(os.path.join(log_dir, final_file), &#34;w&#34;) as f:
+        f.write(&#34;\n&#34;.join(good_paths))
+
+    print(f&#34;number of bad images found: {len(bad_paths)}&#34;)
+    print(f&#34;number of good images found: {len(good_paths)}&#34;)
+
+    if timing is True:
+        print(
+            f&#34;Total time to run feature extraction: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )</code></pre>
+</details>
+</dd>
+<dt id="odm.fivebhist_runner.get_all_image_paths"><code class="name flex">
+<span>def <span class="ident">get_all_image_paths</span></span>(<span>root_dir, ext, timing: bool = False) ‑> set</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get all image paths in a directory, including subdirectories.</p>
+<p>Parameters:
+root_dir (str): Path of the directory to be searched.
+ext (str): File extension to be searched.</p>
+<p>Returns:
+set: A set of image paths.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all_image_paths(root_dir, ext, timing: bool = False) -&gt; set:
+    &#34;&#34;&#34;
+    Get all image paths in a directory, including subdirectories.
+
+    Parameters:
+    root_dir (str): Path of the directory to be searched.
+    ext (str): File extension to be searched.
+
+    Returns:
+    set: A set of image paths.
+    &#34;&#34;&#34;
+    t0 = time.time()
+    image_paths = set()
+    for dirpath, dirnames, filenames in tqdm(
+        os.walk(root_dir), desc=&#34;Walking through directories&#34;
+    ):
+        for filename in filenames:
+            if filename.endswith(ext):
+                image_paths.add(os.path.join(dirpath, filename))
+
+    if timing is True:
+        print(
+            f&#34;Time to walk through directories: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )
+
+    return image_paths</code></pre>
+</details>
+</dd>
+<dt id="odm.fivebhist_runner.get_pixel_list"><code class="name flex">
+<span>def <span class="ident">get_pixel_list</span></span>(<span>data, timing: bool = False) ‑> list</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate a list of pixel arrays from a dictionary of DICOM data.</p>
+<p>Parameters:
+data (dict): A dictionary of DICOM data.</p>
+<p>Returns:
+list: A list of pixel arrays.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_pixel_list(data, timing: bool = False) -&gt; list:
+    &#34;&#34;&#34;
+    Generate a list of pixel arrays from a dictionary of DICOM data.
+
+    Parameters:
+    data (dict): A dictionary of DICOM data.
+
+    Returns:
+    list: A list of pixel arrays.
+    &#34;&#34;&#34;
+    import pydicom as dicom
+    t0 = time.time()
+    imgs = []
+    for key in tqdm(data, desc=&#34;Generating pixel arrays&#34;):
+        try:
+            # If the image is a DICOM file
+            if isinstance(data[key][0], dicom.dataset.FileDataset):
+                imgs.append(data[key][0].pixel_array)
+            # If the image is a PNG file
+            elif isinstance(data[key][0], np.ndarray):
+                imgs.append(data[key][0])
+        except Exception as e:
+            print(f&#34;Error reading file {data[key][1]}: {e}&#34;)
+
+    if timing:
+        print(
+            f&#34;Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )
+
+    return imgs</code></pre>
+</details>
+</dd>
+<dt id="odm.fivebhist_runner.load_data_batch"><code class="name flex">
+<span>def <span class="ident">load_data_batch</span></span>(<span>files, timing: bool = False) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Load a batch of DICOM files into a dictionary.</p>
+<p>Parameters:
+files (list): A list of file paths to be loaded.</p>
+<p>Returns:
+dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_data_batch(files, timing: bool = False) -&gt; dict:
+    &#34;&#34;&#34;
+    Load a batch of DICOM files into a dictionary.
+
+    Parameters:
+    files (list): A list of file paths to be loaded.
+
+    Returns:
+    dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
+    &#34;&#34;&#34;
+    import pydicom as dicom
+    t0 = time.time()
+    data_dict = {}
+    for index, file in tqdm(
+        enumerate(files), desc=&#34;Loading IMAGE files&#34;, total=len(files)
+    ):
+        try:
+            if file.endswith(&#34;.dcm&#34;) or file.endswith(&#34;.DCM&#34;) or file.endswith(&#34;&#34;):
+                data_dict[index] = [dicom.dcmread(file), file]
+            else:
+                with Image.open(file) as img:
+                    data_dict[index] = [np.array(img), file]
+        except Exception as e_:
+            print(f&#34;Error reading file {file}: {e_}&#34;)
+
+    if timing is True:
+        print(
+            f&#34;Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}&#34;
+        )
+
+    return data_dict</code></pre>
+</details>
+</dd>
+<dt id="odm.fivebhist_runner.process_batch"><code class="name flex">
+<span>def <span class="ident">process_batch</span></span>(<span>file_batch, timing: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process a batch of files.</p>
+<p>Parameters:
+file_batch (list): A list of file paths to be processed.
+timing (bool): Whether to print timing information.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def process_batch(file_batch, timing: bool = False):
+    &#34;&#34;&#34;
+    Process a batch of files.
+
+    Parameters:
+    file_batch (list): A list of file paths to be processed.
+    timing (bool): Whether to print timing information.
+    &#34;&#34;&#34;
+    bad_paths = set()
+    data_dict = load_data_batch(file_batch, timing=timing)
+    data_imgs = get_pixel_list(data_dict, timing=timing)
+    five_b_hist = Features.get_features(
+        data_imgs, feature_type=&#34;hist&#34;, norm_type=&#34;minmax&#34;, bins=5, timing=timing
+    )
+    for i, binary in enumerate(five_b_hist):
+        if binary[4] &gt; 15000 or binary[1] &lt; 1000:
+            bad_paths.add(data_dict[i][1])
+    return bad_paths</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="odm" href="index.html">odm</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="odm.fivebhist_runner.file_batches_generator" href="#odm.fivebhist_runner.file_batches_generator">file_batches_generator</a></code></li>
+<li><code><a title="odm.fivebhist_runner.fivebhist_runner" href="#odm.fivebhist_runner.fivebhist_runner">fivebhist_runner</a></code></li>
+<li><code><a title="odm.fivebhist_runner.get_all_image_paths" href="#odm.fivebhist_runner.get_all_image_paths">get_all_image_paths</a></code></li>
+<li><code><a title="odm.fivebhist_runner.get_pixel_list" href="#odm.fivebhist_runner.get_pixel_list">get_pixel_list</a></code></li>
+<li><code><a title="odm.fivebhist_runner.load_data_batch" href="#odm.fivebhist_runner.load_data_batch">load_data_batch</a></code></li>
+<li><code><a title="odm.fivebhist_runner.process_batch" href="#odm.fivebhist_runner.process_batch">process_batch</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

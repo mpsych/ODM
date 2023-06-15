@@ -23,6 +23,8 @@ class Features:
         ----------
         pixels : list or np.ndarray
             List of images or single image
+        bins : int, optional
+            Number of bins. The default is 256.
         norm_type : str, optional
             Type of normalization. The default is None.
         timing : bool, optional
@@ -66,10 +68,10 @@ class Features:
     @staticmethod
     def get_features(
         data: Union[SimpleNamespace, np.ndarray],
-        timing: bool = False,
         feature_type: str = "hist",
         norm_type: str = None,
         bins: int = 256,
+        timing: bool = False,
     ) -> np.ndarray:
         """
         Get features of data
@@ -82,6 +84,8 @@ class Features:
             Type of feature to extract. The default is "histogram".
         norm_type : str, optional
             Type of normalization. The default is None.
+        bins : int, optional
+            Number of bins to use for normalization. The default is 256.
         timing: bool, optional
             Whether to time the function. The default is False.
 

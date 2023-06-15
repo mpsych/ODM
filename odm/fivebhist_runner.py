@@ -2,7 +2,6 @@ import concurrent
 import datetime
 import time
 import numpy as np
-import pydicom as dicom
 import argparse
 from PIL import Image
 from tqdm import tqdm
@@ -60,7 +59,7 @@ def file_batches_generator(directory, ext, batch_size) -> tuple:
         )
 
     for i in range(0, len(all_files), batch_size):
-        yield all_files[i : i + batch_size]
+        yield all_files[i: i + batch_size]
 
 
 def load_data_batch(files, timing: bool = False) -> dict:
@@ -73,6 +72,7 @@ def load_data_batch(files, timing: bool = False) -> dict:
     Returns:
     dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
     """
+    import pydicom as dicom
     t0 = time.time()
     data_dict = {}
     for index, file in tqdm(
@@ -105,11 +105,17 @@ def get_pixel_list(data, timing: bool = False) -> list:
     Returns:
     list: A list of pixel arrays.
     """
+    import pydicom as dicom
     t0 = time.time()
     imgs = []
     for key in tqdm(data, desc="Generating pixel arrays"):
         try:
-            imgs.append(data[key][0].pixel_array)
+            # If the image is a DICOM file
+            if isinstance(data[key][0], dicom.dataset.FileDataset):
+                imgs.append(data[key][0].pixel_array)
+            # If the image is a PNG file
+            elif isinstance(data[key][0], np.ndarray):
+                imgs.append(data[key][0])
         except Exception as e:
             print(f"Error reading file {data[key][1]}: {e}")
 
@@ -210,13 +216,19 @@ if __name__ == "__main__":
 
     Supports the following command-line arguments:
         --data_root: The root directory of the DICOM files.
+        --log_dir: The directory to save the log files.
         --final_file: The name of the final text file containing paths to good images.
+        --batch_size: The number of files to load at a time.
+        --ext: The file extension to be searched.
+        --max_workers: The maximum number of workers to be used by the ThreadPoolExecutor.
+        --timing: Whether to print timing information.
     """
     # read the config file
     config = ConfigParser()
     config.read("config.ini")
 
-    parser = argparse.ArgumentParser(description="Image feature extraction task.")
+    parser = argparse.ArgumentParser(
+        description="Image feature extraction task.")
     parser.add_argument(
         "--data_root",
         type=str,

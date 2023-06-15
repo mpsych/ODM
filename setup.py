@@ -1,12 +1,20 @@
 from setuptools import setup, find_packages
 
+from odm.__version__ import __version__
+
 setup(
     name="odm",
-    version="0.1.0",
+    version=__version__,
     url="https://github.com/mpsych/ODM.git",
     author="Ryan Zurrin, Daniel Haehn",
     author_email="ryan.zurrin001@umb.edu, daniel.haehn@umb.edu",
-    description="Outlier Detection Models (ODM) is a Python package for medical image analysis with a focus on detection of outliers in DICOM images. Leveraging techniques such as 5-bin histogram features and variational autoencoders, ODM facilitates automated identification of images with atypical characteristics. Its user-friendly API allows seamless integration with existing pipelines, making it a handy tool for large-scale studies and quality assurance in medical imaging.",
+    description="Outlier Detection for Mammograms (ODM) is a Python package for medical "
+    "image analysis with a focus on detection of outliers in DICOM mammogram "
+    "images. Leveraging techniques such as 5-bin histogram thresholding and "
+    "variational auto-encoders, ODM facilitates automated identification of "
+    "images with atypical characteristics. Its user-friendly API allows seamless "
+    "integration with existing pipelines, making it a handy tool for large-scale "
+    "studies and quality assurance in mammography medical imaging research.",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3.9",
@@ -34,5 +42,7 @@ setup(
         "pandas~=1.5.2",
         "statsmodels~=0.13.5",
         "tensorflow~=2.12.0",
+        "future~=0.18.3",
+        "setuptools~=65.6.3",
     ],
 )

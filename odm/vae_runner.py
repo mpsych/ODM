@@ -8,7 +8,6 @@ import argparse
 from configparser import ConfigParser
 from tqdm import tqdm
 from PIL import Image
-import pydicom as dicom
 from feature_extractor import *
 from utils import *
 
@@ -26,6 +25,7 @@ def load_data_batch(files, timing):
     Returns:
     dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
     """
+    import pydicom as dicom
     t0 = time.time()
     img_formats = [
         ".png",
@@ -43,7 +43,8 @@ def load_data_batch(files, timing):
     for index, file in tqdm(enumerate(files), desc="Loading files", total=len(files)):
         try:
             if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(""):
-                data_dict[index] = [dicom.dcmread(file).pixel_array, file]  # DICOM
+                data_dict[index] = [dicom.dcmread(
+                    file).pixel_array, file]  # DICOM
             elif file.endswith(tuple(img_formats)):
                 with Image.open(file) as img:
                     data_dict[index] = [np.array(img), file]  # Non-DICOM
@@ -81,15 +82,17 @@ def get_pixel_list(data, timing):
     return imgs
 
 
-def vae_runner(caselist, contamination, batch_size, verbose, timing):
+def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
     """
     Run the VAE algorithm on a list of files.
 
     Parameters:
+    log_dir (str): The path to the directory where the log file will be written.
     caselist (str): The path to a file containing a list of file paths to be processed.
     contamination (float): The proportion of outliers in the data set.
-    verbose (bool): Whether to print verbose output.
     batch_size (int): The number of files to process at a time.
+    verbose (bool): Whether to print verbose output.
+    timing (bool): Whether to print timing information.
     """
     t0 = time.time()
     FEAT = "hist"
@@ -102,13 +105,17 @@ def vae_runner(caselist, contamination, batch_size, verbose, timing):
     good_img_paths = []
     bad_img_paths = []
 
+    # check if caselist is just a file name or a full path
+    if not os.path.isfile(caselist):
+        caselist = os.path.join(log_dir, caselist)
+
     # Read the list of file paths
     with open(caselist, "r") as f_:
         all_files = [path_.strip() for path_ in f_.readlines()]
 
     # Process the files in batches
     for i in range(0, len(all_files), batch_size):
-        file_batch = all_files[i : i + batch_size]
+        file_batch = all_files[i: i + batch_size]
 
         # Load the data batch after running 5bhist algorithm
         data_dict = load_data_batch(file_batch, timing)
@@ -122,7 +129,6 @@ def vae_runner(caselist, contamination, batch_size, verbose, timing):
         # Run the outlier detection algorithm
         decision_scores, labels = OutlierDetector.detect_outliers(
             features=feats,
-            pyod_algorithm="VAE",
             contamination=contamination,
             verbose=verbose,
             timing=timing,
@@ -155,8 +161,8 @@ if __name__ == "__main__":
     overwrites config values if command line arguments are provided, and then runs the VAE algorithm.
 
     Supports the following command-line arguments:
+        log_dir (str): The path to the directory where the log file will be written.
         caselist (str): Path to the text file containing the paths of the DICOM files.
-        contamination (float, optional): The proportion of outliers in the data. Defaults to 0.015.
         verbose (bool, optional): Whether to print progress messages to stdout. Defaults to False.
         batch_size (int, optional): The number of files to process in each batch. Defaults to 100.
         good_output (str, optional): The path to the text file to write the final list of good files to.
@@ -170,16 +176,16 @@ if __name__ == "__main__":
         description="Runs the Variational AutoEncoder (VAE) algorithm on given data."
     )
     parser.add_argument(
+        "--log_dir",
+        type=str,
+        default=config["DEFAULT"]["log_dir"],
+        help="The path to the directory where log files will be saved.",
+    )
+    parser.add_argument(
         "--caselist",
         type=str,
         default=config["VAE"]["caselist"],
         help="The path to the text file containing the paths of the DICOM files.",
-    )
-    parser.add_argument(
-        "--contamination",
-        type=float,
-        default=config["VAE"]["contamination"],
-        help="The proportion of outliers in the data.",
     )
     parser.add_argument(
         "--batch_size",
@@ -211,6 +217,7 @@ if __name__ == "__main__":
         default=config.getboolean("VAE", "verbose"),
         help="Whether to print progress messages to stdout.",
     )
+
     args = parser.parse_args()
 
     validate_inputs(**vars(args))
@@ -218,8 +225,20 @@ if __name__ == "__main__":
     print_properties("VAE Runner", **vars(args))
 
     good_paths, bad_paths = vae_runner(
-        args.caselist, args.contamination, args.batch_size, args.verbose, args.timing
+        args.log_dir,
+        args.caselist,
+        args.contamination,
+        args.batch_size,
+        args.verbose,
+        args.timing
     )
+
+    # check if output files are just file names or full paths
+    if not os.path.isfile(args.good_output):
+        args.good_output = os.path.join(args.log_dir, args.good_output)
+
+    if not os.path.isfile(args.bad_output):
+        args.bad_output = os.path.join(args.log_dir, args.bad_output)
 
     try:
         with open(args.good_output, "w") as f:

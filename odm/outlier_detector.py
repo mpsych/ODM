@@ -2,7 +2,8 @@ import logging
 import os
 import time
 import contextlib
-from vae import *
+from vae import vae
+import numpy as np
 
 
 class OutlierDetector:
@@ -13,7 +14,6 @@ class OutlierDetector:
     @staticmethod
     def detect_outliers(
         features: np.ndarray,
-        pyod_algorithm: str,
         redirect_output: bool = False,
         return_decision_function: bool = False,
         timing: bool = False,
@@ -50,7 +50,7 @@ class OutlierDetector:
 
         try:
             if redirect_output:
-                print(f"Running {pyod_algorithm}...", end=" ")
+                print(f"Running VAE...", end=" ")
                 out_file = "outlier_output.txt"
                 with open(out_file, "w") as f:
                     with contextlib.redirect_stdout(f):
@@ -59,32 +59,26 @@ class OutlierDetector:
                                 decision_scores,
                                 labels,
                                 t_decision_function,
-                            ) = vae(features, pyod_algorithm=pyod_algorithm, **kwargs)
+                            ) = vae(features, **kwargs)
                         else:
-                            decision_scores, labels = vae(
-                                features, pyod_algorithm=pyod_algorithm, **kwargs
-                            )
+                            decision_scores, labels = vae(features, **kwargs)
             else:
-                print(f"Running {pyod_algorithm}...")
+                print(f"Running VAE...")
 
                 if return_decision_function:
                     (
                         decision_scores,
                         labels,
                         t_decision_function,
-                    ) = vae(features, pyod_algorithm=pyod_algorithm, **kwargs)
+                    ) = vae(features, **kwargs)
 
                 else:
-                    decision_scores, labels = vae(
-                        features, pyod_algorithm=pyod_algorithm, **kwargs
-                    )
+                    decision_scores, labels = vae(features, **kwargs)
 
         # if the algorithm causes an error, skip it and move on
         except Exception as e:
-            logging.error(
-                f"Error running {pyod_algorithm} on data {features} with exception {e}"
-            )
-            errors[pyod_algorithm] = e
+            logging.error(f"Error running VAE on data {features} with exception {e}")
+            errors["VAE"] = e
             labels = None
 
         print(
