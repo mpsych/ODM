@@ -26,6 +26,7 @@ def load_data_batch(files, timing):
     dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
     """
     import pydicom as dicom
+
     t0 = time.time()
     img_formats = [
         ".png",
@@ -43,8 +44,7 @@ def load_data_batch(files, timing):
     for index, file in tqdm(enumerate(files), desc="Loading files", total=len(files)):
         try:
             if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(""):
-                data_dict[index] = [dicom.dcmread(
-                    file).pixel_array, file]  # DICOM
+                data_dict[index] = [dicom.dcmread(file).pixel_array, file]  # DICOM
             elif file.endswith(tuple(img_formats)):
                 with Image.open(file) as img:
                     data_dict[index] = [np.array(img), file]  # Non-DICOM
@@ -115,7 +115,7 @@ def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
 
     # Process the files in batches
     for i in range(0, len(all_files), batch_size):
-        file_batch = all_files[i: i + batch_size]
+        file_batch = all_files[i : i + batch_size]
 
         # Load the data batch after running 5bhist algorithm
         data_dict = load_data_batch(file_batch, timing)
@@ -230,7 +230,7 @@ if __name__ == "__main__":
         args.contamination,
         args.batch_size,
         args.verbose,
-        args.timing
+        args.timing,
     )
 
     # check if output files are just file names or full paths
