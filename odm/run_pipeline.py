@@ -5,7 +5,7 @@ from vae_runner import *
 
 
 def get_5bhist_args(config_):
-    """ Get the arguments for the 5BHIST runner.
+    """Get the arguments for the 5BHIST runner.
 
     Parameters
     config_ : configparser.ConfigParser
@@ -128,7 +128,7 @@ def run_stage1(args_):
     """Runs the 5BHIST runner.
 
     Parameters
-    args_ : argparse.Namespace    
+    args_ : argparse.Namespace
     """
     try:
         fivebhist_runner(
@@ -172,7 +172,7 @@ def run_stage2(args_):
 
 
 def write_to_file(file_path, paths):
-    """ Writes the paths to a text file.
+    """Writes the paths to a text file.
 
     Parameters
     file_path (str) : The path to the text file.

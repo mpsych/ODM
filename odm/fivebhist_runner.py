@@ -59,7 +59,7 @@ def file_batches_generator(directory, ext, batch_size) -> tuple:
         )
 
     for i in range(0, len(all_files), batch_size):
-        yield all_files[i: i + batch_size]
+        yield all_files[i : i + batch_size]
 
 
 def load_data_batch(files, timing: bool = False) -> dict:
@@ -73,6 +73,7 @@ def load_data_batch(files, timing: bool = False) -> dict:
     dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
     """
     import pydicom as dicom
+
     t0 = time.time()
     data_dict = {}
     for index, file in tqdm(
@@ -106,6 +107,7 @@ def get_pixel_list(data, timing: bool = False) -> list:
     list: A list of pixel arrays.
     """
     import pydicom as dicom
+
     t0 = time.time()
     imgs = []
     for key in tqdm(data, desc="Generating pixel arrays"):
@@ -227,8 +229,7 @@ if __name__ == "__main__":
     config = ConfigParser()
     config.read("config.ini")
 
-    parser = argparse.ArgumentParser(
-        description="Image feature extraction task.")
+    parser = argparse.ArgumentParser(description="Image feature extraction task.")
     parser.add_argument(
         "--data_root",
         type=str,

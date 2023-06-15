@@ -32,6 +32,7 @@ class Normalize:
             Extracted pixels
         """
         import pydicom as dicom
+
         t0 = time.time()
         pixels = []
         if isinstance(images, list):
@@ -111,8 +112,7 @@ class Normalize:
         if isinstance(pixels, list):
             normalized_pixels = []
             for p in pixels:
-                normalized_pixels.append(
-                    Normalize._minmax_helper(p, bins=bins))
+                normalized_pixels.append(Normalize._minmax_helper(p, bins=bins))
         else:
             normalized_pixels = Normalize._minmax_helper(pixels, bins=bins)
 
@@ -151,8 +151,7 @@ class Normalize:
         t0 = time.time()
         pixels = Normalize.extract_pixels(pixels, timing=timing)
         if norm_type.lower() == "minmax" or norm_type.lower() == "min-max":
-            normalized, filtered = Normalize.minmax(
-                pixels, timing=timing, bins=bins)
+            normalized, filtered = Normalize.minmax(pixels, timing=timing, bins=bins)
         else:
             raise ValueError("Invalid normalization type")
 
