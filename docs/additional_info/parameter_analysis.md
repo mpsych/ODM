@@ -4,6 +4,10 @@ The effectiveness of our outlier detection pipeline hinges on a careful selectio
 
 ## 5-Bin Histogram Filtering
 
+Why not a 256-bin histogram? A 256-bin histogram, while offering a much more detailed distribution of the pixel intensities, also significantly increases the complexity of the data analysis. A larger number of bins can make the patterns less discernible and harder to interpret. The extra granularity might not necessarily provide additional useful information for the task at hand.
+
+With a 5-bin histogram, we were able to identify key patterns (specifically, values below 2,000 in the second bin and a "1" label in the last bin for outliers) in the data that effectively differentiated between satisfactory and unsatisfactory mammograms. These patterns were clear and easy to understand, and increasing the number of bins risked obscuring these important features.
+
 The choice to use a 5-bin histogram over a 2-bin histogram was motivated by our preliminary analysis of the data. While a 2-bin histogram did yield promising results initially, it misclassified a considerable portion of satisfactory images as outliers, indicating that more granularity was needed in our approach.
 
 Upon further exploration of the data, we found that 5-bin histograms provided the balance we needed. Notably, we discovered that outliers generally exhibited specific patterns across the bins: values below 2,000 in the second bin and a "1" label in the last bin, while most other cases displayed a higher value. By using these patterns as thresholds, we were able to improve our detection of outliers significantly while minimizing false positives. This specific pattern in our ground truth labeled data guided the choice of five bins and their respective thresholds.
