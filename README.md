@@ -210,7 +210,7 @@ encoder_neurons =
 decoder_neurons =
 ```
 
-You can change these parameters by editing the file or by overriding them via command-line arguments. The parameters are divided into sections, each corresponding to a stage of the pipeline. The parameters for each stage were described above. The parameters in the [DEFAULT] section are used by both stages of the pipeline.
+You can change these parameters by editing the file or by overriding the [5BHIST] and [VAE] sections via command-line arguments. The parameters are divided into meaningful sections, each corresponding to a stage of the pipeline. The parameters for each stage were described above. The parameters in the [DEFAULT] section are used by both stages of the pipeline.
 
 ## Hyperparameters
 
