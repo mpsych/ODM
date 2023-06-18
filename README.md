@@ -6,20 +6,23 @@ ODM is an open-source project that implements a two-stage unsupervised learning-
 
 ## Table of Contents
 
-1. [Installation](#installation)
-   - [Standard Installation](#standard-installation)
-   - [Docker Installation](#docker-installation)
-2. [Usage](#usage)
-   - [Full Outlier Detection Pipeline](#full-outlier-detection-pipeline)
-   - [Separate Pipeline Stages](#separate-pipeline-stages)
-   - [Five-Bin Histogram Based Thresholding (5BHIST)](#1-five-bin-histogram-based-thresholding-5bhist)
-   - [Variational Autoencoder (VAE)](#2-variational-autoencoder-vae)
-3. [Configuration](#configuration)
-4. [Additional Documentation](#additional-documentation)
-5. [Citation](#citation)
-6. [License](#license)
-7. [Acknowledgements](#acknowledgements)
-8. [Contact](#contact)
+- [Outlier Detection for Mammograms (ODM)](#outlier-detection-for-mammograms-odm)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Standard Installation](#standard-installation)
+    - [Docker Installation](#docker-installation)
+  - [Usage](#usage)
+    - [Full Outlier Detection Pipeline](#full-outlier-detection-pipeline)
+    - [Separate Pipeline Stages](#separate-pipeline-stages)
+  - [1. Five-Bin Histogram Based Thresholding (5BHIST)](#1-five-bin-histogram-based-thresholding-5bhist)
+  - [2. Variational Autoencoder (VAE)](#2-variational-autoencoder-vae)
+  - [Configuration](#configuration)
+  - [Hyperparameters](#hyperparameters)
+  - [Additional Documentation](#additional-documentation)
+  - [Citation](#citation)
+  - [License](#license)
+  - [Acknowledgements](#acknowledgements)
+  - [Contact](#contact)
 
 ## Installation
 
@@ -244,7 +247,9 @@ For more detailed information, please see the following additional documentation
 - [Replies to Reviewers](docs/additional_info/review_replies.md)
 - [Methods](docs/additional_info/methods.md)
 - [Parameter analysis](docs/additional_info/parameter_analysis.md)
+- [Algorithms Tested](docs/additional_info/algorithms_tested.md)
 - [limitations](docs/additional_info/limitations.md)
+- [References](docs/additional_info/references.md)
 
 ## Citation
 
