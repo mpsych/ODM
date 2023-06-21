@@ -2,7 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-ODM is an open-source project that implements a two-stage unsupervised learning-based outlier detection pipeline for large mammogram collections. The goal of ODM is to filter out low-quality and undesired scans in mammogram datasets, thereby facilitating a more efficient and accurate downstream analysis. The pipeline first utilizes a threshold-based 5-bin histogram filtering (5BHIST) to filter out images with poor quality, followed by a Variational Autoencoder (VAE) to further detect and remove outlier scans.
+ODM is an open-source project that utilizes a two-stage hybrid algorithm, where the second stage employs unsupervised learning for outlier detection. Primarily designed for handling large mammogram collections, ODM's primary aim is to streamline mammogram datasets by filtering out low-quality and undesired scans. This facilitates more efficient and accurate downstream analysis. The first stage of the pipeline employs a threshold-based 5-bin histogram filtering (5BHIST) method, designed to exclude poor-quality images. The second stage leverages a Variational Autoencoder (VAE), an unsupervised machine learning model, to further identify and eliminate outlier scans. By combining conventional filtering techniques with advanced machine learning, ODM ensures robust and comprehensive outlier detection in mammogram datasets.
+
+The algorithms and strategies employed by ODM are based on our published research paper. In the additional documentation, we've included our replies to reviewers, a more detailed explanation of our methods, an analysis of our chosen parameters, and a thorough list of tested algorithms.
 
 ## Table of Contents
 
@@ -14,11 +16,11 @@ ODM is an open-source project that implements a two-stage unsupervised learning-
   - [Usage](#usage)
     - [Full Outlier Detection Pipeline](#full-outlier-detection-pipeline)
     - [Separate Pipeline Stages](#separate-pipeline-stages)
-  - [1. Five-Bin Histogram Based Thresholding (5BHIST)](#1-five-bin-histogram-based-thresholding-5bhist)
-  - [2. Variational Autoencoder (VAE)](#2-variational-autoencoder-vae)
-  - [Configuration](#configuration)
-  - [Hyperparameters](#hyperparameters)
-  - [Additional Documentation](#additional-documentation)
+    - [1. Five-Bin Histogram Based Thresholding (5BHIST)](#1-five-bin-histogram-based-thresholding-5bhist)
+    - [2. Variational Autoencoder (VAE)](#2-variational-autoencoder-vae)
+    - [Configuration](#configuration)
+    - [Hyperparameters](#hyperparameters)
+    - [Additional Documentation](#additional-documentation)
   - [Citation](#citation)
   - [License](#license)
   - [Acknowledgements](#acknowledgements)
@@ -125,7 +127,7 @@ In this command:
 You can also run the two stages of the pipeline separately using the `fivebhist_runner.py`
 and `vae_runner.py` scripts:
 
-## 1. Five-Bin Histogram Based Thresholding (5BHIST)
+### 1. Five-Bin Histogram Based Thresholding (5BHIST)
 
 The `fivebhist_runner.py` script runs the first stage of the pipeline. It accepts the
 root directory of the data and the name of the final file where the paths of the determined
@@ -146,7 +148,7 @@ python fivebhist_runner.py --data_root PATH_TO_YOUR_DATA_ROOT --log_file LOG_FIL
 
 See the description of the `run_pipeline.py` script above for a description of these parameters.
 
-## 2. Variational Autoencoder (VAE)
+### 2. Variational Autoencoder (VAE)
 
 The `vae_runner.py` script runs the second stage of the pipeline. It requires the path to the data and optionally accepts the proportion of outliers in the data(contamination) and a verbosity flag. These parameters will be loaded by default from the `[VAE]` section of the `config.ini` file, but they can be overridden via command-line arguments.
 
@@ -166,7 +168,7 @@ See the description of the `run_pipeline.py` script above for a description of t
 
 For additional help/usage instructions for any of the scripts, run `python SCRIPT_NAME.py -h`.
 
-## Configuration
+### Configuration
 
 The `config.ini` file contains the default parameters for the pipeline and should look like this:
 
@@ -215,7 +217,7 @@ decoder_neurons =
 
 You can change these parameters by editing the file or by overriding the [5BHIST] and [VAE] sections via command-line arguments. The parameters are divided into meaningful sections, each corresponding to a stage of the pipeline. The parameters for each stage were described above. The parameters in the [DEFAULT] section are used by both stages of the pipeline.
 
-## Hyperparameters
+### Hyperparameters
 
 The [HYPERPARAMS] section provides configuration options for the training process of the Variational Autoencoder (VAE). The only way to set these parameters is in the config.ini file and cannot be overridden via command-line. Here's a brief description of each parameter:
 
@@ -240,16 +242,16 @@ The [HYPERPARAMS] section provides configuration options for the training proces
 
 Please note that not all of these parameters need to be specified; only specify those parameters that are relevant to your specific use case. The values for these parameters will be dependent on the specific dataset you're using, the architecture of your model, and the specific problem you're trying to solve.
 
-## Additional Documentation
+### Additional Documentation
 
 For more detailed information, please see the following additional documentation:
 
-- [Replies to Reviewers](docs/additional_info/review_replies.md)
-- [Methods](docs/additional_info/methods.md)
-- [Parameter analysis](docs/additional_info/parameter_analysis.md)
-- [Algorithms Tested](docs/additional_info/algorithms_tested.md)
-- [limitations](docs/additional_info/limitations.md)
-- [References](docs/additional_info/references.md)
+- [Replies to Reviewers](docs/additional_info/review_replies.md): Our responses to the insightful questions and suggestions from the reviewers of our research paper. The information here can provide some clarity regarding specific decisions and improvements in our approach.
+- [Methods](docs/additional_info/methods.md): Detailed explanations of the methods employed in this project, from pre-processing of the mammogram scans to outlier detection.
+- [Parameter analysis](docs/additional_info/parameter_analysis.md): An analysis of the different parameters we have used in the project, offering insights into our choices and their impact on the results.
+- [Algorithms Tested](docs/additional_info/algorithms_tested.md): A list and brief description of the different algorithms we tested during our research.
+- [limitations](docs/additional_info/limitations.md): A discussion on the potential limitations of our current approach and possible directions for future work.
+- [References](docs/additional_info/references.md): A collection of all the references that were instrumental in guiding our research.
 
 ## Citation
 
