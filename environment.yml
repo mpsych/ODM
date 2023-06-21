@@ -1,4 +1,4 @@
-name: ODM2
+name: ODM
 channels:
   - anaconda
   - defaults
