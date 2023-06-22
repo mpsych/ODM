@@ -220,9 +220,17 @@ if __name__ == "__main__":
 
     log_dir = config['DEFAULT']['log_dir']
     logfile = config['DEFAULT']['logfile']
+
     # if logfile is only a file name and not a path, prepend log_dir
     if not os.path.dirname(logfile):
         logfile = os.path.join(log_dir, logfile)
+
+    # Print the logfile path for debugging
+    print(f"Logfile path: {logfile}")
+
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(logfile), exist_ok=True)
+
     loglevel = config['DEFAULT']['loglevel']
     verbose = config.getboolean('DEFAULT', 'verbose')
     setup_logging(logfile, loglevel, verbose)

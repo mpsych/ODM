@@ -9,18 +9,25 @@ config.read("config.ini")
 def print_properties(tite, **kwargs) -> None:
     """
     Print the properties of the VAE Runner.
+
+    Parameters
+    tite (str) : The title of the runner.
+    **kwargs : The properties of the runner.
     """
-    print("-" * 80)
-    # print(f"Running {tite} with the following properties:")
+    max_key_length = max([len(key) for key in kwargs.keys()])
+    max_val_length = max([len(str(val)) for val in kwargs.values()])
+    max_length = max(max_key_length + max_val_length + 5,
+                     len(tite) + len('Running ') +
+                     len(' with the following properties:'))
+
+    print("-" * max_length)
     logging.info(f"Running {tite} with the following properties:")
-    print("-" * 80)
-    # print(f"{'Property':<25} {'Value':<10}")
-    logging.info(f"{'Property':<25} {'Value':<10}")
-    print("-" * 80)
+    print("-" * max_length)
+    logging.info(f"{'Property':<{max_key_length}} {'Value':<{max_val_length}}")
+    print("-" * max_length)
     for key, value in kwargs.items():
-        # print(f"{key:<25} {str(value):<10}")
-        logging.info(f"{key:<25} {str(value):<10}")
-    print("-" * 80)
+        logging.info(f"{key:<{max_key_length}} {str(value):<{max_val_length}}")
+    print("-" * max_length)
 
 
 def validate_inputs(**kwargs) -> None:
