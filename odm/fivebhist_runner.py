@@ -32,7 +32,7 @@ def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
                 image_paths.add(os.path.join(dirpath, filename))
 
     if timing is True:
-        print(
+        logging.info(
             f"Time to walk through directories: {datetime.timedelta(seconds=time.time() - t0)}"
         )
 
@@ -86,10 +86,10 @@ def load_data_batch(files, timing: bool = False) -> dict:
                 with Image.open(file) as img:
                     data_dict[index] = [np.array(img), file]
         except Exception as e_:
-            print(f"Error reading file {file}: {e_}")
+            logging.info(f"Error reading file {file}: {e_}")
 
     if timing is True:
-        print(
+        logging.info(
             f"Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
         )
 
@@ -119,10 +119,10 @@ def get_pixel_list(data, timing: bool = False) -> list:
             elif isinstance(data[key][0], np.ndarray):
                 imgs.append(data[key][0])
         except Exception as e:
-            print(f"Error reading file {data[key][1]}: {e}")
+            logging.info(f"Error reading file {data[key][1]}: {e}")
 
     if timing:
-        print(
+        logging.info(
             f"Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}"
         )
 
@@ -135,7 +135,7 @@ def process_batch(file_batch, timing: bool = False):
 
     Parameters:
     file_batch (list): A list of file paths to be processed.
-    timing (bool): Whether to print timing information.
+    timing (bool): Whether to logging.info timing information.
     """
     bad_paths = set()
     data_dict = load_data_batch(file_batch, timing=timing)
@@ -162,17 +162,17 @@ def fivebhist_runner(
     ext (str): File extension to be searched.
     batch_size (int): Size of the file batches to be returned.
     max_workers (int): Maximum number of workers to be used by the ThreadPoolExecutor.
-    timing (bool): Whether to print timing information.
+    timing (bool): Whether to logging.info timing information.
     """
 
     t0 = time.time()
     if not os.path.isdir(data_root):
-        print("Provided data root directory does not exist.")
+        logging.info("Provided data root directory does not exist.")
         return
 
     bad_paths = set()
 
-    print("Running 5-BHIST Stage 1...")
+    logging.info("Running 5-BHIST Stage 1...")
 
     all_paths = get_all_image_paths(data_root, ext, timing=timing)
     total_files = len(all_paths)
@@ -186,7 +186,7 @@ def fivebhist_runner(
         for future in concurrent.futures.as_completed(future_to_batch):
             bad_paths.update(future.result())
 
-    print(f"Total files: {total_files}")
+    logging.info(f"Total files: {total_files}")
 
     date_and_time = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     file_name_bad_paths = f"{date_and_time}_bad_paths.txt"
@@ -202,11 +202,11 @@ def fivebhist_runner(
     with open(os.path.join(log_dir, final_file), "w") as f:
         f.write("\n".join(good_paths))
 
-    print(f"number of bad images found: {len(bad_paths)}")
-    print(f"number of good images found: {len(good_paths)}")
+    logging.info(f"number of bad images found: {len(bad_paths)}")
+    logging.info(f"number of good images found: {len(good_paths)}")
 
     if timing is True:
-        print(
+        logging.info(
             f"Total time to run feature extraction: {datetime.timedelta(seconds=time.time() - t0)}"
         )
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
         --batch_size: The number of files to load at a time.
         --ext: The file extension to be searched.
         --max_workers: The maximum number of workers to be used by the ThreadPoolExecutor.
-        --timing: Whether to print timing information.
+        --timing: Whether to logging.info timing information.
     """
     # read the config file
     config = ConfigParser()
@@ -277,7 +277,7 @@ if __name__ == "__main__":
 
     validate_inputs(**vars(args))
 
-    print_properties("5BHIST Runner", **vars(args))
+    logging.info_properties("5BHIST Runner", **vars(args))
 
     try:
         fivebhist_runner(
@@ -290,4 +290,4 @@ if __name__ == "__main__":
             args.timing,
         )
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")

@@ -1,7 +1,30 @@
-import configparser
-import sys
 from fivebhist_runner import *
 from vae_runner import *
+import configparser
+import logging
+import sys
+
+
+def setup_logging(logfile, level='INFO', verbose=False):
+    """
+    Setup logging to stdout and file.
+
+    Parameters
+    logfile (str): The path to the log file.
+    level (str): The logging level.
+    verbose (bool): Whether to print to stdout.
+    """
+    loglevel = getattr(logging, level.upper(), None)
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        level=loglevel,
+        handlers=[
+            logging.FileHandler(logfile),
+            logging.StreamHandler(
+                sys.stdout) if verbose else logging.NullHandler(),
+        ],
+    )
+    logging.info("Logging initialized.")
 
 
 def get_5bhist_args(config_):
@@ -141,7 +164,8 @@ def run_stage1(args_):
             timing=args_.timing,
         )
     except Exception as e:
-        print(e)
+        # print(e)
+        logging.error(e)
         sys.exit(1)
 
 
@@ -165,10 +189,14 @@ def run_stage2(args_):
 
     write_to_file(args_.good_output, gp)
     write_to_file(args_.bad_output, bp)
-    print(f"Good paths written to {args_.good_output}")
-    print(f"Bad paths written to {args_.bad_output}")
-    print("number of good paths:", len(gp))
-    print("****** Outlier detection complete. ******")
+    # print(f"Good paths written to {args_.good_output}")
+    # print(f"Bad paths written to {args_.bad_output}")
+    # print("number of good paths:", len(gp))
+    # print("****** Outlier detection complete. ******")
+    logging.info(f"Good paths written to {args_.good_output}")
+    logging.info(f"Bad paths written to {args_.bad_output}")
+    logging.info("number of good paths:", len(gp))
+    logging.info("****** Outlier detection complete. ******")
 
 
 def write_to_file(file_path, paths):
@@ -183,15 +211,28 @@ def write_to_file(file_path, paths):
             for path in paths:
                 f.write(f"{path}\n")
     except Exception as e:
-        print(f"Error writing to file {file_path}: {e}")
+        logging.error(f"Error writing to file {file_path}: {e}")
 
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("config.ini")
 
+    log_dir = config['DEFAULT']['log_dir']
+    logfile = config['DEFAULT']['logfile']
+    # if logfile is only a file name and not a path, prepend log_dir
+    if not os.path.dirname(logfile):
+        logfile = os.path.join(log_dir, logfile)
+    loglevel = config['DEFAULT']['loglevel']
+    verbose = config.getboolean('DEFAULT', 'verbose')
+    setup_logging(logfile, loglevel, verbose)
+
+    logging.info("Starting 5BHIST runner.")
     args1 = get_5bhist_args(config)
     run_stage1(args1)
+    logging.info("5BHIST runner completed.")
 
+    logging.info("Starting VAE runner.")
     args2 = get_vae_args(config)
     run_stage2(args2)
+    logging.info("VAE runner completed.")

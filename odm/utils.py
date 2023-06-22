@@ -1,4 +1,9 @@
+import configparser
+import logging
 import os
+
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 
 def print_properties(tite, **kwargs) -> None:
@@ -6,12 +11,15 @@ def print_properties(tite, **kwargs) -> None:
     Print the properties of the VAE Runner.
     """
     print("-" * 80)
-    print(f"Running {tite} with the following properties:")
+    # print(f"Running {tite} with the following properties:")
+    logging.info(f"Running {tite} with the following properties:")
     print("-" * 80)
-    print(f"{'Property':<25} {'Value':<10}")
+    # print(f"{'Property':<25} {'Value':<10}")
+    logging.info(f"{'Property':<25} {'Value':<10}")
     print("-" * 80)
     for key, value in kwargs.items():
-        print(f"{key:<25} {str(value):<10}")
+        # print(f"{key:<25} {str(value):<10}")
+        logging.info(f"{key:<25} {str(value):<10}")
     print("-" * 80)
 
 
@@ -19,9 +27,13 @@ def validate_inputs(**kwargs) -> None:
     """
     Validate the inputs.
     """
+    log_dir = config["DEFAULT"]["log_dir"]
     # check if the caselist is in kwargs and if so if it is a valid file
     caselist = kwargs.get("caselist", None)
     if caselist is not None:
+        # join caselist with log_dir if it is not a full path
+        if not os.path.isfile(caselist):
+            caselist = os.path.join(log_dir, caselist)
         if not os.path.isfile(caselist):
             raise FileNotFoundError(f"File {caselist} does not exist.")
 
@@ -90,7 +102,8 @@ def validate_inputs(**kwargs) -> None:
         import multiprocessing
 
         if n_proc > multiprocessing.cpu_count():
-            raise ValueError("Number of workers must not exceed the number of cores.")
+            raise ValueError(
+                "Number of workers must not exceed the number of cores.")
 
     # check if time is a valid boolean
     time = kwargs.get("time", None)

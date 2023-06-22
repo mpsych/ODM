@@ -1,6 +1,7 @@
 # =============================================================================
 # Variable Autoencoder (VAE) for outlier detection, wrapper for PyOD which
-# can be found here: https://pyod.readthedocs.io/en/latest/pyod.models.html#pyod.models.vae.VAE
+# can be found here:
+# https://pyod.readthedocs.io/en/latest/pyod.models.html#pyod.models.vae.VAE
 # ==============================================================================
 import numpy as np
 import configparser
@@ -32,7 +33,8 @@ def vae(data_x):
                 data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 3), "constant")
         data_x = np.array(data_x)
 
-    # Now fetch the hyperparameters from the configuration file, with fallbacks for defaults
+    # Now fetch the hyperparameters from the configuration file,
+    # with fallbacks for defaults
     latent_dim = config.getint("HYPERPARAMS", "latent_dim", fallback=2)
     hidden_activation = config.get("HYPERPARAMS", "hidden_activation", fallback="relu")
     output_activation = config.get(
