@@ -27,6 +27,6 @@ Reviewer Aruq pointed out the following concerns:
 
 In response to this feedback:
 
-1. **Publicly available dataset:** Thank you for pointing this out. We have updated our repository to include the link to access the dataset. Please note that due to privacy considerations, some restrictions may apply.
+1. **Publicly available dataset:** Thank you for pointing this out. We have updated our paper to include the link to access the repository. Please note that due to privacy considerations, some restrictions may apply to sharing our tested data until the public release of the Omama-DB dataset.
 
 2. **Parameter analysis:** We agree that a thorough analysis of the parameters used in our method is necessary. We have included in our repository a new section, ['Parameter Analysis'](./parameter_analysis.md), that provides insights into our choice of parameters for both the 5-bin histogram filtering and the variational autoencoder. This analysis covers how we arrived at our specific settings and the impact of these parameters on the performance of our pipeline.
