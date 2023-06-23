@@ -1,15 +1,13 @@
-import os
-import numpy as np
-import datetime
-import time
-from outlier_detector import OutlierDetector
-import logging
-import argparse
 from configparser import ConfigParser
-from tqdm import tqdm
-from PIL import Image
 from feature_extractor import *
+from outlier_detector import OutlierDetector
+from PIL import Image
+from tqdm import tqdm
 from utils import *
+import argparse
+import datetime
+import numpy as np
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -49,12 +47,12 @@ def load_data_batch(files, timing):
                 with Image.open(file) as img:
                     data_dict[index] = [np.array(img), file]  # Non-DICOM
             else:
-                print(f"File {file} is not a valid image file.")
+                logging.info(f"File {file} is not a valid image file.")
         except Exception as e:
-            print(f"Error reading file {file}: {e}")
+            logging.info(f"Error reading file {file}: {e}")
 
     if timing:
-        print(
+        logging.info(
             f"Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
         )
     return data_dict
@@ -73,26 +71,27 @@ def get_pixel_list(data, timing):
         try:
             imgs.append(data[key][0])
         except Exception as e:
-            print(f"Error reading file {data[key][1]}: {e}")
+            logging.info(f"Error reading file {data[key][1]}: {e}")
 
     if timing:
-        print(
-            f"Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}"
+        logging.info(
+            f"Time to generate pixel arrays: "
+            f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
     return imgs
 
 
-def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
+def vae_runner(log_dir, caselist, batch_size, verbose, timing):
     """
     Run the VAE algorithm on a list of files.
 
     Parameters:
     log_dir (str): The path to the directory where the log file will be written.
-    caselist (str): The path to a file containing a list of file paths to be processed.
-    contamination (float): The proportion of outliers in the data set.
+    caselist (str): The path to a file containing a list of file paths to be
+        processed.
     batch_size (int): The number of files to process at a time.
-    verbose (bool): Whether to print verbose output.
-    timing (bool): Whether to print timing information.
+    verbose (bool): Whether to logging.info verbose output.
+    timing (bool): Whether to logging.info timing information.
     """
     t0 = time.time()
     FEAT = "hist"
@@ -113,6 +112,8 @@ def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
     with open(caselist, "r") as f_:
         all_files = [path_.strip() for path_ in f_.readlines()]
 
+    logging.info(f"Number of files to process: {len(all_files)}")
+
     # Process the files in batches
     for i in range(0, len(all_files), batch_size):
         file_batch = all_files[i : i + batch_size]
@@ -129,13 +130,11 @@ def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
         # Run the outlier detection algorithm
         decision_scores, labels = OutlierDetector.detect_outliers(
             features=feats,
-            contamination=contamination,
             verbose=verbose,
             timing=timing,
         )
 
-        # Add the decision scores, labels, and paths to the master dictionaries using the index as the key
-        # so index i in each dictionary corresponds to the path, decision score, and label for the same file
+        # Add the decision scores, labels, and paths to the master dictionaries
         for index, path_ in enumerate(file_batch):
             master_decision_scores[i + index] = decision_scores[index]
             master_labels[i + index] = labels[index]
@@ -149,31 +148,33 @@ def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
             bad_img_paths.append(master_paths[key])
 
     if timing:
-        print(
-            f"Time to run VAE on {len(all_files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
+        logging.info(
+            f"Time to run VAE on {len(all_files)} "
+            f"files: {datetime.timedelta(seconds=time.time() - t0)}"
         )
     return good_img_paths, bad_img_paths
 
 
 if __name__ == "__main__":
-    """
-    Main entry point of the program. Parses command-line arguments, reads the config file,
-    overwrites config values if command line arguments are provided, and then runs the VAE algorithm.
+    """Main entry point of the program. Parses command-line arguments,
+    reads the config file, overwrites config values if command line arguments
+    are provided, and then runs the VAE algorithm.
 
-    Supports the following command-line arguments:
-        log_dir (str): The path to the directory where the log file will be written.
-        caselist (str): Path to the text file containing the paths of the DICOM files.
-        verbose (bool, optional): Whether to print progress messages to stdout. Defaults to False.
-        batch_size (int, optional): The number of files to process in each batch. Defaults to 100.
-        good_output (str, optional): The path to the text file to write the final list of good files to.
-        bad_output (str, optional): The path to the text file to write the final list of bad files to.
-    """
+    Supports the following command-line arguments: log_dir (str): The path to
+    the directory where the log file will be written. caselist (str): Path to
+    the text file containing the paths of the DICOM files. verbose (bool,
+    optional): Whether to logging.info progress messages to stdout. Defaults
+    to False. batch_size (int, optional): The number of files to process in
+    each batch. Defaults to 100. good_output (str, optional): The path to the
+    text file to write the final list of good files to. bad_output (str,
+    optional): The path to the text file to write the final list of bad files
+    to."""
     # read the config file
     config = ConfigParser()
     config.read("config.ini")
 
     parser = argparse.ArgumentParser(
-        description="Runs the Variational AutoEncoder (VAE) algorithm on given data."
+        description="Runs the Variational AutoEncoder (VAE) algorithm on " "given data."
     )
     parser.add_argument(
         "--log_dir",
@@ -185,7 +186,7 @@ if __name__ == "__main__":
         "--caselist",
         type=str,
         default=config["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM files.",
+        help="The path to the text file containing the paths of the DICOM " "files.",
     )
     parser.add_argument(
         "--batch_size",
@@ -215,7 +216,7 @@ if __name__ == "__main__":
         "--verbose",
         action="store_true",
         default=config.getboolean("VAE", "verbose"),
-        help="Whether to print progress messages to stdout.",
+        help="Whether to logging.info progress messages to stdout.",
     )
 
     args = parser.parse_args()
@@ -225,12 +226,11 @@ if __name__ == "__main__":
     print_properties("VAE Runner", **vars(args))
 
     good_paths, bad_paths = vae_runner(
-        args.log_dir,
-        args.caselist,
-        args.contamination,
-        args.batch_size,
-        args.verbose,
-        args.timing,
+        log_dir=args.log_dir,
+        caselist=args.caselist,
+        batch_size=args.batch_size,
+        verbose=args.verbose,
+        timing=args.timing,
     )
 
     # check if output files are just file names or full paths
@@ -245,11 +245,11 @@ if __name__ == "__main__":
             for path in good_paths:
                 f.write(f"{path}\n")
     except Exception as e:
-        print(f"Error writing to file {args.good_output}: {e}")
+        logging.info(f"Error writing to file {args.good_output}: {e}")
 
     try:
         with open(args.bad_output, "w") as f:
             for path in bad_paths:
                 f.write(f"{path}\n")
     except Exception as e:
-        print(f"Error writing to file {args.bad_output}: {e}")
+        logging.info(f"Error writing to file {args.bad_output}: {e}")

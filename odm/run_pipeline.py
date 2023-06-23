@@ -1,7 +1,29 @@
-import configparser
-import sys
 from fivebhist_runner import *
 from vae_runner import *
+import configparser
+import logging
+import sys
+
+
+def setup_logging(logfile_, level="INFO", verbose_=False):
+    """
+    Setup logging to stdout and file.
+
+    Parameters
+    logfile (str): The path to the log file.
+    level (str): The logging level.
+    verbose (bool): Whether to print to stdout.
+    """
+    loglevel = getattr(logging, level.upper(), None)
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        level=loglevel,
+        handlers=[
+            logging.FileHandler(logfile_),
+            logging.StreamHandler(sys.stdout) if verbose_ else logging.NullHandler(),
+        ],
+    )
+    logging.info("Logging initialized.")
 
 
 def get_5bhist_args(config_):
@@ -77,16 +99,16 @@ def get_vae_args(config_):
         description="Stage 2 mammogram Outlier detection task."
     )
     parser_.add_argument(
+        "--log_dir",
+        type=str,
+        default=config_["DEFAULT"]["log_dir"],
+        help="Directory to save the log files.",
+    )
+    parser_.add_argument(
         "--caselist",
         type=str,
         default=config_["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM files.",
-    )
-    parser_.add_argument(
-        "--contamination",
-        type=float,
-        default=config_["VAE"]["contamination"],
-        help="The proportion of outliers in the data.",
+        help="The path to the text file containing the paths of the DICOM " "files.",
     )
     parser_.add_argument(
         "--batch_size",
@@ -141,7 +163,10 @@ def run_stage1(args_):
             timing=args_.timing,
         )
     except Exception as e:
-        print(e)
+        import traceback
+
+        traceback.print_exc()
+        logging.error(f"Error in 5BHIST runner: {e}")
         sys.exit(1)
 
 
@@ -153,22 +178,32 @@ def run_stage2(args_):
     """
     try:
         gp, bp = vae_runner(
+            log_dir=args_.log_dir,
             caselist=args_.caselist,
-            contamination=args_.contamination,
             batch_size=args_.batch_size,
             verbose=args_.verbose,
             timing=args_.timing,
         )
     except Exception as e:
-        print(e)
+        import traceback
+
+        traceback.print_exc()
+        logging.error(f"Error in VAE runner: {e}")
         sys.exit(1)
+
+    # check if good_output and bad_output are just file names or full paths,
+    # if just file names, add log_dir
+    if not os.path.dirname(args_.good_output):
+        args_.good_output = os.path.join(args_.log_dir, args_.good_output)
+    if not os.path.dirname(args_.bad_output):
+        args_.bad_output = os.path.join(args_.log_dir, args_.bad_output)
 
     write_to_file(args_.good_output, gp)
     write_to_file(args_.bad_output, bp)
-    print(f"Good paths written to {args_.good_output}")
-    print(f"Bad paths written to {args_.bad_output}")
-    print("number of good paths:", len(gp))
-    print("****** Outlier detection complete. ******")
+    logging.info(f"Good paths written to {args_.good_output}")
+    logging.info(f"Bad paths written to {args_.bad_output}")
+    logging.info(f"number of good paths: {len(gp)}")
+    logging.info("****** Outlier detection complete. ******")
 
 
 def write_to_file(file_path, paths):
@@ -179,19 +214,41 @@ def write_to_file(file_path, paths):
     paths (list) : The list of paths to write to the file.
     """
     try:
-        with open(file_path, "w") as f:
-            for path in paths:
-                f.write(f"{path}\n")
-    except Exception as e:
-        print(f"Error writing to file {file_path}: {e}")
+        with open(file_path, "w") as f_:
+            for path_ in paths:
+                f_.write(f"{path_}\n")
+    except Exception as e_:
+        import traceback
+
+        traceback.print_exc()
+        logging.error(f"Error writing to file {file_path}: {e_}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("config.ini")
 
+    log_dir = config["DEFAULT"]["log_dir"]
+    logfile = config["DEFAULT"]["logfile"]
+
+    # if logfile is only a file name and not a path, prepend log_dir
+    if not os.path.dirname(logfile):
+        logfile = os.path.join(log_dir, logfile)
+
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(logfile), exist_ok=True)
+
+    loglevel = config["DEFAULT"]["loglevel"]
+    verbose = config.getboolean("DEFAULT", "verbose")
+    setup_logging(logfile, loglevel, verbose)
+
+    logging.info("Starting 5BHIST runner.")
     args1 = get_5bhist_args(config)
     run_stage1(args1)
+    logging.info("5BHIST runner completed.")
 
+    logging.info("Starting VAE runner.")
     args2 = get_vae_args(config)
     run_stage2(args2)
+    logging.info("VAE runner completed.")

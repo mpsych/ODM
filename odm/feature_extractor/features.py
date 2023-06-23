@@ -1,9 +1,11 @@
-import time
-from types import SimpleNamespace
+import logging
 from .normalizations import Normalize
+from tqdm import tqdm
+from types import SimpleNamespace
+from typing import Union, List
 import mahotas as mh
 import numpy as np
-from typing import Union, List
+import time
 
 
 class Features:
@@ -37,22 +39,17 @@ class Features:
         """
         t0 = time.time()
         histograms = []
-        # if pixels is a list of images get list of histograms for each image
         if isinstance(pixels, list):
-            for i in range(len(pixels)):
-                # if pixels is a list of SimpleNamespace use the pixels attribute
+            for i in tqdm(range(len(pixels))):  # adding progress bar here
                 if isinstance(pixels[i], SimpleNamespace):
                     tmp_pixels = pixels[i].pixels.copy()
-                else:  # else assume pixels is a list of np.ndarray
+                else:
                     tmp_pixels = pixels[i].copy()
-                # if normalization is specified normalize pixels before histogram
                 if norm_type is not None:
                     tmp_pixels = Normalize.get_norm(
                         pixels=tmp_pixels, norm_type=norm_type, timing=timing, bins=bins
                     )[0]
-                # append histogram to list
                 histograms.append(mh.fullhistogram(tmp_pixels.astype(np.uint8)))
-        # if pixels is a single image get histogram
         else:
             tmp_pixels = pixels.copy()
             if norm_type is not None:
@@ -60,9 +57,8 @@ class Features:
                     tmp_pixels, norm_type=norm_type, timing=timing, bins=bins
                 )[0]
             histograms = mh.fullhistogram(tmp_pixels.astype(np.uint8))
-
         if timing:
-            print("Histogram: %s", time.time() - t0)
+            logging.info(f"Time to get histogram: {time.time() - t0}")
         return np.array(histograms)
 
     @staticmethod
@@ -93,7 +89,7 @@ class Features:
         -------
         np.ndarray
         """
-        print("get_features")
+        logging.info("Getting features")
         t0 = time.time()
         if feature_type in ["hist", "histogram"]:
             features = Features.histogram(
@@ -102,5 +98,5 @@ class Features:
         else:
             raise ValueError("Feature type not supported")
         if timing:
-            print("Get features: %s", time.time() - t0)
+            logging.info(f"Time to get features: {time.time() - t0}")
         return features
