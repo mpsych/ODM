@@ -8,7 +8,9 @@ import argparse
 import datetime
 import numpy as np
 import time
-
+import ast
+from keras.losses import get
+from keras.losses import mse
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +20,10 @@ def load_data_batch(files, timing):
     Load a batch of DICOM files into a dictionary.
 
     Parameters:
-    files (list): A list of file paths to be loaded.
+        files (list): A list of file paths to be loaded.
 
-    Returns:
-    dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
+    Returns: dict: A dictionary where the keys are indices and the values are
+        tuples of DICOM data and the file path.
     """
     import pydicom as dicom
 
@@ -81,6 +83,114 @@ def get_pixel_list(data, timing):
     return imgs
 
 
+def get_hyperparameters(timing=False):
+    """Fetches the hyperparameters from the configuration file.
+
+    Parameters:
+        timing (bool): Whether to time the function.
+
+    Returns:
+        dict: A dictionary of hyperparameters.
+    """
+    if timing:
+        t0 = time.time()
+
+    # read the config file
+    config = ConfigParser()
+    config.read("config.ini")
+
+    # Fetch hyperparameters as strings
+    raw_values = {
+        param: config.get("HYPERPARAMS", param, fallback=None)
+        for param in [
+            "latent_dim",
+            "hidden_activation",
+            "output_activation",
+            "loss",
+            "optimizer",
+            "epochs",
+            "batch_size",
+            "dropout_rate",
+            "l2_regularizer",
+            "validation_size",
+            "preprocessing",
+            "verbose",
+            "contamination",
+            "gamma",
+            "capacity",
+            "random_state",
+            "encoder_neurons",
+            "decoder_neurons",
+        ]
+    }
+
+    # Prepare default values
+    default_values = {
+        "latent_dim": 2,
+        "hidden_activation": "relu",
+        "output_activation": "sigmoid",
+        "loss": mse,
+        "optimizer": "adam",
+        "epochs": 100,
+        "batch_size": 32,
+        "dropout_rate": 0.2,
+        "l2_regularizer": 0.1,
+        "validation_size": 0.1,
+        "preprocessing": True,
+        "verbose": 1,
+        "contamination": 0.1,
+        "gamma": 1.0,
+        "capacity": 0.0,
+        "random_state": None,
+        "encoder_neurons": None,
+        "decoder_neurons": None,
+    }
+
+    # Convert string values to correct types, with fallbacks for empty fields
+    values = {}
+    for param, raw_val in raw_values.items():
+        if raw_val == "":
+            # Use default value if field is empty
+            values[param] = default_values[param]
+        else:
+            try:
+                if param in ["latent_dim", "epochs", "batch_size", "verbose"]:
+                    # These parameters should be integers
+                    values[param] = int(raw_val)
+                elif param in [
+                    "dropout_rate",
+                    "l2_regularizer",
+                    "validation_size",
+                    "contamination",
+                    "gamma",
+                    "capacity",
+                ]:
+                    # These parameters should be floats
+                    values[param] = float(raw_val)
+                elif param in ["random_state", "encoder_neurons", "decoder_neurons"]:
+                    # These parameters should be evaluated as Python expressions
+                    values[param] = ast.literal_eval(raw_val)
+                elif param in ["loss"]:
+                    # These parameters should be evaluated as Keras loss
+                    # functions
+                    values[param] = get(raw_val)
+                else:
+                    # All other parameters are kept as strings
+                    values[param] = raw_val
+            except Exception as e:
+                logging.error(f"Error processing parameter {param}: {e}")
+                return None
+    logging.info("Hyperparameters fetched.")
+
+    print_properties("Hyperparameters", **values)
+
+    if timing:
+        logging.info(
+            f"Time to fetch hyperparameters: {datetime.timedelta(seconds=time.time() - t0)}"
+        )
+    return values
+
+
 def vae_runner(log_dir, caselist, batch_size, verbose, timing):
     """
     Run the VAE algorithm on a list of files.
@@ -114,6 +224,9 @@ def vae_runner(log_dir, caselist, batch_size, verbose, timing):
 
     logging.info(f"Number of files to process: {len(all_files)}")
 
+    # Load the hyperparameters
+    values = get_hyperparameters(timing)
+
     # Process the files in batches
     for i in range(0, len(all_files), batch_size):
         file_batch = all_files[i : i + batch_size]
@@ -132,6 +245,7 @@ def vae_runner(log_dir, caselist, batch_size, verbose, timing):
             features=feats,
             verbose=verbose,
             timing=timing,
+            **values,
         )
 
         # Add the decision scores, labels, and paths to the master dictionaries
