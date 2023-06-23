@@ -181,7 +181,7 @@ def run_stage2(args_):
             log_dir=args_.log_dir,
             caselist=args_.caselist,
             batch_size=args_.batch_size,
-            verbose=args_.verbose,
+            log_to_terminal=args_.verbose,
             timing=args_.timing,
         )
     except Exception as e:

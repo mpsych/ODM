@@ -191,7 +191,7 @@ def get_hyperparameters(timing=False):
     return values
 
 
-def vae_runner(log_dir, caselist, batch_size, verbose, timing):
+def vae_runner(log_dir, caselist, batch_size, log_to_terminal, timing):
     """
     Run the VAE algorithm on a list of files.
 
@@ -200,7 +200,7 @@ def vae_runner(log_dir, caselist, batch_size, verbose, timing):
     caselist (str): The path to a file containing a list of file paths to be
         processed.
     batch_size (int): The number of files to process at a time.
-    verbose (bool): Whether to logging.info verbose output.
+    log_to_terminal (bool): Whether to logging.info verbose output.
     timing (bool): Whether to logging.info timing information.
     """
     t0 = time.time()
@@ -243,7 +243,7 @@ def vae_runner(log_dir, caselist, batch_size, verbose, timing):
         # Run the outlier detection algorithm
         decision_scores, labels = OutlierDetector.detect_outliers(
             features=feats,
-            verbose=verbose,
+            log_to_terminal=log_to_terminal,
             timing=timing,
             **values,
         )
@@ -343,7 +343,7 @@ if __name__ == "__main__":
         log_dir=args.log_dir,
         caselist=args.caselist,
         batch_size=args.batch_size,
-        verbose=args.verbose,
+        log_to_terminal=args.verbose,
         timing=args.timing,
     )
 

@@ -13,8 +13,10 @@ class OutlierDetector:
     """
 
     @staticmethod
-    def detect_outliers(
-        features: np.ndarray, verbose: bool = False, timing: bool = False, **kwargs
+    def detect_outliers(features: np.ndarray,
+                        log_to_terminal: bool = False,
+                        timing: bool = False,
+                        **kwargs
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Detect outliers using PyOD's VAE algorithm.
@@ -23,7 +25,7 @@ class OutlierDetector:
         -----------
         features : (list)
             List of features to be used for outlier detection.
-        verbose : (bool)
+        log_to_terminal : (bool)
             Whether to print verbose output. The default is False.
         timing : (bool)
             Whether to time the function. The default is False.
@@ -33,7 +35,7 @@ class OutlierDetector:
         t0 = time.time()
         decision_scores = []
 
-        if verbose is False:
+        if log_to_terminal is False:
             logging.info("Turning off verbose mode...")
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
             logging.getLogger("tensorflow").disabled = True
