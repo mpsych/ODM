@@ -1,6 +1,8 @@
 import logging
 import os
 import time
+from typing import Tuple
+
 from vae import vae
 import numpy as np
 
@@ -12,8 +14,8 @@ class OutlierDetector:
 
     @staticmethod
     def detect_outliers(
-        features: np.ndarray, verbose: bool = False, timing: bool = False
-    ):
+        features: np.ndarray, verbose: bool = False, timing: bool = False, **kwargs
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Detect outliers using PyOD's VAE algorithm.
 
@@ -21,14 +23,12 @@ class OutlierDetector:
         -----------
         features : (list)
             List of features to be used for outlier detection.
-        pyod_algorithm : (str)
-            Name of the PyOD algorithm to be used for outlier detection.
-        redirect_output : (bool)
-            If True, redirect the output of the PyOD algorithm to a file.
-        return_decision_function : (bool)
-            If True, return the decision function of the PyOD algorithm.
+        verbose : (bool)
+            Whether to print verbose output. The default is False.
+        timing : (bool)
+            Whether to time the function. The default is False.
         **kwargs : (dict)
-            Keyword arguments to be passed to the PyOD algorithm.
+            hyperparameters for VAE
         """
         t0 = time.time()
         decision_scores = []
@@ -43,7 +43,7 @@ class OutlierDetector:
 
         try:
             logging.info(f"Running VAE...")
-            decision_scores, labels = vae(features)
+            decision_scores, labels = vae(features, **kwargs)
 
         # if the algorithm causes an error, skip it and move on
         except Exception as e:
@@ -57,7 +57,7 @@ class OutlierDetector:
             labels = None
 
         logging.info(
-            f"about to save and len of tscore and imgs is "
+            f"len of decision_scores and imgs is "
             f"{len(decision_scores)} and {len(features)}"
         )
 

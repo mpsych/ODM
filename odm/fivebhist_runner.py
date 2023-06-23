@@ -33,7 +33,8 @@ def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
 
     if timing is True:
         logging.info(
-            f"Time to walk through directories: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Time to walk through directories: "
+            f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
 
     return image_paths
@@ -41,7 +42,8 @@ def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
 
 def file_batches_generator(directory, ext, batch_size) -> tuple:
     """
-    Generator that yields batches of files from a directory and the total file count.
+    Generator that yields batches of files from a directory and the total
+    file count.
 
     Parameters:
     directory (str): Path of the directory to be searched.
@@ -69,8 +71,8 @@ def load_data_batch(files, timing: bool = False) -> dict:
     Parameters:
     files (list): A list of file paths to be loaded.
 
-    Returns:
-    dict: A dictionary where the keys are indices and the values are tuples of DICOM data and the file path.
+    Returns: dict: A dictionary where the keys are indices and the values are
+    tuples of DICOM data and the file path.
     """
     import pydicom as dicom
 
@@ -90,7 +92,8 @@ def load_data_batch(files, timing: bool = False) -> dict:
 
     if timing is True:
         logging.info(
-            f"Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Time to load {len(files)} files: "
+            f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
 
     return data_dict
@@ -123,7 +126,8 @@ def get_pixel_list(data, timing: bool = False) -> list:
 
     if timing:
         logging.info(
-            f"Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Time to generate pixel arrays: "
+            f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
 
     return imgs
@@ -155,14 +159,13 @@ def fivebhist_runner(
     """
     Run the 5-BHIST Stage 1 algorithm.
 
-    Parameters:
-    data_root (str): Path of the directory to be searched.
-    final_file (str): Path of the file to be written.
-    log_dir (str): Path of the directory to write log files.
-    ext (str): File extension to be searched.
-    batch_size (int): Size of the file batches to be returned.
-    max_workers (int): Maximum number of workers to be used by the ThreadPoolExecutor.
-    timing (bool): Whether to logging.info timing information.
+    Parameters: data_root (str): Path of the directory to be searched.
+    final_file (str): Path of the file to be written. log_dir (str): Path of
+    the directory to write log files. ext (str): File extension to be
+    searched. batch_size (int): Size of the file batches to be returned.
+    max_workers (int): Maximum number of workers to be used by the
+    ThreadPoolExecutor. timing (bool): Whether to logging.info timing
+    information.
     """
 
     t0 = time.time()
@@ -207,29 +210,32 @@ def fivebhist_runner(
 
     if timing is True:
         logging.info(
-            f"Total time to run feature extraction: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Total time to run feature extraction: "
+            f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
 
 
 if __name__ == "__main__":
-    """
-    Main entry point of the program. Parses command-line arguments, reads the config file,
-    overwrites config values if command line arguments are provided, and then runs the 5BHIST algorithm.
+    """Main entry point of the program. Parses command-line arguments,
+    reads the config file, overwrites config values if command line arguments
+    are provided, and then runs the 5BHIST algorithm.
 
     Supports the following command-line arguments:
         --data_root: The root directory of the DICOM files.
         --log_dir: The directory to save the log files.
-        --final_file: The name of the final text file containing paths to good images.
+        --final_file: The name of the final text file containing paths to good
+            images.
         --batch_size: The number of files to load at a time.
         --ext: The file extension to be searched.
-        --max_workers: The maximum number of workers to be used by the ThreadPoolExecutor.
+        --max_workers: The maximum number of workers to be used by the
+            ThreadPoolExecutor.
         --timing: Whether to logging.info timing information.
     """
     # read the config file
     config = ConfigParser()
     config.read("config.ini")
 
-    parser = argparse.ArgumentParser(description="Image feature extraction task.")
+    parser = argparse.ArgumentParser(description="Image feature extraction " "task.")
     parser.add_argument(
         "--data_root",
         type=str,
