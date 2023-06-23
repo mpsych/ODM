@@ -12,8 +12,6 @@ import datetime
 import numpy as np
 import time
 
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -48,10 +46,13 @@ def load_data_batch(files, timing):
         ".TIFF",
     ]
     data_dict = {}
-    for index, file in tqdm(enumerate(files), desc="Loading files", total=len(files)):
+    for index, file in tqdm(enumerate(files), desc="Loading files",
+                            total=len(files)):
         try:
-            if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(""):
-                data_dict[index] = [dicom.dcmread(file).pixel_array, file]  # DICOM
+            if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(
+                    ""):
+                data_dict[index] = [dicom.dcmread(file).pixel_array,
+                                    file]  # DICOM
             elif file.endswith(tuple(img_formats)):
                 with Image.open(file) as img:
                     data_dict[index] = [np.array(img), file]  # Non-DICOM
@@ -254,7 +255,7 @@ def vae_runner(log_dir,
 
     # Process the files in batches
     for i in range(0, len(all_files), batch_size):
-        file_batch = all_files[i : i + batch_size]
+        file_batch = all_files[i: i + batch_size]
 
         # Load the data batch after running 5bhist algorithm
         data_dict = load_data_batch(file_batch, timing)
@@ -316,7 +317,7 @@ if __name__ == "__main__":
     config.read("config.ini")
 
     parser = argparse.ArgumentParser(
-        description="Runs the Variational AutoEncoder (VAE) algorithm on " 
+        description="Runs the Variational AutoEncoder (VAE) algorithm on "
                     "given data."
     )
     parser.add_argument(
@@ -329,7 +330,7 @@ if __name__ == "__main__":
         "--caselist",
         type=str,
         default=config["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM " 
+        help="The path to the text file containing the paths of the DICOM "
              "files.",
     )
     parser.add_argument(

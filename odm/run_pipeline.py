@@ -23,7 +23,8 @@ def setup_logging(logfile_, level="INFO", verbose_=False):
         level=loglevel_,
         handlers=[
             logging.FileHandler(logfile_),
-            logging.StreamHandler(sys.stdout) if verbose_ else logging.NullHandler(),
+            logging.StreamHandler(
+                sys.stdout) if verbose_ else logging.NullHandler(),
         ],
     )
     logging.info("Logging initialized.")
@@ -119,7 +120,7 @@ def get_vae_args(config_):
         "--caselist",
         type=str,
         default=config_["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM " 
+        help="The path to the text file containing the paths of the DICOM "
              "files.",
     )
     parser_.add_argument(
