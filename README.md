@@ -79,7 +79,7 @@ docker build -t odm .
 docker run -it odm
 ```
 
-1. **Using a pre-built Docker image from Docker Hub.**
+2. **Using a pre-built Docker image from Docker Hub.**
 
 - Pull the Docker image from Docker Hub:
 
