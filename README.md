@@ -56,45 +56,44 @@ conda activate ODM
 
 Ensure you have Docker installed. You can check your Docker version by running `docker --version` in your command line. We have also provided a Dockerfile which can be used to build a Docker image and run the software in a container. To do this, first, make sure you have Docker installed on your system. Then, follow the steps below:
 
-
 We provide two ways to use Docker with ODM:
 
 1. **Building the Docker image from the Dockerfile provided in the repository.**
 
-* Clone the repository:
+- Clone the repository:
 
 ```bash
 git clone https://github.com/mpsych/ODM.git
 cd ODM
 ```
 
-* Build the Docker image:
+- Build the Docker image:
 
 ```bash
 docker build -t odm .
 ```
-* Run the Docker container:
+
+- Run the Docker container:
 
 ```bash
 docker run -it odm
 ```
 
-2. **Using a pre-built Docker image from Docker Hub.**
+1. **Using a pre-built Docker image from Docker Hub.**
 
-* Pull the Docker image from Docker Hub:
+- Pull the Docker image from Docker Hub:
 
 ```bash
-docker pull highrez/odm:latest
+docker pull mpsych/odm:latest
 ```
 
-* Run the Docker container:
+- Run the Docker container:
 
 ```bash
-docker run -it highrez/odm:latest
+docker run -it mpsych/odm:latest
 ```
 
 For both methods, if your project requires access to local files or directories (e.g., for data input or output), you can mount a local directory inside the Docker container using the `-v` flag:
-
 
 ```bash
 docker run -it -v /path/to/local/directory:/path/to/container/directory odm
