@@ -5,7 +5,7 @@ import logging
 import sys
 
 
-def setup_logging(logfile, level='INFO', verbose=False):
+def setup_logging(logfile_, level='INFO', verbose_=False):
     """
     Setup logging to stdout and file.
 
@@ -19,9 +19,9 @@ def setup_logging(logfile, level='INFO', verbose=False):
         format="%(asctime)s - %(levelname)s - %(message)s",
         level=loglevel,
         handlers=[
-            logging.FileHandler(logfile),
+            logging.FileHandler(logfile_),
             logging.StreamHandler(
-                sys.stdout) if verbose else logging.NullHandler(),
+                sys.stdout) if verbose_ else logging.NullHandler(),
         ],
     )
     logging.info("Logging initialized.")
@@ -100,16 +100,17 @@ def get_vae_args(config_):
         description="Stage 2 mammogram Outlier detection task."
     )
     parser_.add_argument(
+        "--log_dir",
+        type=str,
+        default=config_["DEFAULT"]["log_dir"],
+        help="Directory to save the log files.",
+    )
+    parser_.add_argument(
         "--caselist",
         type=str,
         default=config_["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM files.",
-    )
-    parser_.add_argument(
-        "--contamination",
-        type=float,
-        default=config_["VAE"]["contamination"],
-        help="The proportion of outliers in the data.",
+        help="The path to the text file containing the paths of the DICOM "
+             "files.",
     )
     parser_.add_argument(
         "--batch_size",
@@ -177,8 +178,8 @@ def run_stage2(args_):
     """
     try:
         gp, bp = vae_runner(
+            log_dir=args_.log_dir,
             caselist=args_.caselist,
-            contamination=args_.contamination,
             batch_size=args_.batch_size,
             verbose=args_.verbose,
             timing=args_.timing,
@@ -189,10 +190,6 @@ def run_stage2(args_):
 
     write_to_file(args_.good_output, gp)
     write_to_file(args_.bad_output, bp)
-    # print(f"Good paths written to {args_.good_output}")
-    # print(f"Bad paths written to {args_.bad_output}")
-    # print("number of good paths:", len(gp))
-    # print("****** Outlier detection complete. ******")
     logging.info(f"Good paths written to {args_.good_output}")
     logging.info(f"Bad paths written to {args_.bad_output}")
     logging.info("number of good paths:", len(gp))
@@ -235,10 +232,10 @@ if __name__ == "__main__":
     verbose = config.getboolean('DEFAULT', 'verbose')
     setup_logging(logfile, loglevel, verbose)
 
-    logging.info("Starting 5BHIST runner.")
-    args1 = get_5bhist_args(config)
-    run_stage1(args1)
-    logging.info("5BHIST runner completed.")
+    # logging.info("Starting 5BHIST runner.")
+    # args1 = get_5bhist_args(config)
+    # run_stage1(args1)
+    # logging.info("5BHIST runner completed.")
 
     logging.info("Starting VAE runner.")
     args2 = get_vae_args(config)

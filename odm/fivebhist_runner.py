@@ -277,7 +277,7 @@ if __name__ == "__main__":
 
     validate_inputs(**vars(args))
 
-    logging.info_properties("5BHIST Runner", **vars(args))
+    print_properties("5BHIST Runner", **vars(args))
 
     try:
         fivebhist_runner(

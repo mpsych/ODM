@@ -16,9 +16,12 @@ def print_properties(tite, **kwargs) -> None:
     """
     max_key_length = max([len(key) for key in kwargs.keys()])
     max_val_length = max([len(str(val)) for val in kwargs.values()])
-    max_length = max(max_key_length + max_val_length + 5,
-                     len(tite) + len('Running ') +
-                     len(' with the following properties:'))
+    max_line_length = max_key_length + max_val_length + 3
+    header_length = len('Running ') + len(tite) + len(
+        ' with the following properties:')
+    logging_prefix_length = 33
+
+    max_length = max(max_line_length, header_length) + logging_prefix_length
 
     print("-" * max_length)
     logging.info(f"Running {tite} with the following properties:")
@@ -59,6 +62,9 @@ def validate_inputs(**kwargs) -> None:
     # check if the good output has valid parent directories
     good_output = kwargs.get("good_output", None)
     if good_output is not None:
+        # join good_output with log_dir if it is not a full path
+        if not os.path.isfile(good_output):
+            good_output = os.path.join(log_dir, good_output)
         parent_dir = os.path.dirname(good_output)
         if not parent_dir or not os.path.isdir(parent_dir):
             raise NotADirectoryError(f"Directory {parent_dir} does not exist.")
@@ -66,6 +72,9 @@ def validate_inputs(**kwargs) -> None:
     # check if the bad output has valid parent directories
     bad_output = kwargs.get("bad_output", None)
     if bad_output is not None:
+        # join bad_output with log_dir if it is not a full path
+        if not os.path.isfile(bad_output):
+            bad_output = os.path.join(log_dir, bad_output)
         parent_dir = os.path.dirname(bad_output)
         if not parent_dir or not os.path.isdir(parent_dir):
             raise NotADirectoryError(f"Directory {parent_dir} does not exist.")
@@ -79,7 +88,8 @@ def validate_inputs(**kwargs) -> None:
                 os.makedirs(parent_dir, exist_ok=True)
             except Exception as e:
                 raise NotADirectoryError(
-                    f"Directory {parent_dir} does not exist and could not be created."
+                    f"Directory {parent_dir} does not exist and could not be "
+                    f"created."
                 )
 
     # check if the data root has valid parent directories
@@ -101,7 +111,8 @@ def validate_inputs(**kwargs) -> None:
         if not isinstance(ext, str):
             raise ValueError("File extension must be a string.")
 
-    # check if the n_proc is a valid positive integer and not above the number of cores
+    # check if the n_proc is a valid positive integer and not above the
+    # number of cores
     n_proc = kwargs.get("max_workers", None)
     if n_proc is not None:
         if not isinstance(n_proc, int) or n_proc <= 0:

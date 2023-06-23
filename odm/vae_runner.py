@@ -1,9 +1,7 @@
-import os
 import numpy as np
 import datetime
 import time
 from outlier_detector import OutlierDetector
-import logging
 import argparse
 from configparser import ConfigParser
 from tqdm import tqdm
@@ -77,19 +75,20 @@ def get_pixel_list(data, timing):
 
     if timing:
         logging.info(
-            f"Time to generate pixel arrays: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Time to generate pixel arrays: "
+            f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
     return imgs
 
 
-def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
+def vae_runner(log_dir, caselist, batch_size, verbose, timing):
     """
     Run the VAE algorithm on a list of files.
 
     Parameters:
     log_dir (str): The path to the directory where the log file will be written.
-    caselist (str): The path to a file containing a list of file paths to be processed.
-    contamination (float): The proportion of outliers in the data set.
+    caselist (str): The path to a file containing a list of file paths to be
+        processed.
     batch_size (int): The number of files to process at a time.
     verbose (bool): Whether to logging.info verbose output.
     timing (bool): Whether to logging.info timing information.
@@ -113,6 +112,8 @@ def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
     with open(caselist, "r") as f_:
         all_files = [path_.strip() for path_ in f_.readlines()]
 
+    logging.info(f"Number of files to process: {len(all_files)}")
+
     # Process the files in batches
     for i in range(0, len(all_files), batch_size):
         file_batch = all_files[i : i + batch_size]
@@ -129,7 +130,6 @@ def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
         # Run the outlier detection algorithm
         decision_scores, labels = OutlierDetector.detect_outliers(
             features=feats,
-            contamination=contamination,
             verbose=verbose,
             timing=timing,
         )
@@ -149,24 +149,26 @@ def vae_runner(log_dir, caselist, contamination, batch_size, verbose, timing):
 
     if timing:
         logging.info(
-            f"Time to run VAE on {len(all_files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Time to run VAE on {len(all_files)} "
+            f"files: {datetime.timedelta(seconds=time.time() - t0)}"
         )
     return good_img_paths, bad_img_paths
 
 
 if __name__ == "__main__":
-    """
-    Main entry point of the program. Parses command-line arguments, reads the config file,
-    overwrites config values if command line arguments are provided, and then runs the VAE algorithm.
+    """Main entry point of the program. Parses command-line arguments, 
+    reads the config file, overwrites config values if command line arguments 
+    are provided, and then runs the VAE algorithm.
 
-    Supports the following command-line arguments:
-        log_dir (str): The path to the directory where the log file will be written.
-        caselist (str): Path to the text file containing the paths of the DICOM files.
-        verbose (bool, optional): Whether to logging.info progress messages to stdout. Defaults to False.
-        batch_size (int, optional): The number of files to process in each batch. Defaults to 100.
-        good_output (str, optional): The path to the text file to write the final list of good files to.
-        bad_output (str, optional): The path to the text file to write the final list of bad files to.
-    """
+    Supports the following command-line arguments: log_dir (str): The path to 
+    the directory where the log file will be written. caselist (str): Path to 
+    the text file containing the paths of the DICOM files. verbose (bool, 
+    optional): Whether to logging.info progress messages to stdout. Defaults 
+    to False. batch_size (int, optional): The number of files to process in 
+    each batch. Defaults to 100. good_output (str, optional): The path to the 
+    text file to write the final list of good files to. bad_output (str, 
+    optional): The path to the text file to write the final list of bad files 
+    to."""
     # read the config file
     config = ConfigParser()
     config.read("config.ini")
@@ -223,15 +225,14 @@ if __name__ == "__main__":
 
     validate_inputs(**vars(args))
 
-    logging.info_properties("VAE Runner", **vars(args))
+    print_properties("VAE Runner", **vars(args))
 
     good_paths, bad_paths = vae_runner(
-        args.log_dir,
-        args.caselist,
-        args.contamination,
-        args.batch_size,
-        args.verbose,
-        args.timing,
+        log_dir=args.log_dir,
+        caselist=args.caselist,
+        batch_size=args.batch_size,
+        verbose=args.verbose,
+        timing=args.timing,
     )
 
     # check if output files are just file names or full paths

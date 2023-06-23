@@ -1,7 +1,6 @@
 import logging
 import os
 import time
-import contextlib
 from vae import vae
 import numpy as np
 
@@ -13,11 +12,9 @@ class OutlierDetector:
 
     @staticmethod
     def detect_outliers(
-        features: np.ndarray,
-        redirect_output: bool = False,
-        return_decision_function: bool = False,
-        timing: bool = False,
-        **kwargs,
+            features: np.ndarray,
+            verbose: bool = False,
+            timing: bool = False
     ):
         """
         Detect outliers using PyOD's VAE algorithm.
@@ -35,9 +32,8 @@ class OutlierDetector:
         **kwargs : (dict)
             Keyword arguments to be passed to the PyOD algorithm.
         """
-
         t0 = time.time()
-        verbose = kwargs.get("verbose", False)
+        decision_scores = []
 
         if verbose is False:
             print("Turning off verbose mode...")
@@ -46,43 +42,24 @@ class OutlierDetector:
             logging.getLogger("pyod").disabled = True
 
         errors = {}
-        decision_scores = None
 
         try:
-            if redirect_output:
-                print(f"Running VAE...", end=" ")
-                out_file = "outlier_output.txt"
-                with open(out_file, "w") as f:
-                    with contextlib.redirect_stdout(f):
-                        if return_decision_function:
-                            (
-                                decision_scores,
-                                labels,
-                                t_decision_function,
-                            ) = vae(features, **kwargs)
-                        else:
-                            decision_scores, labels = vae(features, **kwargs)
-            else:
-                print(f"Running VAE...")
-
-                if return_decision_function:
-                    (
-                        decision_scores,
-                        labels,
-                        t_decision_function,
-                    ) = vae(features, **kwargs)
-
-                else:
-                    decision_scores, labels = vae(features, **kwargs)
+            print(f"Running VAE...")
+            decision_scores, labels = vae(features)
 
         # if the algorithm causes an error, skip it and move on
         except Exception as e:
-            logging.error(f"Error running VAE on data {features} with exception {e}")
+            import traceback
+            traceback.print_exc()
+            logging.error(f"Error running VAE on data "
+                          f"{features} with exception {e}")
             errors["VAE"] = e
             labels = None
 
+
         print(
-            f"about to save and len of tscore and imgs is {len(decision_scores)} and {len(features)}"
+            f"about to save and len of tscore and imgs is "
+            f"{len(decision_scores)} and {len(features)}"
         )
 
         if timing:

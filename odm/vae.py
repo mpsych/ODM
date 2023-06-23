@@ -3,11 +3,15 @@
 # can be found here:
 # https://pyod.readthedocs.io/en/latest/pyod.models.html#pyod.models.vae.VAE
 # ==============================================================================
+import logging
+
+import keras
 import numpy as np
-import configparser
 import ast
 from keras.losses import get
 from pyod.models.vae import VAE
+from keras.losses import mse
+from utils import *
 
 
 def vae(data_x):
@@ -20,6 +24,7 @@ def vae(data_x):
     config.read("config.ini")
 
     # Preprocess the data
+    logging.info("Preprocessing data in vae...")
     if isinstance(data_x, np.ndarray):
         if len(data_x.shape) == 1:
             data_x = data_x.reshape(-1, 1)
@@ -28,66 +33,121 @@ def vae(data_x):
     elif isinstance(data_x, list):
         for i in range(len(data_x)):
             if len(data_x[i]) == 1:
-                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 1), "constant")
+                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 1),
+                                   "constant")
             if len(data_x[i]) == 3:
-                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 3), "constant")
+                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 3),
+                                   "constant")
         data_x = np.array(data_x)
+    else:
+        raise TypeError("Data type not supported.")
+
+    logging.info("Data preprocessing complete.")
 
     # Now fetch the hyperparameters from the configuration file,
     # with fallbacks for defaults
-    latent_dim = config.getint("HYPERPARAMS", "latent_dim", fallback=2)
-    hidden_activation = config.get("HYPERPARAMS", "hidden_activation", fallback="relu")
-    output_activation = config.get(
-        "HYPERPARAMS", "output_activation", fallback="sigmoid"
-    )
-    loss = get(config.get("HYPERPARAMS", "loss", fallback="mse"))
-    optimizer = config.get("HYPERPARAMS", "optimizer", fallback="adam")
-    epochs = config.getint("HYPERPARAMS", "epochs", fallback=100)
-    batch_size = config.getint("HYPERPARAMS", "batch_size", fallback=32)
-    dropout_rate = config.getfloat("HYPERPARAMS", "dropout_rate", fallback=0.2)
-    l2_regularizer = config.getfloat("HYPERPARAMS", "l2_regularizer", fallback=0.1)
-    validation_size = config.getfloat("HYPERPARAMS", "validation_size", fallback=0.1)
-    preprocessing = config.getboolean("HYPERPARAMS", "preprocessing", fallback=True)
-    verbose = config.getint("HYPERPARAMS", "verbose", fallback=1)
-    contamination = config.getfloat("HYPERPARAMS", "contamination", fallback=0.1)
-    gamma = config.getfloat("HYPERPARAMS", "gamma", fallback=1.0)
-    capacity = config.getfloat("HYPERPARAMS", "capacity", fallback=0.0)
-    random_state = ast.literal_eval(
-        config.get("HYPERPARAMS", "random_state", fallback="None")
-    )
-    encoder_neurons = ast.literal_eval(
-        config.get("HYPERPARAMS", "encoder_neurons", fallback="None")
-    )
-    decoder_neurons = ast.literal_eval(
-        config.get("HYPERPARAMS", "decoder_neurons", fallback="None")
-    )
+    logging.info("Fetching hyperparameters from config file...")
+    # Fetch hyperparameters as strings
+    raw_values = {
+        param: config.get("HYPERPARAMS", param, fallback=None)
+        for param in [
+            "latent_dim",
+            "hidden_activation",
+            "output_activation",
+            "loss",
+            "optimizer",
+            "epochs",
+            "batch_size",
+            "dropout_rate",
+            "l2_regularizer",
+            "validation_size",
+            "preprocessing",
+            "verbose",
+            "contamination",
+            "gamma",
+            "capacity",
+            "random_state",
+            "encoder_neurons",
+            "decoder_neurons"
+        ]
+    }
 
-    # Check for None values (since configparser treats empty fields as strings)
-    random_state = None if random_state == "None" else random_state
-    encoder_neurons = None if encoder_neurons == "None" else encoder_neurons
-    decoder_neurons = None if decoder_neurons == "None" else decoder_neurons
+    # Prepare default values
+    default_values = {
+        "latent_dim": 2,
+        "hidden_activation": "relu",
+        "output_activation": "sigmoid",
+        "loss": mse,
+        "optimizer": "adam",
+        "epochs": 100,
+        "batch_size": 32,
+        "dropout_rate": 0.2,
+        "l2_regularizer": 0.1,
+        "validation_size": 0.1,
+        "preprocessing": True,
+        "verbose": 1,
+        "contamination": 0.1,
+        "gamma": 1.0,
+        "capacity": 0.0,
+        "random_state": None,
+        "encoder_neurons": None,
+        "decoder_neurons": None
+    }
+
+    # Convert string values to correct types, with fallbacks for empty fields
+    values = {}
+    for param, raw_val in raw_values.items():
+        if raw_val == '':
+            # Use default value if field is empty
+            values[param] = default_values[param]
+        else:
+            try:
+                if param in ["latent_dim", "epochs", "batch_size", "verbose"]:
+                    # These parameters should be integers
+                    values[param] = int(raw_val)
+                elif param in ["dropout_rate", "l2_regularizer",
+                               "validation_size",
+                               "contamination", "gamma", "capacity"]:
+                    # These parameters should be floats
+                    values[param] = float(raw_val)
+                elif param in ["random_state", "encoder_neurons",
+                               "decoder_neurons"]:
+                    # These parameters should be evaluated as Python expressions
+                    values[param] = ast.literal_eval(raw_val)
+                elif param in ["loss"]:
+                    # These parameters should be evaluated as Keras loss
+                    # functions
+                    values[param] = get(raw_val)
+                else:
+                    # All other parameters are kept as strings
+                    values[param] = raw_val
+            except Exception as e:
+                logging.error(f"Error processing parameter {param}: {e}")
+                return None
+    logging.info("Hyperparameters fetched.")
+
+    print_properties("Hyperparameters", **values)
 
     # Initialize and train the VAE
-    clf = VAE(
-        encoder_neurons=encoder_neurons,
-        decoder_neurons=decoder_neurons,
-        latent_dim=latent_dim,
-        hidden_activation=hidden_activation,
-        output_activation=output_activation,
-        loss=loss,
-        optimizer=optimizer,
-        epochs=epochs,
-        batch_size=batch_size,
-        dropout_rate=dropout_rate,
-        l2_regularizer=l2_regularizer,
-        validation_size=validation_size,
-        preprocessing=preprocessing,
-        verbose=verbose,
-        random_state=random_state,
-        contamination=contamination,
-        gamma=gamma,
-        capacity=capacity,
-    )
+    # Create your VAE model with the above parameters
+    clf = VAE(contamination=values["contamination"],
+              gamma=values["gamma"],
+              capacity=values["capacity"],
+              latent_dim=values["latent_dim"],
+              encoder_neurons=values["encoder_neurons"],
+              decoder_neurons=values["decoder_neurons"],
+              hidden_activation=values["hidden_activation"],
+              output_activation=values["output_activation"],
+              loss=values["loss"],
+              optimizer=values["optimizer"],
+              epochs=values["epochs"],
+              batch_size=values["batch_size"],
+              dropout_rate=values["dropout_rate"],
+              l2_regularizer=values["l2_regularizer"],
+              validation_size=values["validation_size"],
+              preprocessing=values["preprocessing"],
+              verbose=values["verbose"],
+              random_state=values["random_state"])
 
     clf.fit(data_x)
 
