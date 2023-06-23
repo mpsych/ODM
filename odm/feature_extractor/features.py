@@ -1,5 +1,4 @@
 import logging
-
 from .normalizations import Normalize
 from tqdm import tqdm
 from types import SimpleNamespace

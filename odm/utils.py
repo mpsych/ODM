@@ -17,8 +17,7 @@ def print_properties(tite, **kwargs) -> None:
     max_key_length = max([len(key) for key in kwargs.keys()])
     max_val_length = max([len(str(val)) for val in kwargs.values()])
     max_line_length = max_key_length + max_val_length + 3
-    header_length = len('Running ') + len(tite) + len(
-        ' with the following properties:')
+    header_length = len("Running ") + len(tite) + len(" with the following properties:")
     logging_prefix_length = 33
 
     max_length = max(max_line_length, header_length) + logging_prefix_length
@@ -120,8 +119,7 @@ def validate_inputs(**kwargs) -> None:
         import multiprocessing
 
         if n_proc > multiprocessing.cpu_count():
-            raise ValueError(
-                "Number of workers must not exceed the number of cores.")
+            raise ValueError("Number of workers must not exceed the number of cores.")
 
     # check if time is a valid boolean
     time = kwargs.get("time", None)
@@ -129,4 +127,4 @@ def validate_inputs(**kwargs) -> None:
         if not isinstance(time, bool):
             raise ValueError("Time must be a boolean.")
 
-    print("All inputs are valid.")
+    logging.info("All inputs are valid.")

@@ -33,11 +33,9 @@ def vae(data_x):
     elif isinstance(data_x, list):
         for i in range(len(data_x)):
             if len(data_x[i]) == 1:
-                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 1),
-                                   "constant")
+                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 1), "constant")
             if len(data_x[i]) == 3:
-                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 3),
-                                   "constant")
+                data_x[i] = np.pad(data_x[i], (0, len(data_x[0]) - 3), "constant")
         data_x = np.array(data_x)
     else:
         raise TypeError("Data type not supported.")
@@ -68,7 +66,7 @@ def vae(data_x):
             "capacity",
             "random_state",
             "encoder_neurons",
-            "decoder_neurons"
+            "decoder_neurons",
         ]
     }
 
@@ -91,13 +89,13 @@ def vae(data_x):
         "capacity": 0.0,
         "random_state": None,
         "encoder_neurons": None,
-        "decoder_neurons": None
+        "decoder_neurons": None,
     }
 
     # Convert string values to correct types, with fallbacks for empty fields
     values = {}
     for param, raw_val in raw_values.items():
-        if raw_val == '':
+        if raw_val == "":
             # Use default value if field is empty
             values[param] = default_values[param]
         else:
@@ -105,13 +103,17 @@ def vae(data_x):
                 if param in ["latent_dim", "epochs", "batch_size", "verbose"]:
                     # These parameters should be integers
                     values[param] = int(raw_val)
-                elif param in ["dropout_rate", "l2_regularizer",
-                               "validation_size",
-                               "contamination", "gamma", "capacity"]:
+                elif param in [
+                    "dropout_rate",
+                    "l2_regularizer",
+                    "validation_size",
+                    "contamination",
+                    "gamma",
+                    "capacity",
+                ]:
                     # These parameters should be floats
                     values[param] = float(raw_val)
-                elif param in ["random_state", "encoder_neurons",
-                               "decoder_neurons"]:
+                elif param in ["random_state", "encoder_neurons", "decoder_neurons"]:
                     # These parameters should be evaluated as Python expressions
                     values[param] = ast.literal_eval(raw_val)
                 elif param in ["loss"]:
@@ -130,24 +132,26 @@ def vae(data_x):
 
     # Initialize and train the VAE
     # Create your VAE model with the above parameters
-    clf = VAE(contamination=values["contamination"],
-              gamma=values["gamma"],
-              capacity=values["capacity"],
-              latent_dim=values["latent_dim"],
-              encoder_neurons=values["encoder_neurons"],
-              decoder_neurons=values["decoder_neurons"],
-              hidden_activation=values["hidden_activation"],
-              output_activation=values["output_activation"],
-              loss=values["loss"],
-              optimizer=values["optimizer"],
-              epochs=values["epochs"],
-              batch_size=values["batch_size"],
-              dropout_rate=values["dropout_rate"],
-              l2_regularizer=values["l2_regularizer"],
-              validation_size=values["validation_size"],
-              preprocessing=values["preprocessing"],
-              verbose=values["verbose"],
-              random_state=values["random_state"])
+    clf = VAE(
+        contamination=values["contamination"],
+        gamma=values["gamma"],
+        capacity=values["capacity"],
+        latent_dim=values["latent_dim"],
+        encoder_neurons=values["encoder_neurons"],
+        decoder_neurons=values["decoder_neurons"],
+        hidden_activation=values["hidden_activation"],
+        output_activation=values["output_activation"],
+        loss=values["loss"],
+        optimizer=values["optimizer"],
+        epochs=values["epochs"],
+        batch_size=values["batch_size"],
+        dropout_rate=values["dropout_rate"],
+        l2_regularizer=values["l2_regularizer"],
+        validation_size=values["validation_size"],
+        preprocessing=values["preprocessing"],
+        verbose=values["verbose"],
+        random_state=values["random_state"],
+    )
 
     clf.fit(data_x)
 

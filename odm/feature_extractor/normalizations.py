@@ -1,3 +1,4 @@
+import logging
 import time
 import types
 
@@ -53,7 +54,7 @@ class Normalize:
         else:
             raise TypeError("Unknown type of images")
         if timing:
-            print("Extract pixels: {}".format(time.time() - t0))
+            logging.info("Extract pixels: {}".format(time.time() - t0))
         return pixels
 
     @staticmethod
@@ -117,7 +118,7 @@ class Normalize:
             normalized_pixels = Normalize._minmax_helper(pixels, bins=bins)
 
         if timing:
-            print("minmax: {}".format(time.time() - t0))
+            logging.info("minmax: {}".format(time.time() - t0))
         return normalized_pixels, None
 
     @staticmethod
@@ -156,6 +157,6 @@ class Normalize:
             raise ValueError("Invalid normalization type")
 
         if timing:
-            print("get_norm: {}".format(time.time() - t0))
+            logging.info("get_norm: {}".format(time.time() - t0))
 
         return normalized, filtered

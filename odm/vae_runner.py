@@ -1,13 +1,13 @@
-import numpy as np
-import datetime
-import time
-from outlier_detector import OutlierDetector
-import argparse
 from configparser import ConfigParser
-from tqdm import tqdm
-from PIL import Image
 from feature_extractor import *
+from outlier_detector import OutlierDetector
+from PIL import Image
+from tqdm import tqdm
 from utils import *
+import argparse
+import datetime
+import numpy as np
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -156,26 +156,25 @@ def vae_runner(log_dir, caselist, batch_size, verbose, timing):
 
 
 if __name__ == "__main__":
-    """Main entry point of the program. Parses command-line arguments, 
-    reads the config file, overwrites config values if command line arguments 
+    """Main entry point of the program. Parses command-line arguments,
+    reads the config file, overwrites config values if command line arguments
     are provided, and then runs the VAE algorithm.
 
-    Supports the following command-line arguments: log_dir (str): The path to 
-    the directory where the log file will be written. caselist (str): Path to 
-    the text file containing the paths of the DICOM files. verbose (bool, 
-    optional): Whether to logging.info progress messages to stdout. Defaults 
-    to False. batch_size (int, optional): The number of files to process in 
-    each batch. Defaults to 100. good_output (str, optional): The path to the 
-    text file to write the final list of good files to. bad_output (str, 
-    optional): The path to the text file to write the final list of bad files 
+    Supports the following command-line arguments: log_dir (str): The path to
+    the directory where the log file will be written. caselist (str): Path to
+    the text file containing the paths of the DICOM files. verbose (bool,
+    optional): Whether to logging.info progress messages to stdout. Defaults
+    to False. batch_size (int, optional): The number of files to process in
+    each batch. Defaults to 100. good_output (str, optional): The path to the
+    text file to write the final list of good files to. bad_output (str,
+    optional): The path to the text file to write the final list of bad files
     to."""
     # read the config file
     config = ConfigParser()
     config.read("config.ini")
 
     parser = argparse.ArgumentParser(
-        description="Runs the Variational AutoEncoder (VAE) algorithm on "
-                    "given data."
+        description="Runs the Variational AutoEncoder (VAE) algorithm on " "given data."
     )
     parser.add_argument(
         "--log_dir",
@@ -187,8 +186,7 @@ if __name__ == "__main__":
         "--caselist",
         type=str,
         default=config["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM "
-             "files.",
+        help="The path to the text file containing the paths of the DICOM " "files.",
     )
     parser.add_argument(
         "--batch_size",
