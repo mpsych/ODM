@@ -6,18 +6,21 @@ import sys
 
 
 def setup_logging(logfile_, level="INFO", verbose_=False):
-    """
-    Setup logging to stdout and file.
+    """ Setup logging to stdout and file.
 
     Parameters
-    logfile (str): The path to the log file.
-    level (str): The logging level.
-    verbose (bool): Whether to print to stdout.
+    ----------
+    logfile_ : str
+        The path to the log file.
+    level : str, optional
+        The logging level.
+    verbose_ : bool, optional
+        Whether to log to stdout.
     """
-    loglevel = getattr(logging, level.upper(), None)
+    loglevel_ = getattr(logging, level.upper(), None)
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(message)s",
-        level=loglevel,
+        level=loglevel_,
         handlers=[
             logging.FileHandler(logfile_),
             logging.StreamHandler(sys.stdout) if verbose_ else logging.NullHandler(),
@@ -27,13 +30,17 @@ def setup_logging(logfile_, level="INFO", verbose_=False):
 
 
 def get_5bhist_args(config_):
-    """Get the arguments for the 5BHIST runner.
+    """ Get the arguments for the 5BHIST runner.
 
     Parameters
+    ----------
     config_ : configparser.ConfigParser
+        The configuration file parser.
 
     Returns
+    -------
     args_ : argparse.Namespace
+        The arguments for the 5BHIST runner.
     """
     parser_ = argparse.ArgumentParser(
         description="Stage 1 mammogram Outlier detection task."
@@ -87,13 +94,17 @@ def get_5bhist_args(config_):
 
 
 def get_vae_args(config_):
-    """Gets the arguments for the VAE runner.
+    """ Gets the arguments for the VAE runner.
 
     Parameters
+    ----------
     config_ : configparser.ConfigParser
+        The configuration file parser.
 
     Returns
+    -------
     args_ : argparse.Namespace
+        The arguments for the VAE runner.
     """
     parser_ = argparse.ArgumentParser(
         description="Stage 2 mammogram Outlier detection task."
@@ -108,7 +119,8 @@ def get_vae_args(config_):
         "--caselist",
         type=str,
         default=config_["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM " "files.",
+        help="The path to the text file containing the paths of the DICOM " 
+             "files.",
     )
     parser_.add_argument(
         "--batch_size",
@@ -147,10 +159,12 @@ def get_vae_args(config_):
 
 
 def run_stage1(args_):
-    """Runs the 5BHIST runner.
+    """ Runs the 5BHIST runner.
 
     Parameters
+    ----------
     args_ : argparse.Namespace
+        the arguments for the 5BHIST runner.
     """
     try:
         fivebhist_runner(
@@ -171,17 +185,19 @@ def run_stage1(args_):
 
 
 def run_stage2(args_):
-    """Runs the VAE runner.
+    """ Runs the VAE runner.
 
     Parameters
+    ----------
     args_ : argparse.Namespace
+        The arguments for the VAE runner.
     """
     try:
         gp, bp = vae_runner(
             log_dir=args_.log_dir,
             caselist=args_.caselist,
             batch_size=args_.batch_size,
-            verbose=args_.verbose,
+            log_to_terminal=args_.verbose,
             timing=args_.timing,
         )
     except Exception as e:
@@ -207,11 +223,14 @@ def run_stage2(args_):
 
 
 def write_to_file(file_path, paths):
-    """Writes the paths to a text file.
+    """ Writes the paths to a text file.
 
     Parameters
-    file_path (str) : The path to the text file.
-    paths (list) : The list of paths to write to the file.
+    ----------
+    file_path : str
+        The path to the text file.
+    paths : list
+        The list of paths to write to the file.
     """
     try:
         with open(file_path, "w") as f_:
@@ -226,6 +245,7 @@ def write_to_file(file_path, paths):
 
 
 if __name__ == "__main__":
+    """ The main function for the automated ODM pipeline. """
     config = configparser.ConfigParser()
     config.read("config.ini")
 

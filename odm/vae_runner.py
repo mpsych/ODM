@@ -1,29 +1,36 @@
 from configparser import ConfigParser
 from feature_extractor import *
+from keras.losses import get
+from keras.losses import mse
 from outlier_detector import OutlierDetector
 from PIL import Image
 from tqdm import tqdm
 from utils import *
 import argparse
+import ast
 import datetime
 import numpy as np
 import time
-import ast
-from keras.losses import get
-from keras.losses import mse
+
+
 
 logger = logging.getLogger(__name__)
 
 
 def load_data_batch(files, timing):
-    """
-    Load a batch of DICOM files into a dictionary.
+    """ Load a batch of DICOM files into a dictionary.
 
-    Parameters:
-        files (list): A list of file paths to be loaded.
+    Parameters
+    ----------
+    files : list
+        A list of file paths.
+    timing : bool
+        Whether to time the loading process.
 
-    Returns: dict: A dictionary where the keys are indices and the values are
-        tuples of DICOM data and the file path.
+    Returns
+    -------
+    data_dict : dict
+        A dictionary containing the loaded images and their file paths.
     """
     import pydicom as dicom
 
@@ -60,18 +67,26 @@ def load_data_batch(files, timing):
     return data_dict
 
 
-def get_pixel_list(data, timing):
-    """
-    Generate a list of pixel arrays from a dictionary of DICOM data.
+def get_pixel_list(data, timing) -> list:
+    """ Generate a list of pixel arrays from a dictionary of DICOM data.
 
-    Parameters:
-    data (dict): A dictionary of DICOM data.
+    Parameters
+    ----------
+    data : dict
+        A dictionary of DICOM data.
+    timing : bool
+        Whether to time the process.
+
+    Returns
+    -------
+    images : list
+        A list of pixel arrays.
     """
     t0 = time.time()
-    imgs = []
+    images = []
     for key in tqdm(data, desc="Generating pixel arrays"):
         try:
-            imgs.append(data[key][0])
+            images.append(data[key][0])
         except Exception as e:
             logging.info(f"Error reading file {data[key][1]}: {e}")
 
@@ -80,28 +95,32 @@ def get_pixel_list(data, timing):
             f"Time to generate pixel arrays: "
             f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
-    return imgs
+    return images
 
 
-def get_hyperparameters(timing=False):
-    """Fetches the hyperparameters from the configuration file.
+def get_hyperparameters(timing=False) -> dict:
+    """ Fetches the hyperparameters from the configuration file.
 
-    Parameters:
-        timing (bool): Whether to time the function.
+    Parameters
+    ----------
+    timing : bool
+        Whether to time the process.
 
-    Returns:
-        dict: A dictionary of hyperparameters.
+    Returns
+    -------
+    hyperparameters : dict
+        A dictionary of hyperparameters.
     """
     if timing:
         t0 = time.time()
 
     # read the config file
-    config = ConfigParser()
-    config.read("config.ini")
+    config_ = ConfigParser()
+    config_.read("config.ini")
 
     # Fetch hyperparameters as strings
     raw_values = {
-        param: config.get("HYPERPARAMS", param, fallback=None)
+        param: config_.get("HYPERPARAMS", param, fallback=None)
         for param in [
             "latent_dim",
             "hidden_activation",
@@ -167,7 +186,9 @@ def get_hyperparameters(timing=False):
                 ]:
                     # These parameters should be floats
                     values[param] = float(raw_val)
-                elif param in ["random_state", "encoder_neurons", "decoder_neurons"]:
+                elif param in ["random_state",
+                               "encoder_neurons",
+                               "decoder_neurons"]:
                     # These parameters should be evaluated as Python expressions
                     values[param] = ast.literal_eval(raw_val)
                 elif param in ["loss"]:
@@ -186,21 +207,25 @@ def get_hyperparameters(timing=False):
 
     if timing:
         logging.info(
-            f"Time to fetch hyperparameters: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Time to fetch hyperparameters: "
+            f"{datetime.timedelta(seconds=time.time() - t0)}"
         )
     return values
 
 
-def vae_runner(log_dir, caselist, batch_size, verbose, timing):
-    """
-    Run the VAE algorithm on a list of files.
+def vae_runner(log_dir,
+               caselist,
+               batch_size,
+               log_to_terminal,
+               timing) -> tuple[list[str], list[str]]:
+    """ Run the VAE algorithm on a list of files.
 
     Parameters:
     log_dir (str): The path to the directory where the log file will be written.
     caselist (str): The path to a file containing a list of file paths to be
         processed.
     batch_size (int): The number of files to process at a time.
-    verbose (bool): Whether to logging.info verbose output.
+    log_to_terminal (bool): Whether to logging.info verbose output.
     timing (bool): Whether to logging.info timing information.
     """
     t0 = time.time()
@@ -243,7 +268,7 @@ def vae_runner(log_dir, caselist, batch_size, verbose, timing):
         # Run the outlier detection algorithm
         decision_scores, labels = OutlierDetector.detect_outliers(
             features=feats,
-            verbose=verbose,
+            log_to_terminal=log_to_terminal,
             timing=timing,
             **values,
         )
@@ -270,25 +295,29 @@ def vae_runner(log_dir, caselist, batch_size, verbose, timing):
 
 
 if __name__ == "__main__":
-    """Main entry point of the program. Parses command-line arguments,
+    """ Main entry point of the program. Parses command-line arguments,
     reads the config file, overwrites config values if command line arguments
     are provided, and then runs the VAE algorithm.
 
-    Supports the following command-line arguments: log_dir (str): The path to
-    the directory where the log file will be written. caselist (str): Path to
-    the text file containing the paths of the DICOM files. verbose (bool,
-    optional): Whether to logging.info progress messages to stdout. Defaults
-    to False. batch_size (int, optional): The number of files to process in
-    each batch. Defaults to 100. good_output (str, optional): The path to the
-    text file to write the final list of good files to. bad_output (str,
-    optional): The path to the text file to write the final list of bad files
-    to."""
+    Supports the following command-line arguments: 
+        --log_dir (str): The path to the directory where the log file will be 
+        written. 
+        --caselist (str): Path to the text file containing the paths of the 
+        DICOM files.
+        --batch_size (int, optional): The number of files to process in each 
+        batch. 
+        --good_output (str, optional): The path to the text file to write the 
+        final list of good files to. 
+        --bad_output (str, optional): The path to the text file to write the 
+        final list of bad files to.
+    """
     # read the config file
     config = ConfigParser()
     config.read("config.ini")
 
     parser = argparse.ArgumentParser(
-        description="Runs the Variational AutoEncoder (VAE) algorithm on " "given data."
+        description="Runs the Variational AutoEncoder (VAE) algorithm on " 
+                    "given data."
     )
     parser.add_argument(
         "--log_dir",
@@ -300,7 +329,8 @@ if __name__ == "__main__":
         "--caselist",
         type=str,
         default=config["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM " "files.",
+        help="The path to the text file containing the paths of the DICOM " 
+             "files.",
     )
     parser.add_argument(
         "--batch_size",
@@ -343,7 +373,7 @@ if __name__ == "__main__":
         log_dir=args.log_dir,
         caselist=args.caselist,
         batch_size=args.batch_size,
-        verbose=args.verbose,
+        log_to_terminal=args.verbose,
         timing=args.timing,
     )
 

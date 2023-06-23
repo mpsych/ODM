@@ -1,26 +1,32 @@
-import concurrent
-import datetime
-import time
-import numpy as np
-import argparse
-from PIL import Image
-from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from configparser import ConfigParser
 from feature_extractor import *
+from PIL import Image
+from tqdm import tqdm
 from utils import *
+import argparse
+import concurrent
+import datetime
+import numpy as np
+import time
 
 
 def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
-    """
-    Get all image paths in a directory, including subdirectories.
+    """ Get all image paths in a directory, including subdirectories.
 
-    Parameters:
-    root_dir (str): Path of the directory to be searched.
-    ext (str): File extension to be searched.
+    Parameters
+    ----------
+    root_dir : str
+        Root directory to be searched.
+    ext : str
+        File extension to be searched.
+    timing : bool, optional
+        Whether to time the function. The default is False.
 
-    Returns:
-    set: A set of image paths.
+    Returns
+    -------
+    image_paths : set
+        Set of all image paths.
     """
     t0 = time.time()
     image_paths = set()
@@ -41,18 +47,22 @@ def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
 
 
 def file_batches_generator(directory, ext, batch_size) -> tuple:
-    """
-    Generator that yields batches of files from a directory and the total
+    """ Generator that yields batches of files from a directory and the total
     file count.
 
-    Parameters:
-    directory (str): Path of the directory to be searched.
-    ext (str): File extension to be searched.
-    batch_size (int): Size of the file batches to be returned.
+    Parameters
+    ----------
+    directory : str
+        Directory to be searched.
+    ext : str
+        File extension to be searched.
+    batch_size : int
+        Number of files to be yielded at a time.
 
-    Yields:
-    list: A list of file paths of size 'batch_size'.
-    int: Total file count.
+    Yields
+    ------
+    tuple
+        A tuple containing a list of file paths and the total file count.
     """
     all_files = []
     for root, dirs, files in os.walk(directory):
@@ -65,14 +75,19 @@ def file_batches_generator(directory, ext, batch_size) -> tuple:
 
 
 def load_data_batch(files, timing: bool = False) -> dict:
-    """
-    Load a batch of DICOM files into a dictionary.
+    """ Load a batch of DICOM files into a dictionary.
 
-    Parameters:
-    files (list): A list of file paths to be loaded.
+    Parameters
+    ----------
+    files : list
+        List of file paths.
+    timing : bool, optional
+        Whether to time the function. The default is False.
 
-    Returns: dict: A dictionary where the keys are indices and the values are
-    tuples of DICOM data and the file path.
+    Returns
+    -------
+    data_dict : dict
+        Dictionary of DICOM data.
     """
     import pydicom as dicom
 
@@ -100,14 +115,19 @@ def load_data_batch(files, timing: bool = False) -> dict:
 
 
 def get_pixel_list(data, timing: bool = False) -> list:
-    """
-    Generate a list of pixel arrays from a dictionary of DICOM data.
+    """ Generate a list of pixel arrays from a dictionary of DICOM data.
 
-    Parameters:
-    data (dict): A dictionary of DICOM data.
+    Parameters
+    ----------
+    data : dict
+        Dictionary of DICOM data.
+    timing : bool, optional
+        Whether to time the function. The default is False.
 
-    Returns:
-    list: A list of pixel arrays.
+    Returns
+    -------
+    imgs : list
+        List of pixel arrays.
     """
     import pydicom as dicom
 
@@ -134,12 +154,19 @@ def get_pixel_list(data, timing: bool = False) -> list:
 
 
 def process_batch(file_batch, timing: bool = False):
-    """
-    Process a batch of files.
+    """ Process a batch of files.
 
-    Parameters:
-    file_batch (list): A list of file paths to be processed.
-    timing (bool): Whether to logging.info timing information.
+    Parameters
+    ----------
+    file_batch : list
+        List of file paths.
+    timing : bool, optional
+        Whether to time the function. The default is False.
+
+    Returns
+    -------
+    bad_paths : set
+        Set of bad file paths.
     """
     bad_paths = set()
     data_dict = load_data_batch(file_batch, timing=timing)
@@ -156,16 +183,28 @@ def process_batch(file_batch, timing: bool = False):
 def fivebhist_runner(
     data_root, final_file, log_dir, ext, batch_size, max_workers, timing: bool = False
 ) -> None:
-    """
-    Run the 5-BHIST Stage 1 algorithm.
+    """ Run the 5-BHIST Stage 1 algorithm.
 
-    Parameters: data_root (str): Path of the directory to be searched.
-    final_file (str): Path of the file to be written. log_dir (str): Path of
-    the directory to write log files. ext (str): File extension to be
-    searched. batch_size (int): Size of the file batches to be returned.
-    max_workers (int): Maximum number of workers to be used by the
-    ThreadPoolExecutor. timing (bool): Whether to logging.info timing
-    information.
+    Parameters
+    ----------
+    data_root : str
+        Root directory of the data.
+    final_file : str
+        Path to the final file.
+    log_dir : str
+        Path to the log directory.
+    ext : str
+        File extension to be searched.
+    batch_size : int
+        Number of files to be yielded at a time.
+    max_workers : int
+        Maximum number of workers.
+    timing : bool, optional
+        Whether to time the function. The default is False.
+
+    Returns
+    -------
+    None.
     """
 
     t0 = time.time()
@@ -216,7 +255,7 @@ def fivebhist_runner(
 
 
 if __name__ == "__main__":
-    """Main entry point of the program. Parses command-line arguments,
+    """ Main entry point of the program. Parses command-line arguments,
     reads the config file, overwrites config values if command line arguments
     are provided, and then runs the 5BHIST algorithm.
 

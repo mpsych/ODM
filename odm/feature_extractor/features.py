@@ -12,14 +12,15 @@ class Features:
     @staticmethod
     def histogram(
         pixels: Union[
-            List[Union[SimpleNamespace, np.ndarray]], SimpleNamespace, np.ndarray
+            List[Union[SimpleNamespace, np.ndarray]],
+            SimpleNamespace,
+            np.ndarray
         ],
         bins: int = 256,
         timing: bool = False,
         norm_type: str = None,
     ) -> np.ndarray:
-        """
-        Create histogram of data
+        """ Create histogram of data
 
         Parameters
         ----------
@@ -69,8 +70,7 @@ class Features:
         bins: int = 256,
         timing: bool = False,
     ) -> np.ndarray:
-        """
-        Get features of data
+        """ Get features of data
 
         Parameters
         ----------
