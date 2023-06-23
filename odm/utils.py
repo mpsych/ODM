@@ -6,16 +6,18 @@ config = configparser.ConfigParser()
 config.read("config.ini")
 
 
-def print_properties(tite, **kwargs) -> None:
-    """
-    Print the properties of the VAE Runner.
+def print_properties(tite, **properties) -> None:
+    """ Print the properties of the VAE Runner.
 
-    Parameters:
-    tite (str) : The title of the runner.
-    **kwargs : The properties of the runner.
+    Parameters
+    ----------
+    tite : str
+        The title of the runner.
+    **properties
+        The properties of the runner.
     """
-    max_key_length = max([len(key) for key in kwargs.keys()])
-    max_val_length = max([len(str(val)) for val in kwargs.values()])
+    max_key_length = max([len(key) for key in properties.keys()])
+    max_val_length = max([len(str(val)) for val in properties.values()])
     max_line_length = max_key_length + max_val_length + 3
     header_length = (
         len("Running ") + len(tite) + len("with the following " "properties:")
@@ -29,14 +31,18 @@ def print_properties(tite, **kwargs) -> None:
     print("-" * max_length)
     logging.info(f"{'Property':<{max_key_length}} {'Value':<{max_val_length}}")
     print("-" * max_length)
-    for key, value in kwargs.items():
+    for key, value in properties.items():
         logging.info(f"{key:<{max_key_length}} {str(value):<{max_val_length}}")
     print("-" * max_length)
 
 
 def validate_inputs(**kwargs) -> None:
-    """
-    Validate the inputs.
+    """ Validate the inputs.
+
+    Parameters
+    ----------
+    **kwargs : dict, Any
+        The keyword arguments to validate.
     """
     log_dir = config["DEFAULT"]["log_dir"]
     # check if the caselist is in kwargs and if so if it is a valid file

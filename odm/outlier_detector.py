@@ -1,16 +1,13 @@
+from typing import Tuple
+from vae import vae
 import logging
+import numpy as np
 import os
 import time
-from typing import Tuple
-
-from vae import vae
-import numpy as np
 
 
 class OutlierDetector:
-    """
-    Class for outlier detection.
-    """
+    """ Class for outlier detection. """
 
     @staticmethod
     def detect_outliers(features: np.ndarray,
@@ -18,18 +15,17 @@ class OutlierDetector:
                         timing: bool = False,
                         **kwargs
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Detect outliers using PyOD's VAE algorithm.
+        """ Detect outliers using PyOD's VAE algorithm.
 
-        Parameters:
-        -----------
-        features : (list)
+        Parameters
+        ----------
+        features : list
             List of features to be used for outlier detection.
-        log_to_terminal : (bool)
+        log_to_terminal : bool, optional
             Whether to print verbose output. The default is False.
-        timing : (bool)
+        timing : bool, optional
             Whether to time the function. The default is False.
-        **kwargs : (dict)
+        **kwargs : dict, Any
             hyperparameters for VAE
         """
         t0 = time.time()

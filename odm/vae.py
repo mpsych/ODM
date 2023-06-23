@@ -3,19 +3,27 @@
 # can be found here:
 # https://pyod.readthedocs.io/en/latest/pyod.models.html#pyod.models.vae.VAE
 # ==============================================================================
-import numpy as np
 from pyod.models.vae import VAE
 from utils import *
+import numpy as np
 
 
 def vae(data_x, **hyperparams):
-    """Variable Autoencoder (VAE) for outlier detection
+    """ Variable Autoencoder (VAE) for outlier detection
 
     Parameters
-    data_x : array-like of shape (n_samples, n_features)
-        The input samples.
-    hyperparams : dict
+    ----------
+    data_x : np.ndarray
+        Data to be used for outlier detection
+    **hyperparams : dict, Any
         Hyperparameters for VAE
+
+    Returns
+    -------
+    np.ndarray
+        Decision scores for each data point
+    np.ndarray
+        Labels for each data point
     """
     config = configparser.ConfigParser()
     config.read("config.ini")
