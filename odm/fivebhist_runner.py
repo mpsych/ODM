@@ -270,6 +270,16 @@ if __name__ == "__main__":
             ThreadPoolExecutor.
         --timing: Whether to logging.info timing information.
     """
+    # initial parser to get the location of the config file
+    initial_parser = argparse.ArgumentParser(add_help=False)
+    initial_parser.add_argument(
+        "--config_loc",
+        type=str,
+        default="config.ini",
+        help="Location of the configuration file.",
+    )
+    args, remaining_argv = initial_parser.parse_known_args()
+    
     # read the config file
     config = ConfigParser()
     config.read("config.ini")
