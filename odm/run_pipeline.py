@@ -284,5 +284,5 @@ if __name__ == "__main__":
     total_time = t1 - t0
     logging.info(f"Total time: {total_time} seconds.")
     process = psutil.Process(os.getpid())
-    memory = process.memory_info().rss / 1024 ** 2
+    memory = process.memory_info().rss / 1024**2
     logging.info(f"Memory usage: {memory} MB.")

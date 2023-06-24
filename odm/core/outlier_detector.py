@@ -1,5 +1,6 @@
 from typing import Tuple
 from .vae import vae
+
 import logging
 import numpy as np
 import os
