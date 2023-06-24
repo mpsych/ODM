@@ -15,6 +15,7 @@ dependencies:
   - hyperopt
   - pydicom
   - gdcm
+  - cudatoolkit
   - pip:
       - pylibjpeg[all]
       - tensorflow
