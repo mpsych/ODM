@@ -3,8 +3,9 @@
 # can be found here:
 # https://pyod.readthedocs.io/en/latest/pyod.models.html#pyod.models.vae.VAE
 # ==============================================================================
-from pyod.models.vae import VAE
 from .__configloc__ import CONFIG_LOC
+from pyod.models.vae import VAE
+
 import configparser
 import logging
 import numpy as np

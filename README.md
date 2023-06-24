@@ -199,11 +199,13 @@ For additional help/usage instructions for any of the scripts, run `python SCRIP
 
 ### Configuration Path Settings
 
-The configuration file location is set in the `__configloc__.py` file. The default location is set to:
+The configuration file location is set in the `__configloc__.py` file. The default 
+contents of this file are:
 ```python
-CONFIG_LOC = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.ini')
+import os
+CONFIG_LOC = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../config/config.ini')
 ```
-This will construct a file path to a `config.ini` file that resides in the same directory as the Python script that is being executed. 
+This will construct a file path to a `config.ini` file that resides in the `config` directory of the project.
 
 You can change this to point to your custom configuration file by modifying the `CONFIG_LOC` variable in the `__configloc__.py` file.
 
