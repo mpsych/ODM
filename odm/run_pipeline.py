@@ -1,10 +1,14 @@
-from fivebhist_runner import *
-from vae_runner import *
 from __configloc__ import CONFIG_LOC
+from fivebhist_runner import fivebhist_runner
+from utils import print_properties, validate_inputs
+from vae_runner import vae_runner
+import argparse
 import configparser
 import logging
+import os
 import psutil
 import sys
+import time
 
 
 def setup_logging(logfile_, level="INFO", verbose_=False):
@@ -280,4 +284,5 @@ if __name__ == "__main__":
     total_time = t1 - t0
     logging.info(f"Total time: {total_time} seconds.")
     process = psutil.Process(os.getpid())
-    memory = process.memory_info().rss / 1024 ** 2
+    memory = process.memory_info().rss / 1024**2
+    logging.info(f"Memory usage: {memory} MB.")

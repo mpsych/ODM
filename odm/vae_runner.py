@@ -1,4 +1,4 @@
-import os
+from __configloc__ import CONFIG_LOC
 from configparser import ConfigParser
 from feature_extractor import *
 from keras.losses import get
@@ -6,13 +6,13 @@ from keras.losses import mse
 from outlier_detector import OutlierDetector
 from PIL import Image
 from tqdm import tqdm
-from __configloc__ import CONFIG_LOC
 from utils import validate_inputs, print_properties
-import logging
 import argparse
 import ast
 import datetime
+import logging
 import numpy as np
+import os
 import time
 
 logger = logging.getLogger(__name__)

@@ -16,3 +16,4 @@ statsmodels
 tensorflow
 future
 setuptools
+psutil

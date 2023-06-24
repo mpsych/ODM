@@ -1,8 +1,8 @@
-import logging
 from .normalizations import Normalize
 from tqdm import tqdm
 from types import SimpleNamespace
 from typing import Union, List
+import logging
 import mahotas as mh
 import numpy as np
 import time
