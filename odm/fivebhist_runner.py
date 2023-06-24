@@ -1,16 +1,16 @@
-import logging
-import os
+from __configloc__ import CONFIG_LOC
 from concurrent.futures import ThreadPoolExecutor
 from configparser import ConfigParser
-from feature_extractor import *
+from feature_extractor import Features
 from PIL import Image
 from tqdm import tqdm
-from __configloc__ import CONFIG_LOC
 from utils import validate_inputs, print_properties
 import argparse
 import concurrent
 import datetime
+import logging
 import numpy as np
+import os
 import time
 
 

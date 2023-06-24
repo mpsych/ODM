@@ -16,6 +16,8 @@ dependencies:
   - pydicom
   - gdcm
   - cudatoolkit
+  - pytest
+  - psutil
   - pip:
       - pylibjpeg[all]
       - tensorflow

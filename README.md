@@ -18,6 +18,7 @@ The algorithms and strategies employed by ODM are based on our published researc
     - [Separate Pipeline Stages](#separate-pipeline-stages)
     - [1. Five-Bin Histogram Based Thresholding (5BHIST)](#1-five-bin-histogram-based-thresholding-5bhist)
     - [2. Variational Autoencoder (VAE)](#2-variational-autoencoder-vae)
+    - [Configuration Path Settings](#configuration-path-settings)
     - [Configuration](#configuration)
     - [Hyperparameters](#hyperparameters)
     - [Additional Documentation](#additional-documentation)
@@ -50,6 +51,15 @@ Or create a new conda environment and install the required packages:
 ```bash
 conda env create -f environment.yml
 conda activate ODM
+```
+
+#### Test Installation
+
+To Test the installation, set the path in the `__configloc__.py` to the `test_config.ini` file located in the tests folder. Then, run the following command from the odm directory:
+
+
+```bash
+python run_pipeline.py
 ```
 
 ### Docker Installation
@@ -185,6 +195,24 @@ python vae_runner.py --caselist PATH_TO_YOUR_FINAL_FILE --contamination CONTAMIN
 See the description of the `run_pipeline.py` script above for a description of these parameters.
 
 For additional help/usage instructions for any of the scripts, run `python SCRIPT_NAME.py -h`.
+
+### Configuration Path Settings
+
+The configuration file location is set in the `__configloc__.py` file. The default location is set to:
+```python
+CONFIG_LOC = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.ini')
+```
+This will construct a file path to a `config.ini` file that resides in the same directory as the Python script that is being executed. 
+
+You can change this to point to your custom configuration file by modifying the `CONFIG_LOC` variable in the `__configloc__.py` file.
+
+For example, if your configuration file is located at `/home/user/my_config.ini`, you should change the `CONFIG_LOC` variable like this:
+```python
+CONFIG_LOC = '/home/user/my_config.ini' 
+```
+
+Please note that this file is imported in the scripts that use the config location. Ensure the file location is correct before running these scripts.
+
 
 ### Configuration
 
