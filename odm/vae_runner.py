@@ -13,7 +13,7 @@ import numpy as np
 import time
 
 logger = logging.getLogger(__name__)
-
+CONFIG_LOC = "config.ini"
 
 def load_data_batch(files, timing):
     """ Load a batch of DICOM files into a dictionary.
@@ -117,7 +117,7 @@ def get_hyperparameters(timing=False) -> dict:
 
     # read the config file
     config_ = ConfigParser()
-    config_.read("config.ini")
+    config_.read(CONFIG_LOC)
 
     # Fetch hyperparameters as strings
     raw_values = {
@@ -312,9 +312,19 @@ if __name__ == "__main__":
         --bad_output (str, optional): The path to the text file to write the 
         final list of bad files to.
     """
+    initial_parser = argparse.ArgumentParser(add_help=False)
+    initial_parser.add_argument(
+        "--config_loc",
+        type=str,
+        default=CONFIG_LOC,
+        help="Location of the configuration file.",
+    )
+    args, remaining_argv = initial_parser.parse_known_args()
+    CONFIG_LOC = args.config_loc
+    
     # read the config file
     config = ConfigParser()
-    config.read("config.ini")
+    config.read(CONFIG_LOC)
 
     parser = argparse.ArgumentParser(
         description="Runs the Variational AutoEncoder (VAE) algorithm on "

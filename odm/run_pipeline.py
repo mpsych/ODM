@@ -1,5 +1,6 @@
 from fivebhist_runner import *
 from vae_runner import *
+import argparse
 import configparser
 import logging
 import sys
@@ -247,8 +248,16 @@ def write_to_file(file_path, paths):
 
 if __name__ == "__main__":
     """ The main function for the automated ODM pipeline. """
+    parser = argparse.ArgumentParser(description="Outlier Detection Module")
+    parser.add_argument(
+        "--config_loc",
+        type=str,
+        default="config.ini",
+        help="Path to the configuration file.",
+    )
+    args = parser.parse_args()
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read(args.config_loc)
 
     log_dir = config["DEFAULT"]["log_dir"]
     logfile = config["DEFAULT"]["logfile"]
