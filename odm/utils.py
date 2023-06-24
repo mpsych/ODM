@@ -1,13 +1,14 @@
 import configparser
 import logging
 import os
+from __configloc__ import CONFIG_LOC
 
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read(CONFIG_LOC)
 
 
 def print_properties(tite, **properties) -> None:
-    """ Print the properties of the VAE Runner.
+    """Print the properties of the VAE Runner.
 
     Parameters
     ----------
@@ -37,7 +38,7 @@ def print_properties(tite, **properties) -> None:
 
 
 def validate_inputs(**kwargs) -> None:
-    """ Validate the inputs.
+    """Validate the inputs.
 
     Parameters
     ----------

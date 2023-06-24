@@ -1,13 +1,14 @@
 from fivebhist_runner import *
 from vae_runner import *
-import argparse
+from __configloc__ import CONFIG_LOC
 import configparser
 import logging
+import psutil
 import sys
 
 
 def setup_logging(logfile_, level="INFO", verbose_=False):
-    """ Setup logging to stdout and file.
+    """Setup logging to stdout and file.
 
     Parameters
     ----------
@@ -24,15 +25,14 @@ def setup_logging(logfile_, level="INFO", verbose_=False):
         level=loglevel_,
         handlers=[
             logging.FileHandler(logfile_),
-            logging.StreamHandler(
-                sys.stdout) if verbose_ else logging.NullHandler(),
+            logging.StreamHandler(sys.stdout) if verbose_ else logging.NullHandler(),
         ],
     )
     logging.info("Logging initialized.")
 
 
 def get_5bhist_args(config_):
-    """ Get the arguments for the 5BHIST runner.
+    """Get the arguments for the 5BHIST runner.
 
     Parameters
     ----------
@@ -96,7 +96,7 @@ def get_5bhist_args(config_):
 
 
 def get_vae_args(config_):
-    """ Gets the arguments for the VAE runner.
+    """Gets the arguments for the VAE runner.
 
     Parameters
     ----------
@@ -121,8 +121,7 @@ def get_vae_args(config_):
         "--caselist",
         type=str,
         default=config_["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM "
-             "files.",
+        help="The path to the text file containing the paths of the DICOM files.",
     )
     parser_.add_argument(
         "--batch_size",
@@ -161,7 +160,7 @@ def get_vae_args(config_):
 
 
 def run_stage1(args_):
-    """ Runs the 5BHIST runner.
+    """Runs the 5BHIST runner.
 
     Parameters
     ----------
@@ -187,7 +186,7 @@ def run_stage1(args_):
 
 
 def run_stage2(args_):
-    """ Runs the VAE runner.
+    """Runs the VAE runner.
 
     Parameters
     ----------
@@ -225,7 +224,7 @@ def run_stage2(args_):
 
 
 def write_to_file(file_path, paths):
-    """ Writes the paths to a text file.
+    """Writes the paths to a text file.
 
     Parameters
     ----------
@@ -247,17 +246,10 @@ def write_to_file(file_path, paths):
 
 
 if __name__ == "__main__":
-    """ The main function for the automated ODM pipeline. """
-    parser = argparse.ArgumentParser(description="Outlier Detection Module")
-    parser.add_argument(
-        "--config_loc",
-        type=str,
-        default="config.ini",
-        help="Path to the configuration file.",
-    )
-    args = parser.parse_args()
+    """The main function for the automated ODM pipeline."""
+    t0 = time.time()
     config = configparser.ConfigParser()
-    config.read(args.config_loc)
+    config.read(CONFIG_LOC)
 
     log_dir = config["DEFAULT"]["log_dir"]
     logfile = config["DEFAULT"]["logfile"]
@@ -282,3 +274,10 @@ if __name__ == "__main__":
     args2 = get_vae_args(config)
     run_stage2(args2)
     logging.info("VAE runner completed.")
+
+    # print total time and memory usage
+    t1 = time.time()
+    total_time = t1 - t0
+    logging.info(f"Total time: {total_time} seconds.")
+    process = psutil.Process(os.getpid())
+    memory = process.memory_info().rss / 1024 ** 2
