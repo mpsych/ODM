@@ -4,12 +4,14 @@
 # https://pyod.readthedocs.io/en/latest/pyod.models.html#pyod.models.vae.VAE
 # ==============================================================================
 from pyod.models.vae import VAE
-from utils import *
+from __configloc__ import CONFIG_LOC
+import configparser
+import logging
 import numpy as np
 
 
 def vae(data_x, **hyperparams):
-    """ Variable Autoencoder (VAE) for outlier detection
+    """Variable Autoencoder (VAE) for outlier detection
 
     Parameters
     ----------
@@ -26,7 +28,7 @@ def vae(data_x, **hyperparams):
         Labels for each data point
     """
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read(CONFIG_LOC)
 
     # Preprocess the data
     logging.info("Preprocessing data in vae...")

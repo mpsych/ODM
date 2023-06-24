@@ -1,3 +1,4 @@
+import os
 from configparser import ConfigParser
 from feature_extractor import *
 from keras.losses import get
@@ -5,7 +6,9 @@ from keras.losses import mse
 from outlier_detector import OutlierDetector
 from PIL import Image
 from tqdm import tqdm
-from utils import *
+from __configloc__ import CONFIG_LOC
+from utils import validate_inputs, print_properties
+import logging
 import argparse
 import ast
 import datetime
@@ -13,10 +16,10 @@ import numpy as np
 import time
 
 logger = logging.getLogger(__name__)
-CONFIG_LOC = "config.ini"
+
 
 def load_data_batch(files, timing):
-    """ Load a batch of DICOM files into a dictionary.
+    """Load a batch of DICOM files into a dictionary.
 
     Parameters
     ----------
@@ -46,13 +49,10 @@ def load_data_batch(files, timing):
         ".TIFF",
     ]
     data_dict = {}
-    for index, file in tqdm(enumerate(files), desc="Loading files",
-                            total=len(files)):
+    for index, file in tqdm(enumerate(files), desc="Loading files", total=len(files)):
         try:
-            if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(
-                    ""):
-                data_dict[index] = [dicom.dcmread(file).pixel_array,
-                                    file]  # DICOM
+            if file.endswith(".dcm") or file.endswith(".DCM") or file.endswith(""):
+                data_dict[index] = [dicom.dcmread(file).pixel_array, file]  # DICOM
             elif file.endswith(tuple(img_formats)):
                 with Image.open(file) as img:
                     data_dict[index] = [np.array(img), file]  # Non-DICOM
@@ -62,14 +62,15 @@ def load_data_batch(files, timing):
             logging.info(f"Error reading file {file}: {e}")
 
     if timing:
+        end = time.time()
         logging.info(
-            f"Time to load {len(files)} files: {datetime.timedelta(seconds=time.time() - t0)}"
+            f"Time to load {len(files)} files: {datetime.timedelta(seconds=end - t0)}"
         )
     return data_dict
 
 
 def get_pixel_list(data, timing) -> list:
-    """ Generate a list of pixel arrays from a dictionary of DICOM data.
+    """Generate a list of pixel arrays from a dictionary of DICOM data.
 
     Parameters
     ----------
@@ -100,7 +101,7 @@ def get_pixel_list(data, timing) -> list:
 
 
 def get_hyperparameters(timing=False) -> dict:
-    """ Fetches the hyperparameters from the configuration file.
+    """Fetches the hyperparameters from the configuration file.
 
     Parameters
     ----------
@@ -112,8 +113,7 @@ def get_hyperparameters(timing=False) -> dict:
     hyperparameters : dict
         A dictionary of hyperparameters.
     """
-    if timing:
-        t0 = time.time()
+    t0 = time.time()
 
     # read the config file
     config_ = ConfigParser()
@@ -187,9 +187,7 @@ def get_hyperparameters(timing=False) -> dict:
                 ]:
                     # These parameters should be floats
                     values[param] = float(raw_val)
-                elif param in ["random_state",
-                               "encoder_neurons",
-                               "decoder_neurons"]:
+                elif param in ["random_state", "encoder_neurons", "decoder_neurons"]:
                     # These parameters should be evaluated as Python expressions
                     values[param] = ast.literal_eval(raw_val)
                 elif param in ["loss"]:
@@ -214,12 +212,10 @@ def get_hyperparameters(timing=False) -> dict:
     return values
 
 
-def vae_runner(log_dir,
-               caselist,
-               batch_size,
-               log_to_terminal,
-               timing) -> tuple[list[str], list[str]]:
-    """ Run the VAE algorithm on a list of files.
+def vae_runner(
+    log_dir, caselist, batch_size, log_to_terminal, timing
+) -> tuple[list[str], list[str]]:
+    """Run the VAE algorithm on a list of files.
 
     Parameters:
     log_dir (str): The path to the directory where the log file will be written.
@@ -255,7 +251,7 @@ def vae_runner(log_dir,
 
     # Process the files in batches
     for i in range(0, len(all_files), batch_size):
-        file_batch = all_files[i: i + batch_size]
+        file_batch = all_files[i : i + batch_size]
 
         # Load the data batch after running 5bhist algorithm
         data_dict = load_data_batch(file_batch, timing)
@@ -296,39 +292,28 @@ def vae_runner(log_dir,
 
 
 if __name__ == "__main__":
-    """ Main entry point of the program. Parses command-line arguments,
+    """Main entry point of the program. Parses command-line arguments,
     reads the config file, overwrites config values if command line arguments
     are provided, and then runs the VAE algorithm.
 
-    Supports the following command-line arguments: 
-        --log_dir (str): The path to the directory where the log file will be 
-        written. 
-        --caselist (str): Path to the text file containing the paths of the 
+    Supports the following command-line arguments:
+        --log_dir (str): The path to the directory where the log file will be
+        written.
+        --caselist (str): Path to the text file containing the paths of the
         DICOM files.
-        --batch_size (int, optional): The number of files to process in each 
-        batch. 
-        --good_output (str, optional): The path to the text file to write the 
-        final list of good files to. 
-        --bad_output (str, optional): The path to the text file to write the 
+        --batch_size (int, optional): The number of files to process in each
+        batch.
+        --good_output (str, optional): The path to the text file to write the
+        final list of good files to.
+        --bad_output (str, optional): The path to the text file to write the
         final list of bad files to.
     """
-    initial_parser = argparse.ArgumentParser(add_help=False)
-    initial_parser.add_argument(
-        "--config_loc",
-        type=str,
-        default=CONFIG_LOC,
-        help="Location of the configuration file.",
-    )
-    args, remaining_argv = initial_parser.parse_known_args()
-    CONFIG_LOC = args.config_loc
-    
     # read the config file
     config = ConfigParser()
     config.read(CONFIG_LOC)
 
     parser = argparse.ArgumentParser(
-        description="Runs the Variational AutoEncoder (VAE) algorithm on "
-                    "given data."
+        description="Runs the Variational AutoEncoder (VAE) algorithm on " "given data."
     )
     parser.add_argument(
         "--log_dir",
@@ -340,8 +325,7 @@ if __name__ == "__main__":
         "--caselist",
         type=str,
         default=config["VAE"]["caselist"],
-        help="The path to the text file containing the paths of the DICOM "
-             "files.",
+        help="The path to the text file containing the paths of the DICOM " "files.",
     )
     parser.add_argument(
         "--batch_size",

@@ -6,13 +6,13 @@ import types
 
 
 class Normalize:
-    """ Class to represent different normalization techniques """
+    """Class to represent different normalization techniques"""
 
     @staticmethod
     def extract_pixels(
         images: Union[np.ndarray, List[np.ndarray]], timing: bool = False
     ) -> List[np.ndarray]:
-        """ Extract pixels from images
+        """Extract pixels from images
 
         Parameters
         ----------
@@ -54,7 +54,7 @@ class Normalize:
 
     @staticmethod
     def _minmax_helper(pixels: np.ndarray, bins: int) -> np.ndarray:
-        """ Helper function to normalize data using minmax method
+        """Helper function to normalize data using minmax method
 
         Parameters
         ----------
@@ -82,7 +82,7 @@ class Normalize:
         timing: bool = False,
         bins: int = 256,
     ) -> Tuple[List[np.ndarray], None]:
-        """ The min-max approach (often called normalization) rescales the
+        """The min-max approach (often called normalization) rescales the
         feature to a fixed range of [0,1] by subtracting the minimum value
         of the feature and then dividing by the range, which is then multiplied
         by 255 to bring the value into the range [0,255].
@@ -121,7 +121,7 @@ class Normalize:
         timing: bool = False,
         bins: int = 256,
     ) -> Tuple[List[np.ndarray], Optional[Any]]:
-        """ Normalize pixels
+        """Normalize pixels
 
         Parameters
         ----------

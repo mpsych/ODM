@@ -7,15 +7,16 @@ import time
 
 
 class OutlierDetector:
-    """ Class for outlier detection. """
+    """Class for outlier detection."""
 
     @staticmethod
-    def detect_outliers(features: np.ndarray,
-                        log_to_terminal: bool = False,
-                        timing: bool = False,
-                        **kwargs
+    def detect_outliers(
+        features: np.ndarray,
+        log_to_terminal: bool = False,
+        timing: bool = False,
+        **kwargs,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """ Detect outliers using PyOD's VAE algorithm.
+        """Detect outliers using PyOD's VAE algorithm.
 
         Parameters
         ----------

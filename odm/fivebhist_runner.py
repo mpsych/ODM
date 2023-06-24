@@ -1,9 +1,12 @@
+import logging
+import os
 from concurrent.futures import ThreadPoolExecutor
 from configparser import ConfigParser
 from feature_extractor import *
 from PIL import Image
 from tqdm import tqdm
-from utils import *
+from __configloc__ import CONFIG_LOC
+from utils import validate_inputs, print_properties
 import argparse
 import concurrent
 import datetime
@@ -12,7 +15,7 @@ import time
 
 
 def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
-    """ Get all image paths in a directory, including subdirectories.
+    """Get all image paths in a directory, including subdirectories.
 
     Parameters
     ----------
@@ -47,7 +50,7 @@ def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
 
 
 def file_batches_generator(directory, ext, batch_size) -> tuple:
-    """ Generator that yields batches of files from a directory and the total
+    """Generator that yields batches of files from a directory and the total
     file count.
 
     Parameters
@@ -75,7 +78,7 @@ def file_batches_generator(directory, ext, batch_size) -> tuple:
 
 
 def load_data_batch(files, timing: bool = False) -> dict:
-    """ Load a batch of DICOM files into a dictionary.
+    """Load a batch of DICOM files into a dictionary.
 
     Parameters
     ----------
@@ -115,7 +118,7 @@ def load_data_batch(files, timing: bool = False) -> dict:
 
 
 def get_pixel_list(data, timing: bool = False) -> list:
-    """ Generate a list of pixel arrays from a dictionary of DICOM data.
+    """Generate a list of pixel arrays from a dictionary of DICOM data.
 
     Parameters
     ----------
@@ -154,7 +157,7 @@ def get_pixel_list(data, timing: bool = False) -> list:
 
 
 def process_batch(file_batch, timing: bool = False):
-    """ Process a batch of files.
+    """Process a batch of files.
 
     Parameters
     ----------
@@ -183,7 +186,7 @@ def process_batch(file_batch, timing: bool = False):
 def fivebhist_runner(
     data_root, final_file, log_dir, ext, batch_size, max_workers, timing: bool = False
 ) -> None:
-    """ Run the 5-BHIST Stage 1 algorithm.
+    """Run the 5-BHIST Stage 1 algorithm.
 
     Parameters
     ----------
@@ -255,7 +258,7 @@ def fivebhist_runner(
 
 
 if __name__ == "__main__":
-    """ Main entry point of the program. Parses command-line arguments,
+    """Main entry point of the program. Parses command-line arguments,
     reads the config file, overwrites config values if command line arguments
     are provided, and then runs the 5BHIST algorithm.
 
@@ -270,19 +273,9 @@ if __name__ == "__main__":
             ThreadPoolExecutor.
         --timing: Whether to logging.info timing information.
     """
-    # initial parser to get the location of the config file
-    initial_parser = argparse.ArgumentParser(add_help=False)
-    initial_parser.add_argument(
-        "--config_loc",
-        type=str,
-        default="config.ini",
-        help="Location of the configuration file.",
-    )
-    args, remaining_argv = initial_parser.parse_known_args()
-    
     # read the config file
     config = ConfigParser()
-    config.read("config.ini")
+    config.read(CONFIG_LOC)
 
     parser = argparse.ArgumentParser(description="Image feature extraction " "task.")
     parser.add_argument(
