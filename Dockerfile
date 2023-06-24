@@ -1,5 +1,5 @@
-# Use an official Python runtime as a parent image
-FROM ubuntu:latest
+# Use an official Tensorflow runtime as a parent image
+FROM tensorflow/tensorflow:latest-gpu-py3-jupyter
 
 # Set the working directory in the container to /app
 WORKDIR /app
@@ -8,15 +8,17 @@ WORKDIR /app
 ENV PATH="/root/miniconda3/bin:${PATH}"
 ENV CONDA_AUTO_UPDATE_CONDA=false
 
-# Install any needed packages specified in requirements.txt
+# Add missing GPG key for CUDA repo
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
+
+# Install wget and git
 RUN apt-get update && apt-get install -y \
-    python3-pip \
-    python3-dev \
-    build-essential \
     wget \
     git \
-    python3 \
-    python3-venv \
+    vim \
+    ack \
+    tree \
+    build-essential \
     python3-setuptools \
     libssl-dev \
     libffi-dev \
@@ -25,7 +27,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN python3 -m pip install --upgrade pip
 
-# install anaconda
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-py39_23.3.1-0-Linux-x86_64.sh \
     && chmod +x Miniconda3-py39_23.3.1-0-Linux-x86_64.sh \
@@ -37,7 +38,7 @@ RUN conda --version
 # clone repo
 RUN git clone https://github.com/mpsych/ODM.git
 
-# change into repo and create conda env from yml file
+# change into repo and install Python requirements
 WORKDIR /app/ODM
 RUN conda env create -f environment.yml
 
@@ -46,5 +47,4 @@ SHELL ["/bin/bash", "-c"]
 RUN echo "source activate ODM" > ~/.bashrc
 ENV PATH /opt/conda/envs/ODM/bin:$PATH
 
-# finish by opening a bash shell for interactive use
 CMD [ "/bin/bash" ]
