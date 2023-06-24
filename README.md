@@ -13,6 +13,7 @@ The algorithms and strategies employed by ODM are based on our published researc
   - [Installation](#installation)
     - [Standard Installation](#standard-installation)
     - [Docker Installation](#docker-installation)
+    - [Test Installation](#test-installation)
   - [Usage](#usage)
     - [Full Outlier Detection Pipeline](#full-outlier-detection-pipeline)
     - [Separate Pipeline Stages](#separate-pipeline-stages)
@@ -51,15 +52,6 @@ Or create a new conda environment and install the required packages:
 ```bash
 conda env create -f environment.yml
 conda activate ODM
-```
-
-#### Test Installation
-
-To Test the installation, set the path in the `__configloc__.py` to the `test_config.ini` file located in the tests folder. Then, run the following command from the odm directory:
-
-
-```bash
-python run_pipeline.py
 ```
 
 ### Docker Installation
@@ -112,6 +104,15 @@ docker run -it -v /path/to/local/directory:/path/to/container/directory odm
 Replace `/path/to/local/directory` with the path to the directory on your host system that you want to access from within the Docker container, and replace `/path/in/container` with the path where you want the directory to be mounted in the Docker container.
 
 In the command above, the `-it` flag starts the container in interactive mode, so you can interact with the command line of the running container, and the -v` flag mounts a local directory inside the container.
+
+### Test Installation
+
+To test the installation, run the following command from the odm directory:
+
+```bash
+python run_tests.py
+``` 
+The run_tests.py script has been designed to facilitate testing in both regular installations and within Docker containers. Therefore, it has now become our preferred method for verifying that ODM has been installed and is functioning correctly. This approach significantly simplifies the testing process as it only requires the execution of a single script, regardless of the type of installation.
 
 ## Usage
 

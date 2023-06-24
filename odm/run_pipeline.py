@@ -1,7 +1,7 @@
-from __configloc__ import CONFIG_LOC
-from fivebhist_runner import fivebhist_runner
-from utils import print_properties, validate_inputs
-from vae_runner import vae_runner
+from core.__configloc__ import CONFIG_LOC
+from core.fivebhist_runner import fivebhist_runner
+from core.utils import print_properties, validate_inputs
+from core.vae_runner import vae_runner
 import argparse
 import configparser
 import logging
@@ -284,5 +284,5 @@ if __name__ == "__main__":
     total_time = t1 - t0
     logging.info(f"Total time: {total_time} seconds.")
     process = psutil.Process(os.getpid())
-    memory = process.memory_info().rss / 1024**2
+    memory = process.memory_info().rss / 1024 ** 2
     logging.info(f"Memory usage: {memory} MB.")
