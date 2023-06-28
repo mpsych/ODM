@@ -56,7 +56,11 @@ conda activate ODM
 
 ### Docker Installation
 
-Ensure you have Docker installed. You can check your Docker version by running `docker --version` in your command line. We have also provided a Dockerfile which can be used to build a Docker image and run the software in a container. To do this, first, make sure you have Docker installed on your system. Then, follow the steps below:
+Ensure you have Docker installed. You can check your Docker version by running `docker --version` in your command line. We have also provided a Dockerfile which can be used to build a Docker image and run the software in a container. To do this, first, make sure you have Docker installed on your system.
+
+Running with GPU support requires that the host system has the NVIDIA Container Toolkit installed. For more information, see the [NVIDIA Container Toolkit documentation](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+
+#### Building and Running the Docker Image
 
 We provide two ways to use Docker with ODM:
 
@@ -111,7 +115,8 @@ To test the installation, run the following command from the odm directory:
 
 ```bash
 python run_tests.py
-``` 
+```
+
 The run_tests.py script has been designed to facilitate testing in both regular installations and within Docker containers. Therefore, it has now become our preferred method for verifying that ODM has been installed and is functioning correctly. This approach significantly simplifies the testing process as it only requires the execution of a single script, regardless of the type of installation.
 
 ## Usage
@@ -199,23 +204,25 @@ For additional help/usage instructions for any of the scripts, run `python SCRIP
 
 ### Configuration Path Settings
 
-The configuration file location is set in the `__configloc__.py` file. The default 
+The configuration file location is set in the `__configloc__.py` file. The default
 contents of this file are:
+
 ```python
 import os
 CONFIG_LOC = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../config/config.ini')
 ```
+
 This will construct a file path to a `config.ini` file that resides in the `config` directory of the project.
 
 You can change this to point to your custom configuration file by modifying the `CONFIG_LOC` variable in the `__configloc__.py` file.
 
 For example, if your configuration file is located at `/home/user/my_config.ini`, you should change the `CONFIG_LOC` variable like this:
+
 ```python
-CONFIG_LOC = '/home/user/my_config.ini' 
+CONFIG_LOC = '/home/user/my_config.ini'
 ```
 
 Please note that this file is imported in the scripts that use the config location. Ensure the file location is correct before running these scripts.
-
 
 ### Configuration
 
