@@ -12,7 +12,9 @@ ENV CONDA_AUTO_UPDATE_CONDA=false
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
 
 # Install wget and git
-RUN apt-get update && apt-get install -y --no-install-recommends \
+ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y \
     cuda-drivers \
     wget \
     git \
