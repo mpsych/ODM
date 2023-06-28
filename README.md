@@ -78,7 +78,7 @@ docker build -t odm .
 - Run the Docker container:
 
 ```bash
-docker run -it odm
+docker run -it --gpus all odm
 ```
 
 2. **Using a pre-built Docker image from Docker Hub.**
@@ -92,7 +92,7 @@ docker pull mpsych/odm:latest
 - Run the Docker container:
 
 ```bash
-docker run -it mpsych/odm:latest
+docker run -it --gpus all mpsych/odm:latest
 ```
 
 For both methods, if your project requires access to local files or directories (e.g., for data input or output), you can mount a local directory inside the Docker container using the `-v` flag:

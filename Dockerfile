@@ -12,7 +12,8 @@ ENV CONDA_AUTO_UPDATE_CONDA=false
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
 
 # Install wget and git
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cuda-drivers \
     wget \
     git \
     vim \
@@ -42,9 +43,11 @@ RUN git clone https://github.com/mpsych/ODM.git
 WORKDIR /app/ODM
 RUN conda env create -f environment.yml
 
+
 # activate conda env
 SHELL ["/bin/bash", "-c"]
-RUN echo "source activate ODM" > ~/.bashrc
+RUN echo "source activate ODM" > ~/.bashrc \
+    && echo 'export LD_LIBRARY_PATH="/root/miniconda3/pkgs/cudatoolkit-11.3.1-h2bc3f7f_2/lib:$LD_LIBRARY_PATH"' >> ~/.bashrc
 ENV PATH /opt/conda/envs/ODM/bin:$PATH
 
 CMD [ "/bin/bash" ]
