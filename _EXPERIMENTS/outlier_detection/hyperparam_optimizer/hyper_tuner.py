@@ -75,7 +75,7 @@ class HyperTuner(object):
             keyword arguments to be used for hyperparameter tuning.
         """
         t0 = time.perf_counter()
-        print(f"HyperTuner initializing, please be patient...")
+        print("HyperTuner initializing, please be patient...")
         self.algorithm = algorithm
         self.param_space = param_space
         self.feature_type = feature_type
@@ -187,15 +187,11 @@ class HyperTuner(object):
             logging.getLogger("scipy").disabled = True
             logging.getLogger("PIL").disabled = True
 
-        print(f"HyperTuner optimizing, please be patient...")
+        print("HyperTuner optimizing, please be patient...")
         # check if there is a new parameter space in kwargs to be used
         param_space = kwargs.get("param_space", self.param_space)
 
-        if self.obj_func is not None:
-            fn = self.obj_func
-        else:
-            fn = self.objective
-
+        fn = self.obj_func if self.obj_func is not None else self.objective
         # get the best parameters
         run_flag = True
         while run_flag:
@@ -236,7 +232,7 @@ class HyperTuner(object):
                 test = float(param_dict[key][0])
             except ValueError:
                 value = param_dict[key][int(value)]
-            print("{}: {}".format(key, value))
+            print(f"{key}: {value}")
 
     def print_param_space(self):
         """
@@ -246,7 +242,7 @@ class HyperTuner(object):
         # print the parameter space
         print("Parameter space:")
         for key, value in param_dict.items():
-            print("{}: {}".format(key, value))
+            print(f"{key}: {value}")
 
     def plot_results(self):
         """
@@ -279,22 +275,14 @@ class HyperTuner(object):
 
         """
         file = "temp_param_space.txt"
-        # open file
-        f = open(file, "w")
-        # write only the hyperopt_param to the file in a readable format above
-        for s in self.param_space:
-            f.write("{}: {}".format(s, self.param_space[s]["hyperopt_param"]))
-            f.write("\n")
-        # close file
-        f.close()
-
-        # open file
-        f = open(file, "r")
-        # read in the file
-        lines = f.readlines()
-        # close file
-        f.close()
-
+        with open(file, "w") as f:
+                # write only the hyperopt_param to the file in a readable format above
+            for s in self.param_space:
+                f.write(f'{s}: {self.param_space[s]["hyperopt_param"]}')
+                f.write("\n")
+        with open(file, "r") as f:
+            # read in the file
+            lines = f.readlines()
         # create a dictionary to store the key and values
         param_dict = {}
         # loop through the lines
@@ -308,32 +296,30 @@ class HyperTuner(object):
                 # and the next key or the end of the file
                 values = []
                 for line in lines[lines.index(line) + 1 :]:
-                    # if line does not start with a number then it is a key
                     if line and not line[0].isdigit():
                         # break out of the loop
                         break
-                    else:
                         # split the line with the value at the Literal{ and
                         # store the value
-                        if "Literal" in line:
-                            value = line.split("Literal{")[1].split("}")[0]
+                    if "Literal" in line:
+                        value = line.split("Literal{")[1].split("}")[0]
                             # if the value is the same as the key then ignore it
-                            if value != key and value != "hyperopt_param":
-                                # store the value in the values list
-                                values.append(value)
-                            # check the second value in the list and see if it can
-                            # be converted to a float and if not then check the
-                            # first value and if it can then pop the first value
-                            # from the list
-                            if len(values) > 1:
+                        if value not in [key, "hyperopt_param"]:
+                            # store the value in the values list
+                            values.append(value)
+                        # check the second value in the list and see if it can
+                        # be converted to a float and if not then check the
+                        # first value and if it can then pop the first value
+                        # from the list
+                        if len(values) > 1:
+                            try:
+                                float(values[1])
+                            except ValueError:
                                 try:
-                                    float(values[1])
+                                    int(values[0])
+                                    values.pop(0)
                                 except ValueError:
-                                    try:
-                                        int(values[0])
-                                        values.pop(0)
-                                    except ValueError:
-                                        pass
+                                    pass
 
                 # store the key and values in the dictionary
                 param_dict[key] = values

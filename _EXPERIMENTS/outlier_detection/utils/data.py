@@ -225,7 +225,7 @@ class Data:
         elif cls._cache and not cls._load_cache:
             cls._generate_label_map(timing=timing)
             cls._cache_labels(timing=timing)
-        elif cls._cache and cls._load_cache:
+        elif cls._cache:
             cls._init_cache(timing=timing)
             cls._cache_labels(timing=timing)
         else:
@@ -248,11 +248,11 @@ class Data:
             study paths is printed
         """
         t0 = time.time()
-        study_list = []
         if cls._caselist_path is None:
             if cls.dl.data_paths is None or len(cls.dl.data_paths) == 0:
                 print("no study files loaded")
                 return
+            study_list = []
             # load the sorted study from list of paths
             for path in cls.dl.data_paths:  # iterate through each path
                 study = sorted(
@@ -310,7 +310,7 @@ class Data:
                     study_id = values[0]
                     lat = values[1]
                     label = values[2].strip()
-                    cls._label_mapping_dict[study_id + "_" + lat] = label
+                    cls._label_mapping_dict[f"{study_id}_{lat}"] = label
         if timing is True:
             cls.timing(t0, "csv_to_map")
 
@@ -338,7 +338,7 @@ class Data:
                         if file.startswith(
                             cls.dl.dicom_2d_substring
                         ) or file.startswith(cls.dl.dicom_3d_substring):
-                            cls._image_paths.append(path + "/" + str(file))
+                            cls._image_paths.append(f"{path}/{str(file)}")
                 cls._image_paths = sorted(cls._image_paths)
         else:
             # open the caselist file and read each line which is a path and
@@ -441,17 +441,16 @@ class Data:
             ):
                 if label == "IndexCancer":
                     cls.total_2d_cancer += 1
-                elif label == "PreIndexCancer":
-                    cls.total_2d_preindex += 1
                 elif label == "NonCancer":
                     cls.total_2d_noncancer += 1
-            else:
-                if label == "IndexCancer":
-                    cls.total_3d_cancer += 1
                 elif label == "PreIndexCancer":
-                    cls.total_3d_preindex += 1
-                elif label == "NonCancer":
-                    cls.total_3d_noncancer += 1
+                    cls.total_2d_preindex += 1
+            elif label == "IndexCancer":
+                cls.total_3d_cancer += 1
+            elif label == "NonCancer":
+                cls.total_3d_noncancer += 1
+            elif label == "PreIndexCancer":
+                cls.total_3d_preindex += 1
         if timing is True:
             cls.timing(t0, "generate_counts")
 
@@ -559,10 +558,8 @@ class Data:
                 pickle.dump(data, file)
             file.close()
         else:
-            pickle_file = open(path, "wb")
-            pickle.dump(data, pickle_file)
-            pickle_file.close()
-
+            with open(path, "wb") as pickle_file:
+                pickle.dump(data, pickle_file)
         if timing is True:
             cls.timing(t0, "save_pickle")
 
@@ -580,9 +577,8 @@ class Data:
             is printed
         """
         t0 = time.time()
-        pickle_file = open(path, "rb")
-        result = pickle.load(pickle_file)
-        pickle_file.close()
+        with open(path, "rb") as pickle_file:
+            result = pickle.load(pickle_file)
         if timing is True:
             cls.timing(t0, "load_pickle")
         return result
@@ -924,15 +920,15 @@ class Data:
             the label of the image
         """
         t0 = time.time()
-        key = str(cancer_id) + "_" + str(image_laterality)
+        key = f"{str(cancer_id)}_{str(image_laterality)}"
         if key in cls._label_mapping_dict:
             label = cls._label_mapping_dict[key]
-        elif str(cancer_id) + "_" + "None" in cls._label_mapping_dict:
-            label = cls._label_mapping_dict[str(cancer_id) + "_" + "None"]
+        elif f"{str(cancer_id)}_None" in cls._label_mapping_dict:
+            label = cls._label_mapping_dict[f"{str(cancer_id)}_None"]
         elif (
-            (str(cancer_id) + "_" + "L" in cls._label_mapping_dict)
-            or (str(cancer_id) + "_" + "R" in cls._label_mapping_dict)
-            or (str(cancer_id) + "_" + "B" in cls._label_mapping_dict)
+            f"{str(cancer_id)}_L" in cls._label_mapping_dict
+            or f"{str(cancer_id)}_R" in cls._label_mapping_dict
+            or f"{str(cancer_id)}_B" in cls._label_mapping_dict
         ):
             label = "NonCancer"
         else:
@@ -962,7 +958,7 @@ class Data:
         """
         if file_path is None:
             # get current working directory
-            file_path = os.getcwd() + "/"
+            file_path = f"{os.getcwd()}/"
         if file_name is None:
             file_name = "image_paths.txt"
         with open(file_path + file_name, "w") as f:
@@ -1148,7 +1144,6 @@ class Data:
             dicom_header=dicom_header,
             timing=timing,
         )
-        img = None
         study_instance_uid = None
         img_path = cls.path(image_id=image_id, dicom_name=dicom_name, path=path)
         if os.path.basename(img_path).startswith(cls.dl.dicom_3d_substring):
@@ -1191,14 +1186,13 @@ class Data:
         sop_uid = os.path.basename(img_path)
         if cls.dl.dicom_3d_substring != "" and cls.dl.dicom_2d_substring != "":
             # remove the dicom_3d_substring or dicom_2d_substring from the beginning
-            sop_uid = sop_uid.replace(cls.dl.dicom_3d_substring + ".", "")
-            sop_uid = sop_uid.replace(cls.dl.dicom_2d_substring + ".", "")
+            sop_uid = sop_uid.replace(f"{cls.dl.dicom_3d_substring}.", "")
+            sop_uid = sop_uid.replace(f"{cls.dl.dicom_2d_substring}.", "")
 
         # get the image label
         label = cls.get_label(sop_uid)
 
-        if pixels is True:
-            img = ds.pixel_array
+        img = ds.pixel_array if pixels is True else None
         if dicom_header is False:
             ds = None
         dictionary = {
@@ -1253,15 +1247,11 @@ class Data:
         """
         t0 = time.time()
         generator_map = {}
-        image_index_list = {}
-        if label is not None:
-            for i in range(len(cls._labels)):
-                if cls._labels[i] == label:
-                    image_index_list[i] = cls._image_paths[i]
-        else:
-            for i in range(len(cls._labels)):
-                image_index_list[i] = cls._image_paths[i]
-
+        image_index_list = {
+            i: cls._image_paths[i]
+            for i in range(len(cls._labels))
+            if label is not None and cls._labels[i] == label or label is None
+        }
         if _2d and _3d:
             for k, v in image_index_list.items():
                 generator_map[k] = v
@@ -1282,16 +1272,14 @@ class Data:
             random.shuffle(dicoms)
 
         for k, v in dicoms:
-            img_path = str(v)
             test_label = cls._labels[int(k)]
-            if test_label == label or label is None:
-                ds = cls.get_image(path=img_path)
-                try:
-                    yield ds
-                except StopIteration:
-                    break
-            else:
+            if test_label != label and label is not None:
                 continue
+            ds = cls.get_image(path=str(v))
+            try:
+                yield ds
+            except StopIteration:
+                break
         if timing:
             cls.timing(t0, "next_image_all")
 

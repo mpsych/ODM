@@ -41,7 +41,7 @@ def get_all_image_paths(root_dir, ext, timing: bool = False) -> set:
             if filename.endswith(ext):
                 image_paths.add(os.path.join(dirpath, filename))
 
-    if timing is True:
+    if timing:
         logging.info(
             f"Time to walk through directories: "
             f"{datetime.timedelta(seconds=time.time() - t0)}"
@@ -109,7 +109,7 @@ def load_data_batch(files, timing: bool = False) -> dict:
         except Exception as e_:
             logging.info(f"Error reading file {file}: {e_}")
 
-    if timing is True:
+    if timing:
         logging.info(
             f"Time to load {len(files)} files: "
             f"{datetime.timedelta(seconds=time.time() - t0)}"
@@ -172,16 +172,16 @@ def process_batch(file_batch, timing: bool = False):
     bad_paths : set
         Set of bad file paths.
     """
-    bad_paths = set()
     data_dict = load_data_batch(file_batch, timing=timing)
     data_imgs = get_pixel_list(data_dict, timing=timing)
     five_b_hist = Features.get_features(
         data_imgs, feature_type="hist", norm_type="minmax", bins=5, timing=timing
     )
-    for i, binary in enumerate(five_b_hist):
-        if binary[4] > 15000 or binary[1] < 1000:
-            bad_paths.add(data_dict[i][1])
-    return bad_paths
+    return {
+        data_dict[i][1]
+        for i, binary in enumerate(five_b_hist)
+        if binary[4] > 15000 or binary[1] < 1000
+    }
 
 
 def fivebhist_runner(
@@ -251,7 +251,7 @@ def fivebhist_runner(
     logging.info(f"number of bad images found: {len(bad_paths)}")
     logging.info(f"number of good images found: {len(good_paths)}")
 
-    if timing is True:
+    if timing:
         logging.info(
             f"Total time to run feature extraction: "
             f"{datetime.timedelta(seconds=time.time() - t0)}"

@@ -89,7 +89,7 @@ class Features:
         """
         logging.info("Getting features")
         t0 = time.time()
-        if feature_type in ["hist", "histogram"]:
+        if feature_type in {"hist", "histogram"}:
             features = Features.histogram(
                 data, norm_type=norm_type, timing=timing, bins=bins
             )

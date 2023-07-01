@@ -33,7 +33,7 @@ class OutlierDetector:
         t0 = time.time()
         decision_scores = []
 
-        if log_to_terminal is False:
+        if not log_to_terminal:
             logging.info("Turning off verbose mode...")
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
             logging.getLogger("tensorflow").disabled = True
@@ -42,10 +42,9 @@ class OutlierDetector:
         errors = {}
 
         try:
-            logging.info(f"Running VAE...")
+            logging.info("Running VAE...")
             decision_scores, labels = vae(features, **kwargs)
 
-        # if the algorithm causes an error, skip it and move on
         except Exception as e:
             import traceback
 

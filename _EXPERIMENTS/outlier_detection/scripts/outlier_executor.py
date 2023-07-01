@@ -119,9 +119,7 @@ def per_task_execution(idx):
 
     # print out the feature, the normalization type, and the dataset
     print(
-        "Running data on: Feature: {}, Norm: {}, Dataset: {}".format(
-            feature, norm_type, dataset
-        )
+        f"Running data on: Feature: {feature}, Norm: {norm_type}, Dataset: {dataset}"
     )
 
     OutlierDetector.generate_std_avg_all_algs(

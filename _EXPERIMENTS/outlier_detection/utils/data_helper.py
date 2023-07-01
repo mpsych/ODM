@@ -39,9 +39,7 @@ class DataHelper(object):
         if Data.instance is None:
             loader = DataLoader(config_num=config_num)
             Data(loader, load_cache=True)
-            data = Data.instance
-        else:
-            data = Data.instance
+        data = Data.instance
         if timing:
             Data.timing(t0, "check_data_instance")
         return data
@@ -131,22 +129,13 @@ class DataHelper(object):
                 # print('image is a list of numpy arrays')
                 return image
             elif isinstance(image[0], SimpleNamespace):
-                # print('image is a list of simple namespace objects')
-                pixels = []
-                for i in image:
-                    pixels.append(i.pixels)
+                pixels = [i.pixels for i in image]
                 return np.array(pixels)
             elif isinstance(image[0], dicom.dataset.FileDataset):
-                # print('image is a list of dicom datasets')
-                pixels = []
-                for i in image:
-                    pixels.append(i.pixel_array)
+                pixels = [i.pixel_array for i in image]
                 return np.array(pixels)
             elif isinstance(image[0], str):
-                # print('image is a list of paths')
-                pixels = []
-                for i in image:
-                    pixels.append(DataHelper.get_pixels(i, data))
+                pixels = [DataHelper.get_pixels(i, data) for i in image]
                 return np.array(pixels)
             else:
                 return (
@@ -161,16 +150,10 @@ class DataHelper(object):
             image = dicom.read_file(path, force=True)
             return image.pixel_array
         elif isinstance(path, Data):
-            # print('Loading image from data object...')
-            pixels = []
-            for d in path:
-                pixels.append(d.pixel_array)
+            pixels = [d.pixel_array for d in path]
             return pixels
         elif isinstance(path, list):
-            # print('Loading image from list of paths...')
-            pixels = []
-            for p in path:
-                pixels.append(DataHelper.get_pixels(p, data))
+            pixels = [DataHelper.get_pixels(p, data) for p in path]
             return pixels
         else:
             raise ValueError("Pixel array not found")
@@ -193,7 +176,7 @@ class DataHelper(object):
             The image with the bounding box.
         """
         if pred[sop_uid]["coords"] is None:
-            print("No bounding box found for SOP_UID: " + sop_uid)
+            print(f"No bounding box found for SOP_UID: {sop_uid}")
             return image
 
         img_copy = image.copy()
@@ -221,11 +204,10 @@ class DataHelper(object):
             The coordinates of the bounding box.
         """
         if pred[sop_uid]["coords"] is None:
-            print("No bounding box found for SOP_UID: " + sop_uid)
+            print(f"No bounding box found for SOP_UID: {sop_uid}")
             return None
         coords = pred[sop_uid]["coords"]
-        coords = [int(p) for p in coords]
-        return coords
+        return [int(p) for p in coords]
 
     # --------------------------------------------------------------------------
     @staticmethod
@@ -243,8 +225,7 @@ class DataHelper(object):
         new_image = ds.pixel_array.astype(float)
         scaled_image = (np.maximum(new_image, 0) / new_image.max()) * 255.0
         scaled_image = np.uint8(scaled_image)
-        final_image = Image.fromarray(scaled_image)
-        return final_image
+        return Image.fromarray(scaled_image)
 
     # --------------------------------------------------------------------------
     @staticmethod
@@ -291,10 +272,8 @@ class DataHelper(object):
             label = "NonCancer"
         else:
             label = None
-        images = []
         gen = data.next_image(_2d=True, label=label, randomize=randomize, timing=timing)
-        for i in range(N):
-            images.append(next(gen))
+        images = [next(gen) for _ in range(N)]
         if timing is True:
             Data.timing(t0, "get2D")
         return images
@@ -344,10 +323,8 @@ class DataHelper(object):
             label = "NonCancer"
         else:
             label = None
-        images = []
         gen = data.next_image(_3d=True, label=label, randomize=randomize, timing=timing)
-        for i in range(N):
-            images.append(next(gen))
+        images = [next(gen) for _ in range(N)]
         if timing is True:
             Data.timing(t0, "get3D")
         return images
@@ -433,40 +410,26 @@ class DataHelper(object):
         else:
             ds = dicom.dcmread(path)
 
-        if is_nparray is False:
+        if not is_nparray:
             is_3d_flag = len(ds.pixel_array.shape) == 3
             # save the sop_uid for the image
             sop_uid = ds.SOPInstanceUID
         else:
             is_3d_flag = len(ds.shape) == 3
 
-        if is_3d_flag:
             # 3D image
-            if is_nparray is False:
-                img = ds.pixel_array.copy()
-            else:
-                img = ds.copy()
+        img = ds.pixel_array.copy() if not is_nparray else ds.copy()
+        if is_3d_flag:
             if slice_num is None:
                 # displays the center fame by default
-                if prediction is not None and is_nparray is False:
+                if prediction is not None and not is_nparray:
                     # get the slice number from the prediction
                     slice_num = prediction[sop_uid]["slice"]
                 else:
                     slice_num = int(img.shape[0] // 2)
-                img = img[slice_num]
-            else:
-                img = img[slice_num]
-        elif is_3d_flag is False:
-            # 2D image
-            if is_nparray is False:
-                img = ds.pixel_array.copy()
-            else:
-                img = ds.copy()
-        else:
-            print("Not a valid image")
-            return None
+            img = img[slice_num]
         # get the dicoms window center and width and use that for vmin and vmax
-        if is_3d_flag is False and is_nparray is False:
+        if not is_3d_flag and not is_nparray:
             if isinstance(ds.WindowCenter, dicom.valuerep.DSfloat):
                 wc = float(ds.WindowCenter)
             else:
@@ -475,7 +438,7 @@ class DataHelper(object):
                 ww = float(ds.WindowWidth)
             else:
                 ww = float(ds.WindowWidth[1])
-        elif is_3d_flag and is_nparray is False:
+        elif is_3d_flag and not is_nparray:
             wc = (
                 ds.SharedFunctionalGroupsSequence[0].FrameVOILUTSequence[0].WindowCenter
             )
@@ -484,9 +447,9 @@ class DataHelper(object):
             wc = None
             ww = None
 
-        if vmin is None and is_nparray is False and wc is not None and ww is not None:
+        if vmin is None and not is_nparray and wc is not None and ww is not None:
             vmin = wc - ww
-        if vmax is None and is_nparray is False and wc is not None and ww is not None:
+        if vmax is None and not is_nparray and wc is not None and ww is not None:
             vmax = wc + ww
 
         if prediction is not None:
@@ -546,7 +509,7 @@ class DataHelper(object):
         # print the score of the prediction
         if prediction is not None:
             score = prediction[sop_uid]["score"]
-            plt.title("Score: {}".format(score))
+            plt.title(f"Score: {score}")
 
         if timing is True:
             Data.timing(t0, "view")
@@ -592,11 +555,7 @@ class DataHelper(object):
         for i in range(len(imgs)):
             if len(imgs[i].shape) == 3:
                 img = pixels[i]  # images[i].pixels
-                if slice_num is None:
-                    imgs[i] = img[img.shape[0] // 2]
-                else:
-                    imgs[i] = img[slice_num]
-
+                imgs[i] = img[img.shape[0] // 2] if slice_num is None else img[slice_num]
         if not ncols:
             factors = [i for i in range(1, len(imgs) + 1) if len(imgs) % i == 0]
             ncols = factors[len(factors) // 2] if len(factors) else len(imgs) // 4 + 1
@@ -687,10 +646,7 @@ class DataHelper(object):
         for i in range(len(imgs)):
             if len(imgs[i].shape) == 3:
                 img = pixels[i]
-                if slice_num is None:
-                    imgs[i] = img[img.shape[0] // 2]
-                else:
-                    imgs[i] = img[slice_num]
+                imgs[i] = img[img.shape[0] // 2] if slice_num is None else img[slice_num]
             elif len(imgs[i].shape) == 2:
                 img = pixels[i]
                 imgs[i] = img
@@ -784,7 +740,7 @@ class DataHelper(object):
             ds = dicom.dcmread(path)
         if file_name.endswith(".dcm") is True or "." not in file_name:
             if "." not in file_name:
-                filename = filename + ".DCM"
+                filename = f"{filename}.DCM"
             ds.save_as(filename, write_like_original=False)
         elif file_name.endswith(".npy") is True:
             np.save(filename, ds.pixel_array)
@@ -827,8 +783,7 @@ class DataHelper(object):
         t0 = time.time()
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        i = 0
-        for img in data:
+        for i, img in enumerate(data):
             print(type(img))
             path = data.image_paths[i]
 
@@ -840,7 +795,6 @@ class DataHelper(object):
             # store the image
             print(temp_save_path)
             DataHelper.store(img, temp_save_path, timing=timing)
-            i += 1
         if timing is True:
             Data.timing(t0, "store_all")
 
@@ -863,9 +817,9 @@ class DataHelper(object):
             list of SOPInstanceUIDs
         """
         t0 = time.time()
-        sop_uids = []
-        for path in paths:
-            sop_uids.append(os.path.basename(path).replace(substr_to_remove, ""))
+        sop_uids = [
+            os.path.basename(path).replace(substr_to_remove, "") for path in paths
+        ]
         if timing is True:
             Data.timing(t0, "parse_sop_uid_from_paths")
         return sop_uids
@@ -917,7 +871,7 @@ class DataHelper(object):
             lines = [line.rstrip("\n") for line in f]
         return lines
 
-    def merge_lists(*args):
+    def merge_lists(self):
         """Merges a list of lists into a single list.
         goes through each list taking element i from each list and adding it to the
         new list until all lists are exhausted.
@@ -933,9 +887,8 @@ class DataHelper(object):
             merged list
         """
         merged_list = []
-        for i in range(len(args[0])):
-            for j in range(len(args)):
-                merged_list.append(args[j][i])
+        for i in range(len(self[0])):
+            merged_list.extend(self[j][i] for j in range(len(self)))
         return merged_list
 
     @staticmethod
@@ -1025,13 +978,7 @@ class DataHelper(object):
         dict
             dictionary of the namespace
         """
-        # create a dictionary
-        d = {}
-        # go through each namespace
-        for i, ns in enumerate(namespaces):
-            # add the namespace to the dictionary
-            d[i] = ns.__dict__
-        return d
+        return {i: ns.__dict__ for i, ns in enumerate(namespaces)}
 
     @staticmethod
     def image_collection_to_npy_file(colleciton_path, output_path, infile_type):
@@ -1077,16 +1024,12 @@ class DataHelper(object):
         list
             list of files in the collection
         """
-        # get the list of files in the collection
-        files = glob.glob(collection_path + "/*." + infile_type)
-        return files
+        return glob.glob(f"{collection_path}/*.{infile_type}")
 
     @staticmethod
     def read(file):
         """Reads an image file. using numpy"""
-        # read a .TIF file
-        img = np.array(Image.open(file))
-        return img
+        return np.array(Image.open(file))
 
     @staticmethod
     def data_to_binary_bin_hists(data):
@@ -1120,7 +1063,7 @@ class DataHelper(object):
         if isinstance(pickle_paths, str):
             # if it is a string it is a path to a root diretory containing the
             # pickle files, get the list of pickle files
-            pickle_paths = glob.glob(pickle_paths + "/*.pkl")
+            pickle_paths = glob.glob(f"{pickle_paths}/*.pkl")
         print(f"Length of pickle_paths: {len(pickle_paths)}")
         # create a dictionary to store the results
         results = {}
@@ -1134,16 +1077,11 @@ class DataHelper(object):
                 # if the algorithm is not in the results dictionary add it
                 if k not in results:
                     results[k] = v
-                # if the algorithm is in the results dictionary compare the
-                # roc_auc score
-                else:
-                    # if the roc_auc score is better than the current best
-                    # score replace the current best score
-                    if (
+                elif (
                         v[0]["evaluation"]["roc_auc"]
                         > results[k][0]["evaluation"]["roc_auc"]
                     ):
-                        results[k] = v
+                    results[k] = v
             print(f"Finished {i + 1} of {len(pickle_paths)}")
         # save the results
         with open(save_path, "wb") as f:
