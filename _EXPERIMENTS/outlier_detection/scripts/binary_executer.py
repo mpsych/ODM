@@ -61,7 +61,6 @@ def per_task_execution(idx):
     print(f"number of bad images found: {len(bad_indexes_found)}")
 
     print(f"task number is: {idx}")
-    return
 
 
 if __name__ == "__main__":
