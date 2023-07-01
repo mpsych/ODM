@@ -506,14 +506,8 @@ class Data:
         # as well as the global statistics
         for i in range(0, len(cls.dl.data_paths)):
             folder = str(cls.dl.study_folder_names[i])
-            if folder in files_2d_per_study:
-                _2D = files_2d_per_study[folder]
-            else:
-                _2D = 0
-            if folder in files_3d_per_study:
-                _3D = files_3d_per_study[folder]
-            else:
-                _3D = 0
+            _2D = files_2d_per_study.get(folder, 0)
+            _3D = files_3d_per_study.get(folder, 0)
             total = _2D + _3D
             case = {"total": total, "3D": _3D, "2D": _2D}
             cls._stats[folder] = case
