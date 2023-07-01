@@ -83,26 +83,11 @@ class OutlierDetector(Algorithms):
         """Initializes the OutlierDetector class"""
         t0 = time.time()
         self.__run_id = run_id
-        if algorithms is None:
-            self.__algorithms = ALGORITHMS
-        else:
-            self.__algorithms = algorithms
-        if bad_ids is not None:
-            self.__bad_ids = bad_ids
-        else:
-            self.__bad_ids = BAD_IMAGE_ID_PATH
-        if number_bad is not None:
-            self.__number_bad = number_bad
-        else:
-            self.__number_bad = None
-        if exclude is not None:
-            self.__exclude = exclude
-        else:
-            self.__exclude = []
-        if features is not None:
-            self.__features = features
-        else:
-            self.__features = None
+        self.__algorithms = ALGORITHMS if algorithms is None else algorithms
+        self.__bad_ids = bad_ids if bad_ids is not None else BAD_IMAGE_ID_PATH
+        self.__number_bad = number_bad if number_bad is not None else None
+        self.__exclude = exclude if exclude is not None else []
+        self.__features = features if features is not None else None
         verbose = kwargs.get("verbose", False)
         if verbose is False:
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -202,12 +187,9 @@ class OutlierDetector(Algorithms):
             if verbose:
                 print(f"{alg} accuracy: {accuracy}")
 
-        accuracy_scores = {
-            k: v
-            for k, v in sorted(
-                accuracy_scores.items(), key=lambda item: item[1], reverse=True
-            )
-        }
+        accuracy_scores = dict(
+            sorted(accuracy_scores.items(), key=lambda item: item[1], reverse=True)
+        )
 
         OutlierDetector.save_to_cache(cache_key, accuracy_scores, kwargs, errors)
 
@@ -228,19 +210,12 @@ class OutlierDetector(Algorithms):
     def get_from_cache(cache_key):
         """loads the cache file as a json file, if the file does not exist
         it will return None"""
-        # if the cache file exists, load it
-        if os.path.exists(CACHE_PATH + CACHE_FILE):
-            with open(CACHE_PATH + CACHE_FILE, "r") as f:
-                cache = json.loads(f.read())
-            # if the cache key exists, return the results
-            if cache_key in cache:
-                return cache[cache_key]
-            # if the cache key does not exist, return None
-            else:
-                return None
-        # if the cache file does not exist, return None
-        else:
+        if not os.path.exists(CACHE_PATH + CACHE_FILE):
             return None
+        with open(CACHE_PATH + CACHE_FILE, "r") as f:
+            cache = json.loads(f.read())
+            # if the cache key exists, return the results
+        return cache[cache_key] if cache_key in cache else None
 
     @staticmethod
     def save_to_cache(cache_key, results, configurations=None, errors=None):
@@ -254,10 +229,10 @@ class OutlierDetector(Algorithms):
             cache = {}
         # add the results to the cache
         cache[cache_key] = results
-        cache[cache_key + "_config"] = configurations
+        cache[f"{cache_key}_config"] = configurations
         # cache[cache_key + "_errors"] = errors
         # sort the cache alphabetically by key
-        cache = {k: v for k, v in sorted(cache.items(), key=lambda item: item[0])}
+        cache = dict(sorted(cache.items(), key=lambda item: item[0]))
         # save the cache
         with open(CACHE_PATH + CACHE_FILE, "w") as f:
             json.dump(cache, f)
@@ -314,34 +289,24 @@ class OutlierDetector(Algorithms):
     @staticmethod
     def show_records(hash=None):
         """prints the records in the cache file"""
-        # if the cache file exists, load it
-        if hash is None:
-            if os.path.exists(CACHE_PATH + CACHE_FILE):
+        if os.path.exists(CACHE_PATH + CACHE_FILE):
+            if hash is None:
                 with open(CACHE_PATH + CACHE_FILE, "r") as f:
                     cache = json.load(f)
                 # print the cache in a pretty format
                 print(json.dumps(cache, indent=4))
                 # get the length of records and print it
                 print(f"Number of records: {len(cache)}")
-            # if the cache file does not exist, return None
             else:
-                print("No cache file exists")
-        else:
-            # find all the records that contain the hash string within the key
-            records = []
-            if os.path.exists(CACHE_PATH + CACHE_FILE):
                 with open(CACHE_PATH + CACHE_FILE, "r") as f:
                     cache = json.loads(f.read())
-                for key in cache:
-                    if hash in key:
-                        records.append(key)
+                records = [key for key in cache if hash in key]
                 # print the records in a pretty format
                 print(json.dumps(records, indent=4))
                 # get the length of records and print it
                 print(f"Number of records: {len(records)}")
-            # if the cache file does not exist, return None
-            else:
-                print("No cache file exists")
+        else:
+            print("No cache file exists")
 
     @staticmethod
     def show_stats_records(hash=None):
@@ -353,20 +318,14 @@ class OutlierDetector(Algorithms):
                     cache = json.loads(f.read())
                 # print the cache in a pretty format using json dumps
                 print(json.dumps(cache, indent=4))
+        elif os.path.exists(CACHE_PATH + STATS_CACHE):
+            with open(CACHE_PATH + STATS_CACHE, "r") as f:
+                cache = json.loads(f.read())
+            records = [key for key in cache if hash in key]
+            # print the records in a pretty format using json dumps
+            print(json.dumps(records, indent=4))
         else:
-            # find all the records that contain the hash string within the key
-            records = []
-            if os.path.exists(CACHE_PATH + STATS_CACHE):
-                with open(CACHE_PATH + STATS_CACHE, "r") as f:
-                    cache = json.loads(f.read())
-                for key in cache:
-                    if hash in key:
-                        records.append(key)
-                # print the records in a pretty format using json dumps
-                print(json.dumps(records, indent=4))
-            # if the cache file does not exist, return None
-            else:
-                print("No cache file exists")
+            print("No cache file exists")
 
     @staticmethod
     def show_best(N=10):
@@ -377,16 +336,11 @@ class OutlierDetector(Algorithms):
             with open(CACHE_PATH + CACHE_FILE, "r") as f:
                 cache = json.loads(f.read())
             # sort the cache by the accuracy score
-            for k, v in cache.items():
-                # bring the key and the value of the first index of the
-                # nexted value only if the key does not end with _config
-
-                if not k.endswith("_config"):
-                    # print(f'key:{k}: alg:{list(v.items())[0][0]} acc
-                    # :{list(v.items())[0][1]}')
-                    best_list.append((k, list(v.items())[0][0], list(v.items())[0][1]))
-                # sort the list by the accuracy score
-
+            best_list.extend(
+                (k, list(v.items())[0][0], list(v.items())[0][1])
+                for k, v in cache.items()
+                if not k.endswith("_config")
+            )
             best_list = sorted(best_list, key=lambda x: x[2], reverse=True)
 
             # print the top number of results using the best list but print
@@ -398,15 +352,10 @@ class OutlierDetector(Algorithms):
     @staticmethod
     def show_best_stats(N=10):
         """prints the best results in the cache file"""
-        # if the cache file exists, load it
-        best_list = []
         if os.path.exists(CACHE_PATH + STATS_CACHE):
             with open(CACHE_PATH + STATS_CACHE, "r") as f:
                 cache = json.loads(f.read())
-            # stats cache is already sorted by accuracy score so just put the N best
-            # results in a list and print it
-            for k, v in cache.items():
-                best_list.append((k, v))
+            best_list = list(cache.items())
             print(json.dumps(best_list[:N], indent=4))
         else:
             print("No cache file exists")
@@ -452,19 +401,12 @@ class OutlierDetector(Algorithms):
                                     best_list.append((k, i, v[i]))
                     elif feature is not None:
                         if feature in k:
-                            for i in v:
-                                if i == algorithm:
-                                    best_list.append((k, i, v[i]))
+                            best_list.extend((k, i, v[i]) for i in v if i == algorithm)
                     elif dataset is not None:
                         if str(dataset) in k:
-                            for i in v:
-                                if i == algorithm:
-                                    best_list.append((k, i, v[i]))
+                            best_list.extend((k, i, v[i]) for i in v if i == algorithm)
                     else:
-                        for i in v:
-                            if i == algorithm:
-                                best_list.append((k, i, v[i]))
-
+                        best_list.extend((k, i, v[i]) for i in v if i == algorithm)
         else:
             print("No cache file exists")
             # sort the list by the accuracy score
@@ -609,27 +551,26 @@ class OutlierDetector(Algorithms):
                                         v["standard_deviation"],
                                     )
                                 )
-                else:
-                    if v["pyod_algorithm"] == algorithm:
-                        if include_dataset:
-                            best_list.append(
-                                (
-                                    k,
-                                    v["pyod_algorithm"],
-                                    v["avg_accuracy"],
-                                    v["standard_deviation"],
-                                    dataset_name,
-                                )
+                elif v["pyod_algorithm"] == algorithm:
+                    if include_dataset:
+                        best_list.append(
+                            (
+                                k,
+                                v["pyod_algorithm"],
+                                v["avg_accuracy"],
+                                v["standard_deviation"],
+                                dataset_name,
                             )
-                        else:
-                            best_list.append(
-                                (
-                                    k,
-                                    v["pyod_algorithm"],
-                                    v["avg_accuracy"],
-                                    v["standard_deviation"],
-                                )
+                        )
+                    else:
+                        best_list.append(
+                            (
+                                k,
+                                v["pyod_algorithm"],
+                                v["avg_accuracy"],
+                                v["standard_deviation"],
                             )
+                        )
 
         else:
             print("No cache file exists")
@@ -655,8 +596,8 @@ class OutlierDetector(Algorithms):
                         )
 
                 if include_hash:
-                    if include_dataset:
-                        latex_string += (
+                    latex_string += (
+                        (
                             f"{algorithm} & "
                             f"{norm_type} + {feature} & "
                             # print the accuracy out to 4 decimal places
@@ -665,8 +606,8 @@ class OutlierDetector(Algorithms):
                             f"{i[0]} "
                             f"\\\\" + "\n"
                         )
-                    else:
-                        latex_string += (
+                        if include_dataset
+                        else (
                             f"{algorithm} & "
                             f"{norm_type} + {feature} & "
                             # print the accuracy out to 4 decimal places
@@ -674,24 +615,24 @@ class OutlierDetector(Algorithms):
                             f"{i[0]} "
                             f"\\\\" + "\n"
                         )
+                    )
+                elif include_dataset:
+                    latex_string += (
+                        f"{algorithm} & "
+                        f"{norm_type} + {feature} & "
+                        # print the accuracy out to 4 decimal places
+                        f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ & "
+                        f"{i[4]} "
+                        f"\\\\" + "\n"
+                    )
                 else:
-                    if include_dataset:
-                        latex_string += (
-                            f"{algorithm} & "
-                            f"{norm_type} + {feature} & "
-                            # print the accuracy out to 4 decimal places
-                            f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ & "
-                            f"{i[4]} "
-                            f"\\\\" + "\n"
-                        )
-                    else:
-                        latex_string += (
-                            f"{algorithm} & "
-                            f"{norm_type} + {feature} & "
-                            # print the accuracy out to 4 decimal places
-                            f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ "
-                            f"\\\\" + "\n"
-                        )
+                    latex_string += (
+                        f"{algorithm} & "
+                        f"{norm_type} + {feature} & "
+                        # print the accuracy out to 4 decimal places
+                        f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ "
+                        f"\\\\" + "\n"
+                    )
             else:
                 if display:
                     if include_hash:
@@ -702,35 +643,35 @@ class OutlierDetector(Algorithms):
                         print(f"{i[1]} & $ {i[2]:.4f} \\pm{i[3]:.4f}$ & {i[4]} \\\\")
 
                 if include_hash:
-                    if include_dataset:
-                        latex_string += (
+                    latex_string += (
+                        (
                             f"{algorithm} & "
                             f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ & "
                             f"{i[4]} & "
                             f"{i[0]} "
                             f"\\\\" + "\n"
                         )
-                    else:
-                        latex_string += (
+                        if include_dataset
+                        else (
                             f"{algorithm} & "
                             f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ & "
                             f"{i[0]} "
                             f"\\\\" + "\n"
                         )
+                    )
+                elif include_dataset:
+                    latex_string += (
+                        f"{algorithm} & "
+                        f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ & "
+                        f"{i[4]} "
+                        f"\\\\" + "\n"
+                    )
                 else:
-                    if include_dataset:
-                        latex_string += (
-                            f"{algorithm} & "
-                            f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ & "
-                            f"{i[4]} "
-                            f"\\\\" + "\n"
-                        )
-                    else:
-                        latex_string += (
-                            f"{algorithm} & "
-                            f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ "
-                            f"\\\\" + "\n"
-                        )
+                    latex_string += (
+                        f"{algorithm} & "
+                        f"$ {i[2]:.4f} \\pm{i[3]:.4f}$ "
+                        f"\\\\" + "\n"
+                    )
 
         return latex_string
 
@@ -1140,7 +1081,7 @@ class OutlierDetector(Algorithms):
                     for j in range(3):
                         if i + j < len(best_results[DATA_SETS[0]]):
                             for dataset in DATA_SETS:
-                                f.write(best_results[dataset][i + j][1] + " & ")
+                                f.write(f"{best_results[dataset][i + j][1]} & ")
                             f.write("\\\\\n")
                     if inLaTeX:
                         f.write("\\bottomrule\n")
@@ -1180,7 +1121,7 @@ class OutlierDetector(Algorithms):
 
         # print the best results for each algorithm  @staticmethod
 
-    def get_configuration(cache_key, cache_path=CACHE_PATH, cache_file=CACHE_FILE):
+    def get_configuration(self, cache_path=CACHE_PATH, cache_file=CACHE_FILE):
         """loads the cache file as a json file, if the file does not exist
         it will return None"""
         # if the cache file exists, load it
@@ -1188,12 +1129,7 @@ class OutlierDetector(Algorithms):
             with open(cache_path + cache_file, "r") as f:
                 cache = json.loads(f.read())
             # if the cache key exists, return the results
-            if cache_key in cache:
-                return cache[cache_key + "_config"]
-            # if the cache key does not exist, return None
-            else:
-                return None
-        # if the cache file does not exist, return None
+            return cache[f"{self}_config"] if self in cache else None
         else:
             return None
 
@@ -1207,11 +1143,7 @@ class OutlierDetector(Algorithms):
             with open(cache_path + cache_file, "r") as f:
                 cache = json.loads(f.read())
             # if the cache key exists, return the results
-            if cache_key in cache:
-                return cache[cache_key]["configuration"]
-            # if the cache key does not exist, return None
-            else:
-                return None
+            return cache[cache_key]["configuration"] if cache_key in cache else None
 
     @staticmethod
     def get_all_config_stats(cache_path=CACHE_PATH, cache_file=STATS_CACHE):
@@ -1222,10 +1154,7 @@ class OutlierDetector(Algorithms):
         if os.path.exists(cache_path + cache_file):
             with open(cache_path + cache_file, "r") as f:
                 cache = json.loads(f.read())
-            configurations = {}
-            for key in cache:
-                configurations[key] = cache[key]["configuration"]
-            return configurations
+            return {key: cache[key]["configuration"] for key in cache}
 
     @staticmethod
     def get_values_for_config_parameter(
@@ -1252,27 +1181,28 @@ class OutlierDetector(Algorithms):
         Returs all the different values used for a given configuration parameter
         """
         # if the cache file exists, load it
-        if os.path.exists(cache_path + cache_file):
-            with open(cache_path + cache_file, "r") as f:
-                cache = json.loads(f.read())
-            values = {}
-            for key in cache:
-                for parameter in cache[key]["configuration"]:
-                    if parameter not in values:
-                        values[parameter] = []
-                    if cache[key]["configuration"][parameter] not in values[parameter]:
-                        values[parameter].append(cache[key]["configuration"][parameter])
-            return values
+        if not os.path.exists(cache_path + cache_file):
+            return
+        with open(cache_path + cache_file, "r") as f:
+            cache = json.loads(f.read())
+        values = {}
+        for key in cache:
+            for parameter in cache[key]["configuration"]:
+                if parameter not in values:
+                    values[parameter] = []
+                if cache[key]["configuration"][parameter] not in values[parameter]:
+                    values[parameter].append(cache[key]["configuration"][parameter])
+        return values
 
-    def get_error_log(cache_key, algorithm, print_log=False):
+    def get_error_log(self, algorithm, print_log=False):
         """loads the cache file as a json file, if the file does not exist
         it will return None"""
         # looks in the LOG_DIR for file with name {cache_key}_{algorithm}.txt
         # if the file exists, load it and print the contents as well as return
         # the contents as a list
         # if the file does not exist, return None
-        if os.path.exists(LOG_DIR + f"{cache_key}_{algorithm}.txt"):
-            with open(LOG_DIR + f"{cache_key}_{algorithm}.txt", "r") as f:
+        if os.path.exists(f"{LOG_DIR}{self}_{algorithm}.txt"):
+            with open(f"{LOG_DIR}{self}_{algorithm}.txt", "r") as f:
                 errors = f.readlines()
                 # print in pretty format if print_log is True
                 if print_log:
@@ -1372,7 +1302,7 @@ class OutlierDetector(Algorithms):
         OutlierDetector._save_outlier_path_log(filename, imgs, t_scores)
 
         if timing:
-            display_timing(t0, "running " + pyod_algorithm)
+            display_timing(t0, f"running {pyod_algorithm}")
 
         return t_scores, t_labels, accuracy
 
@@ -1402,18 +1332,13 @@ class OutlierDetector(Algorithms):
         if isinstance(bad_ids, str):
             with open(bad_ids, "r") as f:
                 bad_ids = f.read().splitlines()
-        elif isinstance(bad_ids, list):
-            pass
-        else:
+        elif not isinstance(bad_ids, list):
             raise ValueError("bad_ids must be a string or a list")
 
-        # add all the images and trainscores into the ImageList which is
-        # automatically sorted by trainscore
-
-        img_list = []
-        for i, img in enumerate(imgs):
-            img_list.append(SimpleNamespace(image=img, train_scores=train_scores[0][i]))
-
+        img_list = [
+            SimpleNamespace(image=img, train_scores=train_scores[0][i])
+            for i, img in enumerate(imgs)
+        ]
         # set the counter to 0
         counter = 0
 
@@ -1432,7 +1357,7 @@ class OutlierDetector(Algorithms):
         if verbose:
             print("Accuracy: {:.10f}".format(accuracy))
         if timing:
-            print("accuracy ...took: {}s".format(time.time() - t0))
+            print(f"accuracy ...took: {time.time() - t0}s")
         return accuracy
 
     @staticmethod
@@ -1485,21 +1410,21 @@ class OutlierDetector(Algorithms):
         verbose = kwargs.get("verbose", False)
         print(f"Running {pyod_algorithm} {n_runs} times...")
         if dataset == 1:
-            print(f"populating dataset with 8% errors...")
+            print("populating dataset with 8% errors...")
             imgs = DataHelper.get2D(N=100, config_num=5, randomize=True)
             num_bad = 8
         elif dataset == 2:
-            print(f"populating dataset with 13% errors...")
+            print("populating dataset with 13% errors...")
             imgs = DataHelper.get2D(N=100, config_num=6, randomize=True)
             num_bad = 13
         elif dataset == 3:
-            print(f"populating dataset with 24% errors...")
+            print("populating dataset with 24% errors...")
             imgs = DataHelper.get2D(N=100, config_num=7, randomize=True)
             num_bad = 24
         else:
             raise ValueError("dataset must be 1, 2, or 3")
 
-        print(f"extracting features...")
+        print("extracting features...")
         normalized_imgs = Normalize.get_norm(pixels=imgs, norm_type=norm)
 
         feature_vector = Features.get_features(normalized_imgs, feature_type=feature)
@@ -1549,7 +1474,7 @@ class OutlierDetector(Algorithms):
         )
 
         if timing:
-            print("generate_sd_and_avg ...took: {}s".format(time.time() - t0))
+            print(f"generate_sd_and_avg ...took: {time.time() - t0}s")
         return min_accuracy, max_accuracy, avg_accuracy, standard_deviation
 
     @staticmethod
@@ -1586,21 +1511,21 @@ class OutlierDetector(Algorithms):
             print(f"Running algorithm {alg}...")
             for i in range(n_runs):
                 if dataset == 1:
-                    print(f"populating dataset with 8% errors...")
+                    print("populating dataset with 8% errors...")
                     imgs = DataHelper.get2D(N=100, config_num=5, randomize=True)
                     num_bad = 8
                 elif dataset == 2:
-                    print(f"populating dataset with 13% errors...")
+                    print("populating dataset with 13% errors...")
                     imgs = DataHelper.get2D(N=100, config_num=6, randomize=True)
                     num_bad = 13
                 elif dataset == 3:
-                    print(f"populating dataset with 24% errors...")
+                    print("populating dataset with 24% errors...")
                     imgs = DataHelper.get2D(N=100, config_num=7, randomize=True)
                     num_bad = 24
                 else:
                     raise ValueError("dataset must be 1, 2, or 3")
 
-                print(f"extracting features...")
+                print("extracting features...")
                 normalized_imgs = Normalize.get_norm(pixels=imgs, norm_type=norm)
                 feature_vector = Features.get_features(
                     normalized_imgs, feature_type=feature
@@ -1618,11 +1543,7 @@ class OutlierDetector(Algorithms):
                 print(f"Accuracy: {accuracy}, with i {i}")
                 accuracy_list.append(accuracy)
 
-            # go thoough the accuracy list and get rid of any None values
-            accuracy_list = [x for x in accuracy_list if x is not None]
-
-            # print(f'accuracy list: {accuracy_list}')
-            if len(accuracy_list) != 0:
+            if accuracy_list := [x for x in accuracy_list if x is not None]:
                 min_accuracy = min(accuracy_list)
                 max_accuracy = max(accuracy_list)
                 avg_accuracy = sum(accuracy_list) / len(accuracy_list)
@@ -1654,7 +1575,7 @@ class OutlierDetector(Algorithms):
         OutlierDetector._sort_statistics_log()
 
         if timing:
-            print("generate_sd_and_avg ...took: {}s".format(time.time() - t0))
+            print(f"generate_sd_and_avg ...took: {time.time() - t0}s")
 
     @staticmethod
     def _save_statistics_log(
@@ -1743,11 +1664,11 @@ class OutlierDetector(Algorithms):
         print("sorting statistics log...")
         with open(CACHE_PATH + STATS_CACHE, "r") as f:
             log = json.loads(f.read())
-        sorted_log = {}
-        for key, value in sorted(
-            log.items(), key=lambda item: item[1]["avg_accuracy"], reverse=True
-        ):
-            sorted_log[key] = value
+        sorted_log = dict(
+            sorted(
+                log.items(), key=lambda item: item[1]["avg_accuracy"], reverse=True
+            )
+        )
         with open(CACHE_PATH + STATS_CACHE, "w") as f:
             json.dump(sorted_log, f, indent=4)
             print(f"log saved to {CACHE_PATH + STATS_CACHE}")
@@ -2733,7 +2654,7 @@ class OutlierDetector(Algorithms):
 
         # the path to write the log to will be the LOG_DIR with the cache key
         # appended to it
-        path = os.path.join(LOG_DIR, filename + ".txt")
+        path = os.path.join(LOG_DIR, f"{filename}.txt")
 
         # create the log directory if it doesn't exist with all the parent directories
         if not os.path.exists(os.path.dirname(path)):
@@ -2742,19 +2663,22 @@ class OutlierDetector(Algorithms):
         # this will put all the data into order from highest to lowest score
         image_list = []
         if isinstance(t_scores, np.ndarray):
-            for i in range(len(imgs)):
-                image_list.append(SimpleNamespace(image=imgs[i], score=t_scores[i]))
+            image_list.extend(
+                SimpleNamespace(image=imgs[i], score=t_scores[i])
+                for i in range(len(imgs))
+            )
         elif isinstance(t_scores, list):
             if isinstance(t_scores[0], np.ndarray):
                 for j in range(len(t_scores)):
-                    for i in range(len(imgs)):
-                        image_list.append(
-                            SimpleNamespace(image=imgs[i], score=t_scores[j][i])
-                        )
+                    image_list.extend(
+                        SimpleNamespace(image=imgs[i], score=t_scores[j][i])
+                        for i in range(len(imgs))
+                    )
             else:
-                for i in range(len(imgs)):
-                    image_list.append(SimpleNamespace(image=imgs[i], score=t_scores[i]))
-
+                image_list.extend(
+                    SimpleNamespace(image=imgs[i], score=t_scores[i])
+                    for i in range(len(imgs))
+                )
         image_list = sorted(image_list, key=lambda x: x.score, reverse=True)
 
         # write the paths in order they are in the image_list
@@ -2765,7 +2689,7 @@ class OutlierDetector(Algorithms):
         # sort the scores from highest to lowest and then write them to
         # another file with the same name as the path but with _scores.txt
         # appended to it
-        path = os.path.join(LOG_DIR, filename + "_scores.txt")
+        path = os.path.join(LOG_DIR, f"{filename}_scores.txt")
         with open(path, "w") as f:
             for i in range(len(image_list)):
                 f.write(str(image_list[i].score) + "\n")
@@ -2786,9 +2710,8 @@ class OutlierDetector(Algorithms):
                     raise ValueError(
                         "LengthError: The length of the data and labels must be the same"
                     )
-        else:
-            if len(data_x) != len(labels):
-                raise ValueError("The length of the data and labels must be the same")
+        elif len(data_x) != len(labels):
+            raise ValueError("The length of the data and labels must be the same")
 
     @staticmethod
     def _init_base_detectors(base_detectors):

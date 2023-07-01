@@ -60,23 +60,7 @@ class DataLoader:
 
     def __str__(self):
         """Returns a string representation of the DataLoader object"""
-        return (
-            "DataLoader(data_paths={}, csv_paths={}, pickle_path={}, "
-            "dicom_tags={}, dicom_2d_substring={}, dicom_3d_substring={}, "
-            "whitelist_path={}, config_num={}, config_csv_path={} )".format(
-                self._data_paths,
-                self._csv_paths,
-                self._cache_paths,
-                self._dicom_tags,
-                self._dicom_2d_substring,
-                self._dicom_3d_substring,
-                self._caselist_path,
-                self._patient_identifier,
-                self._cancer_identifier,
-                self._config_num,
-                self._config_loc,
-            )
-        )
+        return f"DataLoader(data_paths={self._data_paths}, csv_paths={self._csv_paths}, pickle_path={self._cache_paths}, dicom_tags={self._dicom_tags}, dicom_2d_substring={self._dicom_2d_substring}, dicom_3d_substring={self._dicom_3d_substring}, whitelist_path={self._caselist_path}, config_num={self._patient_identifier}, config_csv_path={self._cancer_identifier} )"
 
     @property
     def data_paths(self):
@@ -202,7 +186,7 @@ class DataLoader:
 
         if cache_paths is None and case_list_path is None:
             # throw error saying there is no data to load
-            raise ValueError("No data found for config_num: {}".format(config_num))
+            raise ValueError(f"No data found for config_num: {config_num}")
 
         return cache_paths, case_list_path
 
@@ -216,9 +200,7 @@ class DataLoader:
         cache_paths = []
         case_list_path = None
         for key in config[str(config_num)]:
-            if key == "cache_path1":
-                cache_paths.append(config[str(config_num)][key])
-            elif key == "cache_path2":
+            if key in ["cache_path1", "cache_path2"]:
                 cache_paths.append(config[str(config_num)][key])
             elif key == "caselist_path":
                 case_list_path = config[str(config_num)][key]
@@ -230,6 +212,6 @@ class DataLoader:
 
         if cache_paths is None and case_list_path is None:
             # throw error saying there is no data to load
-            raise ValueError("No data found for config_num: {}".format(config_num))
+            raise ValueError(f"No data found for config_num: {config_num}")
 
         return cache_paths, case_list_path

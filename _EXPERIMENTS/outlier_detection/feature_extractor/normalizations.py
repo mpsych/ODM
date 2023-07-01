@@ -28,11 +28,9 @@ class Normalize:
             if isinstance(images[0], np.ndarray):
                 return images
             elif isinstance(images[0], types.SimpleNamespace):
-                for image in images:
-                    pixels.append(image.pixels)
+                pixels.extend(image.pixels for image in images)
             elif isinstance(images[0], dicom.dataset.FileDataset):
-                for image in images:
-                    pixels.append(image.pixel_array)
+                pixels.extend(image.pixel_array for image in images)
             else:
                 raise TypeError("Unknown type of images")
         elif isinstance(images, np.ndarray):
@@ -42,7 +40,7 @@ class Normalize:
         else:
             raise TypeError("Unknown type of images")
         if timing:
-            print("Extract pixels: {}".format(time.time() - t0))
+            print(f"Extract pixels: {time.time() - t0}")
         return pixels
 
     @staticmethod
@@ -77,14 +75,12 @@ class Normalize:
         """
         t0 = time.time()
         if isinstance(pixels, list):
-            normalized_pixels = []
-            for p in pixels:
-                normalized_pixels.append(Normalize._minmax_helper(p, **kwargs))
+            normalized_pixels = [Normalize._minmax_helper(p, **kwargs) for p in pixels]
         else:
             normalized_pixels = Normalize._minmax_helper(pixels, **kwargs)
 
         if timing:
-            print("minmax: {}".format(time.time() - t0))
+            print(f"minmax: {time.time() - t0}")
         return normalized_pixels, None
 
     @staticmethod
@@ -119,14 +115,12 @@ class Normalize:
         t0 = time.time()
         temp_pixels = pixels
         if isinstance(temp_pixels, list):
-            normalized_pixels = []
-            for p in temp_pixels:
-                normalized_pixels.append(Normalize._max_helper(p, **kwargs))
+            normalized_pixels = [Normalize._max_helper(p, **kwargs) for p in temp_pixels]
         else:
             normalized_pixels = Normalize._max_helper(temp_pixels, **kwargs)
 
         if timing:
-            print("max: {}".format(time.time() - t0))
+            print(f"max: {time.time() - t0}")
         return normalized_pixels, None
 
     @staticmethod
@@ -159,9 +153,7 @@ class Normalize:
         temp_pixels = pixels
         bins = kwargs.get("bins", 256)
         if isinstance(temp_pixels, list):
-            filtered = []
-            for i, p in enumerate(temp_pixels):
-                filtered.append(Normalize._gaussian_helper(p, **kwargs))
+            filtered = [Normalize._gaussian_helper(p, **kwargs) for p in temp_pixels]
         else:
             filtered = Normalize._gaussian_helper(temp_pixels, **kwargs)
 
@@ -169,7 +161,7 @@ class Normalize:
         normalized_pixels *= bins - 1
 
         if timing:
-            print("gaussian: {}".format(time.time() - t0))
+            print(f"gaussian: {time.time() - t0}")
         return normalized_pixels, filtered
 
     @staticmethod
@@ -207,14 +199,14 @@ class Normalize:
         t0 = time.time()
         temp_pixels = pixels
         if isinstance(temp_pixels, list):
-            normalized_pixels = []
-            for p in temp_pixels:
-                normalized_pixels.append(Normalize._zscore_helper(p, **kwargs))
+            normalized_pixels = [
+                Normalize._zscore_helper(p, **kwargs) for p in temp_pixels
+            ]
         else:
             normalized_pixels = Normalize._zscore_helper(temp_pixels, **kwargs)
 
         if timing:
-            print("zscore: {}".format(time.time() - t0))
+            print(f"zscore: {time.time() - t0}")
         return normalized_pixels, None
 
     @staticmethod
@@ -258,14 +250,14 @@ class Normalize:
         t0 = time.time()
         temp_pixels = pixels
         if isinstance(temp_pixels, list):
-            normalized_pixels = []
-            for p in temp_pixels:
-                normalized_pixels.append(Normalize._robust_helper(p, **kwargs))
+            normalized_pixels = [
+                Normalize._robust_helper(p, **kwargs) for p in temp_pixels
+            ]
         else:
             normalized_pixels = Normalize._robust_helper(temp_pixels, **kwargs)
 
         if timing:
-            print("robust: {}".format(time.time() - t0))
+            print(f"robust: {time.time() - t0}")
 
         return normalized_pixels, None
 
@@ -305,12 +297,11 @@ class Normalize:
                 else:
                     resized.append(np.array(resize(img, output_shape)))
                 if timing:
-                    print("downsample: {}".format(time.time() - t0))
+                    print(f"downsample: {time.time() - t0}")
+        elif flatten:
+            resized = np.array(resize(images_copy, output_shape)).reshape(-1)
         else:
-            if flatten:
-                resized = np.array(resize(images_copy, output_shape)).reshape(-1)
-            else:
-                resized = np.array(resize(images_copy, output_shape))
+            resized = np.array(resize(images_copy, output_shape))
 
         if normalize is not None:
             if isinstance(normalize, bool):
@@ -322,7 +313,7 @@ class Normalize:
                 resized = Normalize.get_norm(resized, normalize)[0]
 
         if timing:
-            print("downsample: {}".format(time.time() - t0))
+            print(f"downsample: {time.time() - t0}")
         return np.asarray(resized), None
 
     @staticmethod
@@ -353,11 +344,11 @@ class Normalize:
         pixels = Normalize.extract_pixels(pixels)
         if norm_type.lower() == "max":
             normalized, filtered = Normalize.max(pixels, timing, **kwargs)
-        elif norm_type.lower() == "minmax" or norm_type.lower() == "min-max":
+        elif norm_type.lower() in ["minmax", "min-max"]:
             normalized, filtered = Normalize.minmax(pixels, timing, **kwargs)
         elif norm_type.lower() == "gaussian":
             normalized, filtered = Normalize.gaussian(pixels, timing, **kwargs)
-        elif norm_type.lower() == "zscore" or norm_type.lower() == "z-score":
+        elif norm_type.lower() in ["zscore", "z-score"]:
             normalized, filtered = Normalize.z_score(pixels, timing, **kwargs)
         elif norm_type.lower() == "robust":
             output_shape = kwargs.get("output_shape", (256, 256))
@@ -376,6 +367,6 @@ class Normalize:
             raise ValueError("Invalid normalization type")
 
         if timing:
-            print("get_norm: {}".format(time.time() - t0))
+            print(f"get_norm: {time.time() - t0}")
 
         return normalized, filtered

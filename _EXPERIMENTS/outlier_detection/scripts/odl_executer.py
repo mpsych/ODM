@@ -157,12 +157,12 @@ def per_task_execution(r, c, idx, p):
 
     default_config = False
     custom_config = None
-    if CONFIG == "default":
-        default_config = True
     if CONFIG == "custom":
         default_config = None
         custom_config = CUSTOM_CONFIG
 
+    elif CONFIG == "default":
+        default_config = True
     odl = OutlierDetectorLite()
 
     runs = {}
@@ -190,7 +190,7 @@ def per_task_execution(r, c, idx, p):
 
         runs[algo] = []
 
-        for run in range(int(NO_RUNS)):
+        for _ in range(int(NO_RUNS)):
             results = odl.run(
                 DATASET=DATASET,
                 ALGORITHM=algo,
@@ -209,11 +209,9 @@ def per_task_execution(r, c, idx, p):
 
     if CONFIG == "custom":
         FN = custom_config["feat"] + "_" + custom_config["norm"]
-        outputfilename = (
-            DATASET + "_" + CONFIG + "_" + FN + "_" + NO_RUNS + "_" + JOBID + ".pkl"
-        )
+        outputfilename = f"{DATASET}_{CONFIG}_{FN}_{NO_RUNS}_{JOBID}.pkl"
     else:
-        outputfilename = DATASET + "_" + CONFIG + "_" + NO_RUNS + "_" + JOBID + ".pkl"
+        outputfilename = f"{DATASET}_{CONFIG}_{NO_RUNS}_{JOBID}.pkl"
 
     # makesure the OUTPUTDIR exists and if not create it and any missing parent directories
     os.makedirs(OUTPUTDIR, exist_ok=True)
@@ -227,5 +225,5 @@ if __name__ == "__main__":
     config = sys.argv[2]
     task = int(sys.argv[3])
     preload = int(sys.argv[4])
-    task = int(task)
+    task = task
     per_task_execution(num_runs, config, task, preload)
