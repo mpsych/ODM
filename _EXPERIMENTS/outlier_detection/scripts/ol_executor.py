@@ -141,7 +141,6 @@ def per_task_execution(idx):
         **arguments,
     )
     print(f"task number is: {idx}")
-    return
 
 
 if __name__ == "__main__":
