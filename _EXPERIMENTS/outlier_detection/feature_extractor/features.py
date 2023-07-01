@@ -138,7 +138,7 @@ class Features:
             n_scales=n_scales,
         )
         keypoints = []
-        if isinstance(pixels, list) or isinstance(pixels, np.ndarray):
+        if isinstance(pixels, (list, np.ndarray)):
             for i in range(len(pixels)):
                 descriptor_extractor.detect_and_extract(pixels[i])
                 keypoints.append(descriptor_extractor.keypoints)
@@ -147,13 +147,12 @@ class Features:
             keypoints.append(descriptor_extractor.keypoints)
 
         if return_pixel_values:
-            intensities = []
-            for i in range(len(keypoints)):
-                intensities.append(
-                    Features._extract_pixel_intensity_from_keypoints(
-                        keypoints[i], pixels[i]
-                    )
+            intensities = [
+                Features._extract_pixel_intensity_from_keypoints(
+                    keypoints[i], pixels[i]
                 )
+                for i in range(len(keypoints))
+            ]
             keypoints = intensities
 
         if timing:
@@ -282,7 +281,7 @@ class Features:
         )
 
         keypoints = []
-        if isinstance(pixels, list) or isinstance(pixels, np.ndarray):
+        if isinstance(pixels, (list, np.ndarray)):
             for i in range(len(pixels)):
                 descriptor_extractor.detect_and_extract(pixels[i])
                 keypoints.append(descriptor_extractor.keypoints)
@@ -291,13 +290,12 @@ class Features:
             keypoints.append(descriptor_extractor.keypoints)
 
         if return_pixel_values:
-            intensities = []
-            for i in range(len(keypoints)):
-                intensities.append(
-                    Features._extract_pixel_intensity_from_keypoints(
-                        keypoints[i], pixels[i]
-                    )
+            intensities = [
+                Features._extract_pixel_intensity_from_keypoints(
+                    keypoints[i], pixels[i]
                 )
+                for i in range(len(keypoints))
+            ]
             intensities = Features._fix_jagged_keypoint_arrays(intensities)
             keypoints = intensities
 
@@ -335,9 +333,7 @@ class Features:
             output_shape = (128, 128)
         pixels = Normalize.extract_pixels(images)
         if isinstance(pixels, list):
-            resized = []
-            for img in pixels:
-                resized.append(resize(img, output_shape))
+            resized = [resize(img, output_shape) for img in pixels]
         else:
             resized = resize(pixels, output_shape)
 
@@ -350,7 +346,7 @@ class Features:
             )[0]
 
         if timing:
-            print("downsample: {}".format(time.time() - t0))
+            print(f"downsample: {time.time() - t0}")
         return resized
 
     @staticmethod
@@ -388,7 +384,7 @@ class Features:
         np.ndarray
             array of keypoints
         """
-        min_len = min([len(kp) for kp in keypoints])
+        min_len = min(len(kp) for kp in keypoints)
         new_keypoints = []
         for kp in keypoints:
             if len(kp) > min_len:
@@ -417,7 +413,7 @@ class Features:
         np.ndarray, ski.feature.FeatureDetector
         """
         t0 = time.time()
-        if feature_type == "hist" or feature_type == "histogram":
+        if feature_type in ["hist", "histogram"]:
             features = Features.histogram(
                 data, norm_type=norm_type, timing=timing, **kwargs
             )
@@ -522,11 +518,9 @@ class Features:
 
         fig, ax = plt.subplots(1, len(feature_types) + 1, figsize=(10, 5))
         if label is not None:
-            fig.suptitle(
-                "SOPInstanceUID: " + image.SOPInstanceUID + " " + "Label: " + label
-            )
+            fig.suptitle(f"SOPInstanceUID: {image.SOPInstanceUID} Label: {label}")
         else:
-            fig.suptitle("SOPInstanceUID: " + image.SOPInstanceUID)
+            fig.suptitle(f"SOPInstanceUID: {image.SOPInstanceUID}")
         # add extra width between plots
         fig.subplots_adjust(wspace=0.4)
 
@@ -576,22 +570,16 @@ class Features:
                 ax[idx].bar(x_axis, y_axis, color="b", log=True, width=10)
                 ax[idx].set_xlim(0.01, 255)
                 ax[idx].set_ylim(0.01, 10**8)
-                label = Features._get_train_score("hist", feature_types, train_scores)
-                ax[idx].set_title(label, size=8)
             else:
                 y_axis = features[idx - 1]
                 print(y_axis)
                 ax[idx].set_ylim(0, np.max(y_axis))
                 ax[idx].bar(np.arange(0, len(y_axis)), y_axis, log=log)
-                label = Features._get_train_score("hist", feature_types, train_scores)
-                ax[idx].set_title(label, size=8)
-
+            label = Features._get_train_score("hist", feature_types, train_scores)
+            ax[idx].set_title(label, size=8)
         if "downsample" in feature_types:
             idx = feature_types.index("downsample") + 1
-            if features is None:
-                img_ds = Normalize.downsample(img)
-            else:
-                img_ds = features[idx - 1]
+            img_ds = Normalize.downsample(img) if features is None else features[idx - 1]
             ax[idx].imshow(img_ds[0], cmap="gray")
             label = Features._get_train_score("downsample", feature_types, train_scores)
             ax[idx].set_title(label, size=8)

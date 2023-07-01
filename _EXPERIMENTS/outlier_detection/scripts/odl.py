@@ -12,8 +12,6 @@ omama_dir = os.path.abspath(os.path.join(os.path.realpath(__file__), "../../../.
 sys.path.append(omama_dir)
 import omama as O
 
-OUTPUTDIR = "/raid/mpsych/ODL/CSTAR/"
-
 CUSTOM_CONFIG = {
     # 'KNN': {
     #     'contamination': 0.07236974600054445,
@@ -85,12 +83,12 @@ print("CUSTOM_CONFIG", CUSTOM_CONFIG)
 
 default_config = False
 custom_config = None
-if CONFIG == "default":
-    default_config = True
 if CONFIG == "custom":
     default_config = None
     custom_config = CUSTOM_CONFIG
 
+elif CONFIG == "default":
+    default_config = True
 odl = O.OutlierDetectorLite()
 
 runs = {}
@@ -118,7 +116,7 @@ for algo in odl.ALGORITHMS:
 
     runs[algo] = []
 
-    for run in range(int(NO_RUNS)):
+    for _ in range(int(NO_RUNS)):
         results = odl.run(
             DATASET=DATASET,
             ALGORITHM=algo,
@@ -137,42 +135,17 @@ for algo in odl.ALGORITHMS:
 
 if CONFIG == "custom":
     FN = custom_config["feat"] + "_" + custom_config["norm"]
-    if FILE_NAME_ID != "":
-        outputfilename = (
-            DATASET
-            + "_"
-            + CONFIG
-            + "_"
-            + FN
-            + "_"
-            + NO_RUNS
-            + "_"
-            + JOBID
-            + "_"
-            + FILE_NAME_ID
-            + ".pkl"
-        )
-    else:
-        outputfilename = (
-            DATASET + "_" + CONFIG + "_" + FN + "_" + NO_RUNS + "_" + JOBID + ".pkl"
-        )
+    outputfilename = (
+        f"{DATASET}_{CONFIG}_{FN}_{NO_RUNS}_{JOBID}_{FILE_NAME_ID}.pkl"
+        if FILE_NAME_ID != ""
+        else f"{DATASET}_{CONFIG}_{FN}_{NO_RUNS}_{JOBID}.pkl"
+    )
+elif FILE_NAME_ID != "":
+    outputfilename = f"{DATASET}_{CONFIG}_{NO_RUNS}_{JOBID}_{FILE_NAME_ID}.pkl"
 else:
-    if FILE_NAME_ID != "":
-        outputfilename = (
-            DATASET
-            + "_"
-            + CONFIG
-            + "_"
-            + NO_RUNS
-            + "_"
-            + JOBID
-            + "_"
-            + FILE_NAME_ID
-            + ".pkl"
-        )
-    else:
-        outputfilename = DATASET + "_" + CONFIG + "_" + NO_RUNS + "_" + JOBID + ".pkl"
+    outputfilename = f"{DATASET}_{CONFIG}_{NO_RUNS}_{JOBID}.pkl"
 
+OUTPUTDIR = "/raid/mpsych/ODL/CSTAR/"
 # TODO: Make function to save to file to cut down on code duplication
 
 with open(os.path.join(OUTPUTDIR, outputfilename), "wb") as f:

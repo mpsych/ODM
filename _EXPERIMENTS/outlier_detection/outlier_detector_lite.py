@@ -61,7 +61,7 @@ class OutlierDetectorLite:
         imgs : np.ndarray
             The dataset
         """
-        with open(os.path.join(self.datapath, "dataset" + DATASET + ".pkl"), "rb") as f:
+        with open(os.path.join(self.datapath, f"dataset{DATASET}.pkl"), "rb") as f:
             imgs = pickle.load(f)
         return imgs
 
@@ -76,9 +76,7 @@ class OutlierDetectorLite:
         configs : dict
             The dataset
         """
-        with open(
-            os.path.join(self.datapath, "dataset" + DATASET + "_configs.pkl"), "rb"
-        ) as f:
+        with open(os.path.join(self.datapath, f"dataset{DATASET}_configs.pkl"), "rb") as f:
             configs = pickle.load(f)
         return configs
 
@@ -93,9 +91,7 @@ class OutlierDetectorLite:
         ground_truth : np.ndarray
             The ground truth
         """
-        with open(
-            os.path.join(self.datapath, "dataset" + DATASET + "_labels.pkl"), "rb"
-        ) as f:
+        with open(os.path.join(self.datapath, f"dataset{DATASET}_labels.pkl"), "rb") as f:
             ground_truth = pickle.load(f)
         return ground_truth
 
@@ -200,16 +196,12 @@ class OutlierDetectorLite:
             FEAT = configs[ALGORITHM]["feat"]
 
             print("Loaded config, norm, and feats.")
-        # elseif kwargs is not empty
-        elif custom_config is not None:
+        else:
             CONFIG = custom_config
             NORM = CONFIG["norm"]
             FEAT = CONFIG["feat"]
 
             print("Loaded custom config, norm, and feats.")
-        else:
-            raise ValueError("No config provided!")
-
         CONFIG["verbose"] = 0
         CONFIG["return_decision_function"] = True
         CONFIG["accuracy_score"] = False
@@ -248,10 +240,7 @@ class OutlierDetectorLite:
 
         evaluation = None
 
-        if labels is not None:
-            if len(labels) == len(groundtruth):
-                evaluation = self.evaluate(groundtruth, labels)
-        else:
+        if labels is None:
             evaluation = {
                 "groundtruth_indices": np.where(np.array(groundtruth) > 0),
                 "pred_indices": np.where(np.array(scores) > 0),
@@ -270,7 +259,9 @@ class OutlierDetectorLite:
                 "tp": 0,
             }
 
-        results = {
+        elif len(labels) == len(groundtruth):
+            evaluation = self.evaluate(groundtruth, labels)
+        return {
             "algorithm": ALGORITHM,
             "norm": NORM,
             "feat": FEAT,
@@ -281,8 +272,6 @@ class OutlierDetectorLite:
             "groundtruth": groundtruth,
             "evaluation": evaluation,
         }
-
-        return results
 
     @staticmethod
     def evaluate(groundtruth, pred):
@@ -301,7 +290,7 @@ class OutlierDetectorLite:
 
         cm = sklearn.metrics.confusion_matrix(groundtruth, pred)
 
-        scores = {
+        return {
             "groundtruth_indices": np.where(np.array(groundtruth) > 0),
             "pred_indices": np.where(np.array(pred) > 0),
             "roc_auc": sklearn.metrics.roc_auc_score(groundtruth, pred),
@@ -321,8 +310,6 @@ class OutlierDetectorLite:
             "tp": cm[1, 1],
         }
 
-        return scores
-
     def print_results(self, resultsfile):
         """Prints the results of the outlier detection algorithm
         Parameters
@@ -339,23 +326,20 @@ class OutlierDetectorLite:
         NO_RUNS = len(results[list(results.keys())[0]])
 
         for algo in results.keys():
-            metrics = {}
-
-            for method in results[algo][0]["evaluation"].keys():
-                if method.find("indices") != -1:
-                    continue
-
-                metrics[method] = []
-
+            metrics = {
+                method: []
+                for method in results[algo][0]["evaluation"].keys()
+                if method.find("indices") == -1
+            }
             for run in range(0, NO_RUNS):
-                for m in metrics.keys():
+                for m, value in metrics.items():
                     cur = results[algo][run]["evaluation"][m]
 
-                    metrics[m].append(cur)
+                    value.append(cur)
 
             print(algo)
-            for m in metrics.keys():
-                print("   ", m, np.mean(metrics[m]), "+/-", np.std(metrics[m]))
+            for m, value_ in metrics.items():
+                print("   ", m, np.mean(value_), "+/-", np.std(metrics[m]))
 
     def convert_norm_feature(self, norm, feat):
         """Converts the norm and feature to full names with upper case first letter
@@ -424,11 +408,8 @@ class OutlierDetectorLite:
                     variable = "f1"
                 try:
                     scores.append(results_dict[algo][run]["evaluation"][variable])
-                except TypeError:
+                except (TypeError, KeyError):
                     continue
-                except KeyError:
-                    continue
-
             try:
                 mean = np.mean(scores)
                 std = np.std(scores)
@@ -474,34 +455,24 @@ class OutlierDetectorLite:
             with open(dataset, "rb") as f:
                 results.append(pickle.load(f))
 
-        # extract the data from the results
-        values = []
-        for result in results:
-            values.append(self.extract_data(result, variable))
-
-        # get the dataset names
-        dataset_names = []
-        for value in values:
-            dataset_names.append(value[list(value.keys())[0]]["dataset"])
-
-        tabular = ""
-        for i in range(len(dataset_names)):
-            tabular += "ccl|"
+        values = [self.extract_data(result, variable) for result in results]
+        dataset_names = [value[list(value.keys())[0]]["dataset"] for value in values]
+        tabular = "".join("ccl|" for _ in dataset_names)
         tabular = tabular[:-1]
 
-        multicolumn = ""
-        for i in range(len(dataset_names)):
-            multicolumn += (
-                "\\multicolumn{3}{c}{\\textbf{Dataset %s}} & " % dataset_names[i]
-            )
+        multicolumn = "".join(
+            "\\multicolumn{3}{c}{\\textbf{Dataset %s}} & " % dataset_name
+            for dataset_name in dataset_names
+        )
         multicolumn = multicolumn[:-2] + "\\\\"
 
-        header = ""
-        for i in range(len(dataset_names)):
-            header += (
+        header = "".join(
+            (
                 "\\textbf{Algorithm} & \\textbf{Norm. + Feature}  & \\textbf{%s} &"
                 % variable.replace("_", " ").title()
             )
+            for _ in dataset_names
+        )
         header = header[:-1] + "\\\\"
 
         # create the latex table
@@ -522,23 +493,26 @@ class OutlierDetectorLite:
             header,
         )
         for i in range(0, len(values[0].keys())):
-            for j in range(len(values)):
-                algo = list(values[j].keys())[i]
-                if values[j][algo]["std"] < THRESHOLD:
-                    latex += "%s & %s + %s & %.4f &" % (
+            for value_ in values:
+                algo = list(value_.keys())[i]
+                latex += (
+                    "%s & %s + %s & %.4f &"
+                    % (
                         algo,
-                        values[j][algo]["norm"],
-                        values[j][algo]["feat"],
-                        values[j][algo]["mean"],
+                        value_[algo]["norm"],
+                        value_[algo]["feat"],
+                        value_[algo]["mean"],
                     )
-                else:
-                    latex += "%s & %s + %s & $%.4f\pm%.4f$ &" % (
+                    if value_[algo]["std"] < THRESHOLD
+                    else "%s & %s + %s & $%.4f\pm%.4f$ &"
+                    % (
                         algo,
-                        values[j][algo]["norm"],
-                        values[j][algo]["feat"],
-                        values[j][algo]["mean"],
-                        values[j][algo]["std"],
+                        value_[algo]["norm"],
+                        value_[algo]["feat"],
+                        value_[algo]["mean"],
+                        value_[algo]["std"],
                     )
+                )
             latex = latex[:-1] + "\\\\" + "\n"
 
         latex += """
@@ -583,16 +557,10 @@ class OutlierDetectorLite:
             with open(dataset, "rb") as f:
                 results.append(pickle.load(f))
 
-        # extract the data from the results
-        values = []
-        for result in results:
-            values.append(self.extract_data(result, variable, sort=False))
-
-        # get the dataset names
-        dataset_names = []
-        for value in values:
-            dataset_names.append(value[list(value.keys())[0]]["dataset"])
-
+        values = [
+            self.extract_data(result, variable, sort=False) for result in results
+        ]
+        dataset_names = [value[list(value.keys())[0]]["dataset"] for value in values]
         # create the latex table
         tabular = "ccl|cl|cl|cl|cl|cl"
         header = """\\textbf{Algorithm}&\multicolumn{2}{c}{\\textbf{A (n=100, x\%)}} & \multicolumn{2}{c}{\\textbf{B (n=100, x\%)}} & \multicolumn{2}{c}{\\textbf{C (n=100, x\%)}}
@@ -616,52 +584,36 @@ class OutlierDetectorLite:
         """
         )
         for i in range(0, len(values[0].keys())):
-            counter = 0  # use counter so if is 0 then print alogrithm name otherwise we leave alogrithm out as shown in example
-            for j in range(len(values)):
+            for counter, value_ in enumerate(values):
                 if counter == 0:
-                    algo = list(values[j].keys())[i]
-                    norm = self.norm_abbr(values[j][algo]["norm"])
-                    feat = self.feature_abbr(values[j][algo]["feat"])
+                    algo = list(value_.keys())[i]
+                    norm = self.norm_abbr(value_[algo]["norm"])
+                    feat = self.feature_abbr(value_[algo]["feat"])
                     # if std is less than threshold or nan then we don't print std
-                    if (
-                        values[j][algo]["std"] < THRESHOLD
-                        or values[j][algo]["std"] == np.nan
-                    ):
-                        latex += "%s & %s + %s & %.4f &" % (
+                    latex += (
+                        "%s & %s + %s & %.4f &"
+                        % (algo, norm, feat, value_[algo]["mean"])
+                        if value_[algo]["std"] < THRESHOLD
+                        or value_[algo]["std"] == np.nan
+                        else "%s & %s + %s & $%.4f\pm%.4f$ &"
+                        % (
                             algo,
                             norm,
                             feat,
-                            values[j][algo]["mean"],
+                            value_[algo]["mean"],
+                            value_[algo]["std"],
                         )
-                    else:
-                        latex += "%s & %s + %s & $%.4f\pm%.4f$ &" % (
-                            algo,
-                            norm,
-                            feat,
-                            values[j][algo]["mean"],
-                            values[j][algo]["std"],
-                        )
+                    )
                 else:
-                    norm = self.norm_abbr(values[j][algo]["norm"])
-                    feat = self.feature_abbr(values[j][algo]["feat"])
-                    if (
-                        values[j][algo]["std"] < THRESHOLD
-                        or values[j][algo]["std"] == np.nan
-                    ):
-                        latex += "%s + %s & %.4f &" % (
-                            norm,
-                            feat,
-                            values[j][algo]["mean"],
-                        )
-                    else:
-                        latex += "%s + %s & $%.4f\pm%.4f$ &" % (
-                            norm,
-                            feat,
-                            values[j][algo]["mean"],
-                            values[j][algo]["std"],
-                        )
-                counter += 1
-
+                    norm = self.norm_abbr(value_[algo]["norm"])
+                    feat = self.feature_abbr(value_[algo]["feat"])
+                    latex += (
+                        "%s + %s & %.4f &" % (norm, feat, value_[algo]["mean"])
+                        if value_[algo]["std"] < THRESHOLD
+                        or value_[algo]["std"] == np.nan
+                        else "%s + %s & $%.4f\pm%.4f$ &"
+                        % (norm, feat, value_[algo]["mean"], value_[algo]["std"])
+                    )
             latex = latex[:-1] + "\\\\" + "\n"
 
         latex += """
@@ -675,35 +627,25 @@ class OutlierDetectorLite:
         return latex
 
     def norm_abbr(self, norm):
-        if norm == "gaussian" or norm == "Gaussian":
+        if norm in ["gaussian", "Gaussian"]:
             return "G"
-        elif norm == "max" or norm == "Max":
+        elif norm in ["max", "Max"]:
             return "M"
-        elif (
-            norm == "minmax"
-            or norm == "MinMax"
-            or norm == "min-max"
-            or norm == "Min-Max"
-        ):
+        elif norm in ["minmax", "MinMax", "min-max", "Min-Max"]:
             return "MM"
-        elif norm == "robust" or norm == "Robust":
+        elif norm in ["robust", "Robust"]:
             return "R"
-        elif (
-            norm == "zscore"
-            or norm == "ZScore"
-            or norm == "z-score"
-            or norm == "Z-Score"
-        ):
+        elif norm in ["zscore", "ZScore", "z-score", "Z-Score"]:
             return "Z"
         else:
             return norm
 
     def feature_abbr(self, feature):
-        if feature == "histogram" or feature == "Histogram":
+        if feature in ["histogram", "Histogram"]:
             return "H"
-        elif feature == "sift" or feature == "SIFT":
+        elif feature in ["sift", "SIFT"]:
             return "S"
-        elif feature == "orb" or feature == "ORB":
+        elif feature in ["orb", "ORB"]:
             return "O"
         else:
             return feature
@@ -716,11 +658,11 @@ class OutlierDetectorLite:
             return 13
         elif dataset == "C":
             return 24
-        elif dataset == "ASTAR" or dataset == "A*":
+        elif dataset in {"ASTAR", "A*"}:
             return 63
-        elif dataset == "BASTAR" or dataset == "B*":
+        elif dataset in {"BASTAR", "B*"}:
             return 50
-        elif dataset == "CASTAR" or dataset == "C*":
+        elif dataset in {"CASTAR", "C*"}:
             return 15
         else:
             return 0
@@ -758,26 +700,18 @@ class OutlierDetectorLite:
                     results.append(pickle.load(f))
                 except:
                     continue
-        # extract the data from the results
-        values = []
-        for result in results:
-            values.append(self.extract_data(result, variable))
-
-        # get the dataset names
-        dataset_names = []
-        for value in values:
-            dataset_names.append(value[list(value.keys())[0]]["dataset"])
-
+        values = [self.extract_data(result, variable) for result in results]
+        dataset_names = [value[list(value.keys())[0]]["dataset"] for value in values]
         # get the best results for each algorithm
         best_results = {}
         for i in range(len(dataset_names)):
             for algo in values[i].keys():
-                if algo not in best_results.keys():
-                    best_results[algo] = values[i][algo]
-                else:
+                if algo in best_results:
                     if values[i][algo]["mean"] > best_results[algo]["mean"]:
                         best_results[algo] = values[i][algo]
 
+                else:
+                    best_results[algo] = values[i][algo]
         # sort the results by the highest mean
         best_results = sorted(
             best_results.items(), key=lambda x: x[1]["mean"], reverse=True
@@ -787,14 +721,13 @@ class OutlierDetectorLite:
         # print the results
         if display:
             print(
-                "Dataset & Algorithm & Norm. + Feature & %s"
-                % variable.replace("_", " ").title()
+                f'Dataset & Algorithm & Norm. + Feature & {variable.replace("_", " ").title()}'
             )
-            for algo in best_results.keys():
+            for algo, value_ in best_results.items():
                 print(
                     "%s & %s & %s + %s & %.4f"
                     % (
-                        best_results[algo]["dataset"],
+                        value_["dataset"],
                         algo,
                         best_results[algo]["norm"],
                         best_results[algo]["feat"],
@@ -816,9 +749,9 @@ class OutlierDetectorLite:
             """ % (
                 variable.replace("_", " ").title()
             )
-            for algo in best_results.keys():
+            for algo, value__ in best_results.items():
                 latex += "%s & %s & %s + %s & %.4f \\\\" % (
-                    best_results[algo]["dataset"],
+                    value__["dataset"],
                     algo,
                     best_results[algo]["norm"],
                     best_results[algo]["feat"],
@@ -866,29 +799,21 @@ class OutlierDetectorLite:
                     results.append(pickle.load(f))
                 except:
                     continue
-        # extract the data from the results
-        values = []
-        for result in results:
-            values.append(self.extract_data(result, variable))
-
-        # get the dataset names
-        dataset_names = []
-        for value in values:
-            dataset_names.append(value[list(value.keys())[0]]["dataset"])
-
+        values = [self.extract_data(result, variable) for result in results]
+        dataset_names = [value[list(value.keys())[0]]["dataset"] for value in values]
         # get the best results for each dataset
         best_results = {}
         best_alg = ""
         for i in range(len(dataset_names)):
             for algo in values[i].keys():
-                if dataset_names[i] not in best_results.keys():
-                    best_results[dataset_names[i]] = values[i][algo]
-                    best_alg = algo
-                else:
+                if dataset_names[i] in best_results:
                     if values[i][algo]["mean"] > best_results[dataset_names[i]]["mean"]:
                         best_results[dataset_names[i]] = values[i][algo]
                         best_alg = algo
 
+                else:
+                    best_results[dataset_names[i]] = values[i][algo]
+                    best_alg = algo
         # sort the results by the highest mean
         best_results = sorted(
             best_results.items(), key=lambda x: x[1]["mean"], reverse=True
@@ -898,16 +823,15 @@ class OutlierDetectorLite:
         # print the results
         if display:
             print(
-                "Dataset & Algorithm & Norm. + Feature & %s"
-                % variable.replace("_", " ").title()
+                f'Dataset & Algorithm & Norm. + Feature & {variable.replace("_", " ").title()}'
             )
-            for dataset in best_results.keys():
+            for dataset, value_ in best_results.items():
                 print(
                     "%s & %s & %s + %s & %.4f"
                     % (
                         dataset,
                         best_alg,
-                        best_results[dataset]["norm"],
+                        value_["norm"],
                         best_results[dataset]["feat"],
                         best_results[dataset]["mean"],
                     )
@@ -954,16 +878,11 @@ class OutlierDetectorLite:
                     results.append(pickle.load(f))
                 except:
                     continue
-        # extract the data from the results
-        values = []
-        for result in results:
-            values.append(self.extract_data(result, variable))
-
+        values = [self.extract_data(result, variable) for result in results]
         # print out the results
         if display:
             print(
-                "Dataset & Algorithm & Norm. + Feature & %s"
-                % variable.replace("_", " ").title()
+                f'Dataset & Algorithm & Norm. + Feature & {variable.replace("_", " ").title()}'
             )
             for value in values:
                 for algo in value.keys():
@@ -1184,12 +1103,11 @@ class OutlierDetectorLite:
             # if the algorithm is not in the dictionary, add it
             if data["algorithm"] not in best_algorithms:
                 best_algorithms[data["algorithm"]] = data
-            else:
-                if (
+            elif (
                     data["results"]["mean"]
                     > best_algorithms[data["algorithm"]]["results"]["mean"]
                 ):
-                    best_algorithms[data["algorithm"]] = data
+                best_algorithms[data["algorithm"]] = data
 
         # remove the inner key for each algorithm
         for key, value in best_algorithms.items():
@@ -1204,16 +1122,10 @@ class OutlierDetectorLite:
             return 8
         elif dataset == "B":
             return 13
-        elif dataset == "C":
+        elif dataset in ["C", "D"]:
             return 24
-        elif dataset == "D":
-            return 24
-        elif dataset == "ASTAR" or "A*":
+        else:
             return 63
-        elif dataset == "BSTAR" or "B*":
-            return 50
-        elif dataset == "CSTAR" or "C*":
-            return 15
 
     def _print_results(self, best_each_alg_datasetA, variable):
         """Prints the results in a table format"""

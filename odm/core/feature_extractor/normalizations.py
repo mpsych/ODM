@@ -35,11 +35,9 @@ class Normalize:
             if isinstance(images[0], np.ndarray):
                 return images
             elif isinstance(images[0], types.SimpleNamespace):
-                for image in images:
-                    pixels.append(image.pixels)
+                pixels.extend(image.pixels for image in images)
             elif isinstance(images[0], dicom.dataset.FileDataset):
-                for image in images:
-                    pixels.append(image.pixel_array)
+                pixels.extend(image.pixel_array for image in images)
             else:
                 raise TypeError("Unknown type of images")
         elif isinstance(images, np.ndarray):
@@ -49,7 +47,7 @@ class Normalize:
         else:
             raise TypeError("Unknown type of images")
         if timing:
-            logging.info("Extract pixels: {}".format(time.time() - t0))
+            logging.info(f"Extract pixels: {time.time() - t0}")
         return pixels
 
     @staticmethod
@@ -104,14 +102,12 @@ class Normalize:
         """
         t0 = time.time()
         if isinstance(pixels, list):
-            normalized_pixels = []
-            for p in pixels:
-                normalized_pixels.append(Normalize._minmax_helper(p, bins=bins))
+            normalized_pixels = [Normalize._minmax_helper(p, bins=bins) for p in pixels]
         else:
             normalized_pixels = Normalize._minmax_helper(pixels, bins=bins)
 
         if timing:
-            logging.info("minmax: {}".format(time.time() - t0))
+            logging.info(f"minmax: {time.time() - t0}")
         return normalized_pixels, None
 
     @staticmethod
@@ -143,12 +139,12 @@ class Normalize:
         """
         t0 = time.time()
         pixels = Normalize.extract_pixels(pixels, timing=timing)
-        if norm_type.lower() == "minmax" or norm_type.lower() == "min-max":
+        if norm_type.lower() in {"minmax", "min-max"}:
             normalized, filtered = Normalize.minmax(pixels, timing=timing, bins=bins)
         else:
             raise ValueError("Invalid normalization type")
 
         if timing:
-            logging.info("get_norm: {}".format(time.time() - t0))
+            logging.info(f"get_norm: {time.time() - t0}")
 
         return normalized, filtered
