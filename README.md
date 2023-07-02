@@ -14,6 +14,7 @@ The algorithms and strategies employed by ODM are based on our published researc
     - [Standard Installation](#standard-installation)
     - [Docker Installation](#docker-installation)
     - [Test Installation](#test-installation)
+    - [Notes on GPU Support](#notes-on-gpu-support)
   - [Usage](#usage)
     - [Full Outlier Detection Pipeline](#full-outlier-detection-pipeline)
     - [Separate Pipeline Stages](#separate-pipeline-stages)
@@ -82,7 +83,7 @@ docker build -t odm .
 - Run the Docker container:
 
 ```bash
-docker run -it --gpus all odm
+docker run -it  odm
 ```
 
 2. **Using a pre-built Docker image from Docker Hub.**
@@ -96,7 +97,7 @@ docker pull mpsych/odm:latest
 - Run the Docker container:
 
 ```bash
-docker run -it --gpus all mpsych/odm:latest
+docker run -it mpsych/odm:latest
 ```
 
 For both methods, if your project requires access to local files or directories (e.g., for data input or output), you can mount a local directory inside the Docker container using the `-v` flag:
@@ -118,6 +119,32 @@ python run_tests.py
 ```
 
 The run_tests.py script has been designed to facilitate testing in both regular installations and within Docker containers. Therefore, it has now become our preferred method for verifying that ODM has been installed and is functioning correctly. This approach significantly simplifies the testing process as it only requires the execution of a single script, regardless of the type of installation.
+
+### Notes on GPU Support
+
+ODM supports GPU acceleration for the VAE stage of the pipeline. To enable GPU support, you must have a CUDA-enabled GPU and install the appropriate CUDA drivers and CUDA toolkit. For more information, see the [NVIDIA CUDA documentation](https://docs.nvidia.com/cuda/index.html).
+
+If you are using Docker, you must also install the NVIDIA Container Toolkit. For more information, see the [NVIDIA Container Toolkit documentation](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+
+Please be aware that the successful operation of GPU accelerated support while using this software might depend on the type of GPU used. Different GPUs may require different versions of software packages, libraries, or drivers to function correctly.
+
+This project is developed and tested mainly on:
+> GPU: NVIDIA GeForce RTX 3070ti
+> 
+> NVIDIA-SMI 535.54.06, Driver Version: 536.40, CUDA Version: 12.2
+> 
+> nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2019 NVIDIA Corporation
+Built on Sun_Jul_28_19:07:16_PDT_2019
+Cuda compilation tools, release 10.1, V10.1.243
+
+We can't guarantee that it will work flawlessly on other GPU configurations.
+
+Before running the project, please ensure that your environment matches the required specifications. Check your GPU model, driver version, and installed libraries to confirm compatibility. You may need to install different versions of the required software to suit your specific GPU configuration.
+
+In case you encounter any issues related to your GPU while running this project, we recommend looking up compatibility requirements for your particular GPU model, or reaching out to GPU vendor's customer support for guidance. Also, you could explore community forums and resources like StackOverflow, which could potentially provide a solution to similar issues faced by others.
+
+Finally, we encourage you to open an issue on this repository if you encounter any compatibility problems. This will not only help us to improve the project, but it also could assist others who face similar challenges. Your contribution to improving this project is much appreciated.
 
 ## Usage
 
