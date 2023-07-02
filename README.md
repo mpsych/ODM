@@ -115,6 +115,12 @@ In the command above, the `-it` flag starts the container in interactive mode, s
 To test the installation, run the following command from the odm directory:
 
 ```bash
+./run_tests.py
+```
+
+if you are on Windows, run the following command from the odm directory:
+
+```bash
 python run_tests.py
 ```
 
