@@ -135,14 +135,15 @@ If you are using Docker, you must also install the NVIDIA Container Toolkit. For
 Please be aware that the successful operation of GPU accelerated support while using this software might depend on the type of GPU used. Different GPUs may require different versions of software packages, libraries, or drivers to function correctly.
 
 This project is developed and tested mainly on:
+
 > GPU: NVIDIA GeForce RTX 3070ti
-> 
+>
 > NVIDIA-SMI 535.54.06, Driver Version: 536.40, CUDA Version: 12.2
-> 
+>
 > nvcc: NVIDIA (R) Cuda compiler driver
-Copyright (c) 2005-2019 NVIDIA Corporation
-Built on Sun_Jul_28_19:07:16_PDT_2019
-Cuda compilation tools, release 10.1, V10.1.243
+> Copyright (c) 2005-2019 NVIDIA Corporation
+> Built on Sun_Jul_28_19:07:16_PDT_2019
+> Cuda compilation tools, release 10.1, V10.1.243
 
 We can't guarantee that it will work flawlessly on other GPU configurations.
 
@@ -363,15 +364,17 @@ This project is licensed under the terms of the MIT license. See [LICENSE](LICEN
 
 ## Acknowledgements
 
-This research project is a result of collaborative efforts and intellectual contributions that extend beyond our team. We would like to express our heartfelt gratitude to the University of Massachusetts Boston for fostering an environment that encourages academic exploration.
+This research project is the culmination of combined efforts and intellectual contributions that go beyond our team. We would like to express our sincere gratitude to the University of Massachusetts Boston for cultivating an environment that encourages academic exploration.
 
-We are particularly thankful for the financial support provided by the Massachusetts Life Sciences Center, which greatly facilitated the realization of this project. Their commitment to nurturing scientific research played a pivotal role in our endeavor.
+Our profound appreciation goes to the Massachusetts Life Sciences Center for their financial support. Their commitment to nurturing scientific research was instrumental in the realization of this project.
 
-We also wish to extend our appreciation to DeepHealth for their invaluable technical support. Their expertise significantly enriched the quality of our work and the practicality of our solutions.
+Additionally, we express our deep thanks to DeepHealth for their invaluable technical support. Their expertise notably enriched the quality of our work and the applicability of our solutions.
 
-Finally, we acknowledge all the fellow researchers, students, and mentors who provided insightful comments, constructive criticisms, and encouragement during the course of this work. Your inputs have played a vital role in shaping our research.
+We would like to acknowledge the significant contribution of Oracle. The work of our team members was supported in part by the College of Science and Mathematics Dean’s Undergraduate Research Fellowship through fellowship support from Oracle, project ID R20000000025727. This generous support from Oracle played an essential role in our research's progress and success.
 
-Thank you for supporting us in pushing the boundaries of machine learning in medical imaging.
+Lastly, we wish to extend our appreciation to all the fellow researchers, students, and mentors who have provided insightful comments, constructive criticisms, and encouragement throughout the course of this work. Your inputs have been vital in shaping our research.
+
+Thank you all for supporting us in pushing the boundaries of machine learning in medical imaging.
 
 ## Contact
 
