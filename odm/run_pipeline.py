@@ -1,7 +1,11 @@
-from core.__configloc__ import CONFIG_LOC
-from core.fivebhist_runner import fivebhist_runner
-from core.utils import print_properties, validate_inputs
-from core.vae_runner import vae_runner
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from odm.core.__configloc__ import CONFIG_LOC
+from odm.core.fivebhist_runner import fivebhist_runner
+from odm.core.utils import print_properties, validate_inputs
+from odm.core.vae_runner import vae_runner
 import argparse
 import configparser
 import logging
