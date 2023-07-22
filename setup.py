@@ -5,7 +5,7 @@ from odm import __version__
 setup(
     name="odm",
     version=__version__,
-    url="https://github.com/mpsych/ODM.git",
+    url="https://github.com/RyanZurrin/odm",
     author="Ryan Zurrin, Daniel Haehn",
     author_email="ryan.zurrin001@umb.edu, daniel.haehn@umb.edu",
     description="Outlier Detection for Mammograms (ODM) is a Python package for medical "
