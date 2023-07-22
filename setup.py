@@ -6,7 +6,7 @@ with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
 
 setup(
-    name="ODMammogram",
+    name="odmammogram",
     version=__version__,
     url="https://github.com/RyanZurrin/odmammogram",
     author="Ryan Zurrin, Daniel Haehn",
