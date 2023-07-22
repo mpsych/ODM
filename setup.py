@@ -3,9 +3,9 @@ from setuptools import setup, find_packages
 from odm import __version__
 
 setup(
-    name="odm",
+    name="ODMammogram",
     version=__version__,
-    url="https://github.com/RyanZurrin/odm",
+    url="https://github.com/RyanZurrin/ODMammogram",
     author="Ryan Zurrin, Daniel Haehn",
     author_email="ryan.zurrin001@umb.edu, daniel.haehn@umb.edu",
     description="Outlier Detection for Mammograms (ODM) is a Python package for medical "
