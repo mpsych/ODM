@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-from odm.__version__ import __version__
+from odm import __version__
 
 setup(
     name="odm",
