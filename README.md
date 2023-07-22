@@ -126,13 +126,13 @@ cd ODM
 - Build the Docker image:
 
 ```bash
-docker build -t odm .
+docker build -t odmammogram .
 ```
 
 - Run the Docker container:
 
 ```bash
-docker run -it  odm
+docker run -it  odmammogram
 ```
 
 2. **Using a pre-built Docker image from Docker Hub.**
@@ -140,19 +140,19 @@ docker run -it  odm
 - Pull the Docker image from Docker Hub:
 
 ```bash
-docker pull mpsych/odm:latest
+docker pull mpsych/odmammogram:latest
 ```
 
 - Run the Docker container:
 
 ```bash
-docker run -it mpsych/odm:latest
+docker run -it mpsych/odmammogram:latest
 ```
 
 For both methods, if your project requires access to local files or directories (e.g., for data input or output), you can mount a local directory inside the Docker container using the `-v` flag:
 
 ```bash
-docker run -it -v /path/to/local/directory:/path/to/container/directory odm
+docker run -it -v /path/to/local/directory:/path/to/container/directory odmammogram
 ```
 
 Replace `/path/to/local/directory` with the path to the directory on your host system that you want to access from within the Docker container, and replace `/path/in/container` with the path where you want the directory to be mounted in the Docker container.
