@@ -1,8 +1,8 @@
-# Outlier Detection for Mammograms (ODM)
+# Outlier Detection for Mammograms (ODMammogram)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-ODM is an open-source project that utilizes a two-stage hybrid algorithm, where the second stage employs unsupervised learning for outlier detection. Primarily designed for handling large mammogram collections, ODM's primary aim is to streamline mammogram datasets by filtering out low-quality and undesired scans. This facilitates more efficient and accurate downstream analysis. The first stage of the pipeline employs a threshold-based 5-bin histogram filtering (5BHIST) method, designed to exclude poor-quality images. The second stage leverages a Variational Autoencoder (VAE), an unsupervised machine learning model, to further identify and eliminate outlier scans. By combining conventional filtering techniques with advanced machine learning, ODM ensures robust and comprehensive outlier detection in mammogram datasets.
+ODMammogram is an open-source project that utilizes a two-stage hybrid algorithm, where the second stage employs unsupervised learning for outlier detection. Primarily designed for handling large mammogram collections, ODM's primary aim is to streamline mammogram datasets by filtering out low-quality and undesired scans. This facilitates more efficient and accurate downstream analysis. The first stage of the pipeline employs a threshold-based 5-bin histogram filtering (5BHIST) method, designed to exclude poor-quality images. The second stage leverages a Variational Autoencoder (VAE), an unsupervised machine learning model, to further identify and eliminate outlier scans. By combining conventional filtering techniques with advanced machine learning, ODM ensures robust and comprehensive outlier detection in mammogram datasets.
 
 The algorithms and strategies employed by ODM are based on our published research paper. In the additional documentation, we've included our replies to reviewers, a more detailed explanation of our methods, an analysis of our chosen parameters, and a thorough list of tested algorithms.
 
@@ -12,6 +12,7 @@ The algorithms and strategies employed by ODM are based on our published researc
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
     - [Standard Installation](#standard-installation)
+    - [pip Installation](#pip-installation)
     - [Docker Installation](#docker-installation)
     - [Test Installation](#test-installation)
     - [Notes on GPU Support](#notes-on-gpu-support)
@@ -55,6 +56,54 @@ conda env create -f environment.yml
 conda activate ODM
 ```
 
+### pip Installation
+
+Ensure you have Python 3.8 or newer installed. You can check your Python version by running `python --version` in your command line.
+
+#### Installing from PyPI
+
+
+
+To install the latest release from PyPI, run the following command:
+
+```bash
+pip install odmammogram
+```
+
+This command will install the latest release of ODMammogram and all of its dependencies into your current Python environment.
+
+#### Installing from local setup.py
+
+To install the latest release from a local setup.py file, run the following command:
+
+```bash
+pip install .
+```
+
+This command will install the package in your current Python environment using the setup.py file in your current directory.
+
+Note: You need to be in the same directory as the setup.py file to run this command.
+
+#### Upgrading from PyPI
+
+To upgrade to the latest release from PyPI, run the following command:
+
+```bash
+pip install --upgrade odmammogram
+```
+
+This command will upgrade the package in your current Python environment to the latest release.
+
+#### Upgrading from local setup.py
+
+To upgrade to the latest release from a local setup.py file, run the following command:
+
+```bash
+pip install --upgrade .
+```
+
+This command will upgrade the package in your current Python environment to the latest release using the setup.py file in your current directory.
+
 ### Docker Installation
 
 Ensure you have Docker installed. You can check your Docker version by running `docker --version` in your command line. We have also provided a Dockerfile which can be used to build a Docker image and run the software in a container. To do this, first, make sure you have Docker installed on your system.
@@ -77,13 +126,13 @@ cd ODM
 - Build the Docker image:
 
 ```bash
-docker build -t odm .
+docker build -t odmammogram .
 ```
 
 - Run the Docker container:
 
 ```bash
-docker run -it  odm
+docker run -it  odmammogram
 ```
 
 2. **Using a pre-built Docker image from Docker Hub.**
@@ -91,19 +140,19 @@ docker run -it  odm
 - Pull the Docker image from Docker Hub:
 
 ```bash
-docker pull mpsych/odm:latest
+docker pull mpsych/odmammogram:latest
 ```
 
 - Run the Docker container:
 
 ```bash
-docker run -it mpsych/odm:latest
+docker run -it mpsych/odmammogram:latest
 ```
 
 For both methods, if your project requires access to local files or directories (e.g., for data input or output), you can mount a local directory inside the Docker container using the `-v` flag:
 
 ```bash
-docker run -it -v /path/to/local/directory:/path/to/container/directory odm
+docker run -it -v /path/to/local/directory:/path/to/container/directory odmammogram
 ```
 
 Replace `/path/to/local/directory` with the path to the directory on your host system that you want to access from within the Docker container, and replace `/path/in/container` with the path where you want the directory to be mounted in the Docker container.

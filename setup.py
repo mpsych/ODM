@@ -1,20 +1,19 @@
 from setuptools import setup, find_packages
 
-from odm import __version__
+from odmammogram import __version__
+
+with open('README.md', 'r', encoding='utf-8') as fh:
+    long_description = fh.read()
 
 setup(
-    name="odm",
+    name="odmammogram",
     version=__version__,
-    url="https://github.com/mpsych/ODM.git",
+    url="https://github.com/RyanZurrin/odmammogram",
     author="Ryan Zurrin, Daniel Haehn",
-    author_email="ryan.zurrin001@umb.edu, daniel.haehn@umb.edu",
-    description="Outlier Detection for Mammograms (ODM) is a Python package for medical "
-    "image analysis with a focus on detection of outliers in DICOM mammogram "
-    "images. Leveraging techniques such as 5-bin histogram thresholding and "
-    "variational auto-encoders, ODM facilitates automated identification of "
-    "images with atypical characteristics. Its user-friendly API allows seamless "
-    "integration with existing pipelines, making it a handy tool for large-scale "
-    "studies and quality assurance in mammography medical imaging research.",
+    author_email="Ryan Zurrin <ryan.zurrin001@umb.edu>, Daniel Haehn <daniel.haehn@umb.edu>",
+    description="Outlier Detection for Mammograms (ODM) is a Python package for medical image analysis...",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3.9",

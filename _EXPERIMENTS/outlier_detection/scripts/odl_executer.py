@@ -8,7 +8,7 @@ sys.path.append(odm_dir)
 from ..outlier_detector import *
 from ..outlier_detector_lite import *
 
-OUTPUTDIR = "/tmp/odm/output/"
+OUTPUTDIR = "/tmp/odmammogram/output/"
 DATASETS = [
     "A",
     "B",

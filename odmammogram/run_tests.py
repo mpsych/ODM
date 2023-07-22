@@ -1,4 +1,4 @@
-# #!/usr/bin/env python3
+#!/usr/bin/env python3
 # import configparser
 # import os
 # import shutil
@@ -69,13 +69,17 @@
 #
 # if __name__ == "__main__":
 #     run_tests()
-#!/usr/bin/env python3
+
+
+
+
 import configparser
 import os
 import shutil
 import subprocess
 import tempfile
 
+print(f"Current working directory: {os.getcwd()}")
 def run_tests():
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
